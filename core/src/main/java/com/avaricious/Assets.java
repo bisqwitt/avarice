@@ -1,6 +1,9 @@
 package com.avaricious;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+
+import java.util.Arrays;
 
 public class Assets {
 
@@ -9,13 +12,20 @@ public class Assets {
         return instance == null ? (instance = new Assets()) : instance;
     }
 
-    public final AssetManager manager = new AssetManager();
+    private final AssetManager manager = new AssetManager();
 
     private Assets() {
     }
 
     public void load() {
-        manager.load();
+        Arrays.asList(Symbols.values()).forEach((symbol) -> {
+            manager.load(symbol.path(), Texture.class);
+        });
+        manager.finishLoading();
+    }
+
+    public Texture get(Symbols type) {
+        return manager.get(type.path());
     }
 
 }
