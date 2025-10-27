@@ -5,6 +5,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -18,15 +19,14 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 public class Main extends ApplicationAdapter {
 
     SlotMachine slotMachine;
+    RoundsManager roundsManager;
     Long score = 0L;
-    Integer hands = 5;
-    Integer spins = 5;
-
     FitViewport viewport;
     SpriteBatch slotsBatch;
     Vector3 mouse = new Vector3();
     boolean wasPressed = false;
 
+    GlyphLayout layout;
     BitmapFont font;
     ShapeRenderer shapes;
     Rectangle spinButton;
@@ -40,6 +40,7 @@ public class Main extends ApplicationAdapter {
         viewport = new FitViewport(16, 9);
         slotMachine = new SlotMachine(viewport.getWorldWidth(), viewport.getWorldHeight());
 
+        layout = new GlyphLayout();
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Montserrat.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 16;
@@ -51,6 +52,10 @@ public class Main extends ApplicationAdapter {
         shapes = new ShapeRenderer();
         spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
         applyButton = new Rectangle(0.5f, 4f, 0.5f, 0.5f);
+
+        roundsManager = RoundsManager.I();
+        layout.setText(font, "Round: " + roundsManager.getCurrentRound() + " - Score " + roundsManager.getCurrentTargetScore() + " points");
+
     }
 
     @Override
@@ -104,23 +109,42 @@ public class Main extends ApplicationAdapter {
         slotsBatch.begin();
         slotMachine.draw(slotsBatch);
         Rectangle slotBounds = slotMachine.getBounds();
-        font.draw(slotsBatch, "Score: " + score, slotBounds.x, slotBounds.y + slotBounds.height + 1f);
+        font.draw(slotsBatch, layout, (viewport.getWorldWidth() - layout.width) / 2f, slotBounds.y + slotBounds.height + 1.6f);
+        font.draw(slotsBatch, "Score: " + score, slotBounds.x, slotBounds.y + slotBounds.height + 0.8f);
         font.draw(slotsBatch, slotMachine.getScoreFormula(), slotBounds.x, slotBounds.y - 0.5f);
-        font.draw(slotsBatch, hands.toString(), applyButton.x + 0.75f, applyButton.y + applyButton.height);
-        font.draw(slotsBatch, spins.toString(), spinButton.x + 0.75f, spinButton.y + spinButton.height);
+        font.draw(slotsBatch, roundsManager.getHandsLeft().toString(), applyButton.x + 0.75f, applyButton.y + applyButton.height);
+        font.draw(slotsBatch, roundsManager.getSpinsLeft().toString(), spinButton.x + 0.75f, spinButton.y + spinButton.height);
         slotsBatch.end();
     }
 
     private void onSpinButtonPressed() {
-        if(spins == 0) return;
+        if(roundsManager.getSpinsLeft() == 0) return;
         slotMachine.spin();
-        spins--;
+        roundsManager.minusOneSpin();
     }
 
     private void onApplyButtonPressed() {
-        if(hands == 0) return;
         score += slotMachine.applySelection();
-        hands--;
+        roundsManager.minusOneHand();
+
+        if(score >= roundsManager.getCurrentTargetScore()) {
+            roundsManager.nextRound();
+            layout.setText(font, "Round: " + roundsManager.getCurrentRound() + " - Score " + roundsManager.getCurrentTargetScore() + " points");
+            slotMachine.clearSelection();
+            slotMachine.spin();
+
+            score = 0L;
+        } else if(roundsManager.getHandsLeft() == 0) {
+            layout.setText(font, "Haha! You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");
+        }
+    }
+
+    private Integer handsPerRound() {
+        return 4;
+    }
+
+    private Integer spinsPerRound() {
+        return 4;
     }
 
     @Override

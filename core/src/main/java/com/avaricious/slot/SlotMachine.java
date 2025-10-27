@@ -2,7 +2,6 @@ package com.avaricious.slot;
 
 import com.avaricious.Assets;
 import com.avaricious.symbol.Symbol;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -90,8 +89,7 @@ public class SlotMachine {
             .flatMap(Arrays::stream)
             .filter(slot -> selection.contains(slot.type()))
             .forEach(Slot::spin);
-        selection.clear();
-        scoreFormula = "";
+        clearSelection();
         return score;
     }
 
@@ -113,7 +111,6 @@ public class SlotMachine {
                 .collect(Collectors.toList());
             selection.add(type);
         }
-        Gdx.app.log("SELECTION", selection.toString());
         updateScoreFormula();
     }
 
@@ -125,10 +122,10 @@ public class SlotMachine {
     }
 
     public void updateScoreFormula() {
-        scoreFormula = calcScoreFormula();
+        scoreFormula = buildScoreFormula();
     }
 
-    public String calcScoreFormula() {
+    public String buildScoreFormula() {
         if(selection.isEmpty()) return "";
 
         String formula = "(";
@@ -146,6 +143,11 @@ public class SlotMachine {
 
     public String getScoreFormula() {
         return scoreFormula;
+    }
+
+    public void clearSelection() {
+        selection.clear();
+        scoreFormula = "";
     }
 
     public Rectangle getBounds() {
