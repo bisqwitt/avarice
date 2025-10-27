@@ -1,0 +1,8 @@
+jokers:
+
+Increase Symbol Base Value (+Chips)
+Increase Single/Double/Tripple etc. Value
+Increase Pair/Triad/Quartet etc. Value
+
+Increase Symbol spawn chance
+Decrease Symbol spawn chance
