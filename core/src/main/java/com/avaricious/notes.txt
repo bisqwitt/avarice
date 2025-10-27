@@ -6,3 +6,9 @@ Increase Pair/Triad/Quartet etc. Value
 
 Increase Symbol spawn chance
 Decrease Symbol spawn chance
+
+
+todos
+scoreFormula add "=" at the end
+
+right side: basevalue/% of every symbol

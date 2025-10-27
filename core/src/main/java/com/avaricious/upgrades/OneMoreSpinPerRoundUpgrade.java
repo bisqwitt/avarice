@@ -11,6 +11,6 @@ public class OneMoreSpinPerRoundUpgrade implements Upgrade{
 
     @Override
     public String description() {
-        return "Play one more Spin per Round";
+        return "One more Spin per Round";
     }
 }

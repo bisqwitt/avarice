@@ -11,6 +11,6 @@ public class OneMoreHandPerRoundUpgrade implements Upgrade {
 
     @Override
     public String description() {
-        return "Play one more Hand per Round";
+        return "One more Hand per Round";
     }
 }

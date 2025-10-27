@@ -1,7 +1,5 @@
 package com.avaricious.slot;
 
-import com.avaricious.symbol.Symbol;
-
 public class Slot {
 
     private final float posX;
@@ -17,7 +15,7 @@ public class Slot {
     }
 
     public void spin() {
-        type = SymbolManager.I().randomSymbol();
+        type = SymbolManager.I().randomSymbolWithSpawnChance();
     }
 
     public Symbol type() {

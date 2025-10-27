@@ -1,6 +1,6 @@
 package com.avaricious;
 
-import com.avaricious.symbol.Symbol;
+import com.avaricious.slot.Symbol;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 

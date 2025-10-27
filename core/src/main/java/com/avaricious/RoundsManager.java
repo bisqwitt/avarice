@@ -11,11 +11,18 @@ public class RoundsManager {
     }
 
     private RoundsManager() {
-        currentRound = 1;
+        currentRound = 0;
         currentTargetScore = targetScorePerRound.get(currentRound);
+
+        handsPerRound = 4;
+        spinsPerRound = 4;
+
+        handsLeft = handsPerRound;
+        spinsLeft = spinsPerRound;
     }
 
     private final Map<Integer, Long> targetScorePerRound = new HashMap<Integer, Long>() {{
+        put(0, 1L);
         put(1, 100L);
         put(2, 150L);
         put(3, 200L);

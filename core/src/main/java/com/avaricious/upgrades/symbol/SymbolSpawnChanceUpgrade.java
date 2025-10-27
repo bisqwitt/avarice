@@ -1,6 +1,6 @@
 package com.avaricious.upgrades.symbol;
 
-import com.avaricious.symbol.Symbol;
+import com.avaricious.slot.Symbol;
 import com.avaricious.slot.SymbolManager;
 import com.avaricious.upgrades.Upgrade;
 
@@ -9,9 +9,9 @@ public class SymbolSpawnChanceUpgrade implements Upgrade {
     private final Symbol type;
     private final float amount;
 
-    SymbolSpawnChanceUpgrade(Symbol type, float amount) {
-        this.type = type;
-        this.amount = amount;
+    public SymbolSpawnChanceUpgrade() {
+        this.type = SymbolManager.I().randomSymbolWithEqualSpawnChance();
+        this.amount = Math.random() > 0.5 ? 8 : -(SymbolManager.I().getSymbolSpawnChance(type) / 2);
     }
 
     @Override
@@ -21,6 +21,10 @@ public class SymbolSpawnChanceUpgrade implements Upgrade {
 
     @Override
     public String description() {
-        return (amount > 0 ? "Increase " : "Decrease ") + type.toString() + "'s spawn chance by " + amount + "%";
+        if(amount > 0) {
+            return "Increase " + type.toString() + "'s spawn chance by " + amount + "%";
+        } else {
+            return "Halve " + type.toString() + "'s spawn chance";
+        }
     }
 }

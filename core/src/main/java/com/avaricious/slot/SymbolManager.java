@@ -1,7 +1,5 @@
 package com.avaricious.slot;
 
-import com.avaricious.symbol.Symbol;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +12,7 @@ public class SymbolManager {
 
     private SymbolManager() {}
 
-    private Map<Symbol, Integer> symbolValueMap = new HashMap<Symbol, Integer>() {{
+    private final Map<Symbol, Integer> symbolValueMap = new HashMap<Symbol, Integer>() {{
         put(Symbol.LEMON, Symbol.LEMON.baseValue());
         put(Symbol.CHERRY, Symbol.CHERRY.baseValue());
         put(Symbol.CLOVER, Symbol.CLOVER.baseValue());
@@ -47,7 +45,7 @@ public class SymbolManager {
             .forEach((s) -> symbolSpawnChanceMap.put(s, symbolSpawnChanceMap.get(s) - balancing));
     }
 
-    public Symbol randomSymbol() {
+    public Symbol randomSymbolWithSpawnChance() {
         double totalWeight = symbolSpawnChanceMap.values()
             .stream()
             .mapToDouble(Float::doubleValue)
@@ -64,5 +62,18 @@ public class SymbolManager {
 
         // Should never reach here if weights > 0
         return Symbol.LEMON;
+    }
+
+    public Symbol randomSymbolWithEqualSpawnChance() {
+        Symbol[] values = Symbol.values();
+        return values[(int) (Math.random() * values.length)];
+    }
+
+    public Integer getSymbolValue(Symbol symbol) {
+        return symbolValueMap.get(symbol);
+    }
+
+    public Float getSymbolSpawnChance(Symbol symbol) {
+        return symbolSpawnChanceMap.get(symbol);
     }
 }

@@ -1,4 +1,4 @@
-package com.avaricious.symbol;
+package com.avaricious.slot;
 
 public enum Symbol {
 
