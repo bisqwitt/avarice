@@ -2,6 +2,9 @@ package com.avaricious.upgrades;
 
 import com.avaricious.RoundsManager;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class OneMoreSpinPerRoundUpgrade implements Upgrade{
     @Override
     public void apply() {

@@ -1,15 +1,13 @@
 package com.avaricious.slot;
 
 import com.avaricious.Assets;
+import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SlotMachine {
@@ -24,6 +22,7 @@ public class SlotMachine {
 
     private List<Symbol> selection =  new ArrayList<>();
     private String scoreFormula = "";
+    private String patternText = "";
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the grid
@@ -62,7 +61,7 @@ public class SlotMachine {
             .forEach(Slot::spin);
 
         clearSelection();
-        updateScoreFormula();
+        updateDisplayTexts();
     }
 
     public long applySelection() {
@@ -73,13 +72,6 @@ public class SlotMachine {
             .forEach(Slot::spin);
         clearSelection();
         return score;
-    }
-
-    public long countSymbol(Symbol type) {
-        return Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .filter(slot -> slot.type() == type)
-            .count();
     }
 
     public void selectSymbolAt(int col, int row) {
@@ -93,40 +85,59 @@ public class SlotMachine {
                 .collect(Collectors.toList());
             selection.add(type);
         }
-        updateScoreFormula();
+        updateDisplayTexts();
     }
 
-    private long calcScore() {
-        int chips = selection.stream()
-            .mapToInt(Symbol::baseValue)
-            .sum();
-        return chips * (selection.size() + countSymbol(selection.get(0)));
-    }
-
-    public void updateScoreFormula() {
+    private void updateDisplayTexts() {
         if(selection.isEmpty()) {
             scoreFormula = "";
+            patternText = "";
             return;
         }
 
-        StringBuilder sb = new StringBuilder("(");
-        for(int i = 0; i < selection.size(); i++) {
-            if(i != 0) sb.append(" + ");
-            Symbol symbol = selection.get(i);
-            sb.append(SymbolManager.I().getSymbolValue(symbol)).append("-").append(symbol.toString(), 0, 2);
-        }
-        sb.append(") * (").append(selection.size()).append(" + ").append(countSymbol(selection.get(0)));
-        sb.append(") = ").append(calcScore());
-        scoreFormula = sb.toString();
+        long numOfAKind = countSymbol();
+        long chips = selection.stream()
+            .mapToLong(symbol -> numOfAKind * SymbolManager.I().getSymbolValue(symbol))
+            .sum();
+
+        long count = countSymbol();
+        scoreFormula = (chips + UpgradesManager.I().upgradeChipAdditions(selection, count))
+            + " x " + ((numOfAKind * selection.size() + UpgradesManager.I().upgradeMultAdditions(selection, count)));
+
+        patternText = selection.size() + " x " + numOfAKind + "-of-a-kind";
+    }
+
+    private long calcScore() {
+        String[] parts = scoreFormula.split(" x ");
+        return Long.parseLong(parts[0]) * Long.parseLong(parts[1]);
+    }
+
+    public long countSymbol() {
+        return Arrays.stream(grid)
+            .flatMap(Arrays::stream)
+            .filter(slot -> slot.type() == selection.get(0))
+            .count();
+    }
+
+    public long countSymbol(Symbol type) {
+        return Arrays.stream(grid)
+            .flatMap(Arrays::stream)
+            .filter(slot -> slot.type() == type)
+            .count();
+    }
+
+    public void clearSelection() {
+        selection.clear();
+        scoreFormula = "";
+        patternText = "";
     }
 
     public String getScoreFormula() {
         return scoreFormula;
     }
 
-    public void clearSelection() {
-        selection.clear();
-        scoreFormula = "";
+    public String getPatternText() {
+        return patternText;
     }
 
     public Rectangle getBounds() {
@@ -149,33 +160,34 @@ public class SlotMachine {
         return cellW;
     }
 
+
     /*
 
-    SPIN VERSION WHERE SELECTION DOESN'T GET SPINNED
+    ----- OLD SCORE CALCULATION ------
 
-    public void spin() {
-        Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .filter(s -> !selection.contains(s.type()))
-            .forEach(Slot::spin);
+    private long calcScore() {
+        int chips = selection.stream()
+            .mapToInt(symbol -> SymbolManager.I().getSymbolValue(symbol))
+            .sum();
+        return chips * (selection.size() + countSymbol(selection.get(0)));
+    }
 
-        if (!selection.isEmpty()) {
-            Map<Symbol, Long> counts =
-                Arrays.stream(grid)
-                    .flatMap(Arrays::stream)
-                    .map(Slot::type)
-                    .filter(selection::contains)
-                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-
-            long max = counts.values().stream()
-                .mapToLong(Long::longValue)
-                .max()
-                .orElse(0L);
-
-            selection.removeIf(t -> counts.getOrDefault(t, 0L) < max);
+    private void updateScoreFormula() {
+        if(selection.isEmpty()) {
+            scoreFormula = "";
+            return;
         }
 
-        updateScoreFormula();
+        StringBuilder sb = new StringBuilder("(");
+        for(int i = 0; i < selection.size(); i++) {
+            if(i != 0) sb.append(" + ");
+            Symbol symbol = selection.get(i);
+            sb.append(SymbolManager.I().getSymbolValue(symbol)).append("-").append(symbol.toString(), 0, 2);
+        }
+        sb.append(") * (").append(selection.size()).append(" + ").append(countSymbol(selection.get(0))).append(")");
+        scoreFormula = sb.toString();
     }
+
     */
+
 }

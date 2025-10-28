@@ -1,16 +1,16 @@
-package com.avaricious.upgrades.symbol;
+package com.avaricious.upgrades.symbol.value;
 
 import com.avaricious.slot.Symbol;
 import com.avaricious.slot.SymbolManager;
 import com.avaricious.upgrades.Upgrade;
 
-public class SymbolValueUpgrade implements Upgrade {
+public abstract class SymbolValueUpgrade implements Upgrade {
 
     private final Symbol symbol;
     private final Integer amount;
 
-    public SymbolValueUpgrade() {
-        this.symbol = SymbolManager.I().randomSymbolWithEqualSpawnChance();
+    protected SymbolValueUpgrade(Symbol symbol) {
+        this.symbol = symbol;
         this.amount = 10;
     }
 
@@ -23,4 +23,5 @@ public class SymbolValueUpgrade implements Upgrade {
     public String description() {
         return "Increase " + symbol.toString() + "'s value by " + amount;
     }
+
 }

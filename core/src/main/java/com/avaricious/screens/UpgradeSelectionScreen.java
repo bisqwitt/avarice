@@ -47,7 +47,7 @@ public class UpgradeSelectionScreen extends ScreenAdapter {
     public void show() {
         List<Upgrade> upgradeSelection = upgradesManager.randomUpgrades();
         upgradeSelection.forEach(upgrade
-            -> upgradeButtons.put(new Rectangle(0.5f, 2f + (2f * upgradeSelection.indexOf(upgrade) + 1),
+            -> upgradeButtons.put(new Rectangle(0.5f, 0.3f + (2f * upgradeSelection.indexOf(upgrade) + 1),
             0.5f, 0.5f),
             upgrade));
     }
