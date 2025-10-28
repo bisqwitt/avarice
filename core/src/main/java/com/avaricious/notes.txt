@@ -12,3 +12,29 @@ todos
 scoreFormula add "=" at the end
 
 right side: basevalue/% of every symbol
+
+
+balance low hands and high hands
+-> high for round goal
+-> low for coins
+
+overkill score, whats left -> convert to chips
+-> chips buy upgrades
+
+
+50 100 500 - chips
+common uncommon legendary - upgrades
+
+
+ultra rare upgrade drops
+
+
+Mode (Endless run?):
+dont overkill, scale hard on overkill
+if you overkill alot, the game scales extremely hard
+try to score the score target but dont overkill too hard
+-> balance
+
+
+quests
+eg. dont use symbol for one ant -> increase symbol value heavily
