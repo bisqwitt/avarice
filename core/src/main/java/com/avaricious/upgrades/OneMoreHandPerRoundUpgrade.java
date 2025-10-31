@@ -5,16 +5,28 @@ import com.avaricious.RoundsManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public class OneMoreHandPerRoundUpgrade implements Upgrade {
-    @Override
-    public void apply() {
-        RoundsManager roundsManager = RoundsManager.I();
-        roundsManager.setHandsPerRound(roundsManager.getHandsPerRound() + 1);
+public class OneMoreHandPerRoundUpgrade extends Upgrade {
+
+    private final Map<UpgradeRarity, Integer> valuePerRarityMap = Map.of(
+        UpgradeRarity.COMMON, 1,
+        UpgradeRarity.UNCOMMON, 1,
+        UpgradeRarity.RARE, 2,
+        UpgradeRarity.EPIC, 3,
+        UpgradeRarity.LEGENDARY, 4
+    );
+
+    public OneMoreHandPerRoundUpgrade(UpgradeRarity rarity) {
+        super(rarity);
+    }
+
+    public int getAmount() {
+        return valuePerRarityMap.get(getRarity());
     }
 
     @Override
     public String description() {
-        return "One more Hand per Round";
+        return "+" + getAmount() + (getAmount() != 1 ? "Hand's" : " Hand") + " per Round";
     }
 }

@@ -1,5 +1,7 @@
 package com.avaricious.slot;
 
+import com.avaricious.upgrades.UpgradesManager;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,16 +14,6 @@ public class SymbolManager {
 
     private SymbolManager() {}
 
-    private final Map<Symbol, Integer> symbolValueMap = new HashMap<Symbol, Integer>() {{
-        put(Symbol.LEMON, Symbol.LEMON.baseValue());
-        put(Symbol.CHERRY, Symbol.CHERRY.baseValue());
-        put(Symbol.CLOVER, Symbol.CLOVER.baseValue());
-        put(Symbol.BELL, Symbol.BELL.baseValue());
-        put(Symbol.IRON, Symbol.IRON.baseValue());
-        put(Symbol.DIAMOND, Symbol.DIAMOND.baseValue());
-        put(Symbol.SEVEN, Symbol.SEVEN.baseValue());
-    }};
-
     private final Map<Symbol, Float> symbolSpawnChanceMap = new HashMap<Symbol, Float>() {{
         put(Symbol.LEMON, Symbol.LEMON.baseSpawnChance());
         put(Symbol.CHERRY, Symbol.CHERRY.baseSpawnChance());
@@ -31,19 +23,6 @@ public class SymbolManager {
         put(Symbol.DIAMOND, Symbol.DIAMOND.baseSpawnChance());
         put(Symbol.SEVEN, Symbol.SEVEN.baseSpawnChance());
     }};
-
-    public void changeValue(Symbol symbol, Integer amount) {
-        symbolValueMap.put(symbol, symbolValueMap.get(symbol) + amount);
-    }
-
-    public void changeChance(Symbol symbol, float amount) {
-        symbolSpawnChanceMap.put(symbol, symbolSpawnChanceMap.get(symbol) + amount);
-
-        float balancing = amount / 6;
-        symbolSpawnChanceMap.keySet()
-            .stream().filter((s) -> !s.equals(symbol))
-            .forEach((s) -> symbolSpawnChanceMap.put(s, symbolSpawnChanceMap.get(s) - balancing));
-    }
 
     public Symbol randomSymbolWithSpawnChance() {
         double totalWeight = symbolSpawnChanceMap.values()
@@ -64,16 +43,7 @@ public class SymbolManager {
         return Symbol.LEMON;
     }
 
-    public Symbol randomSymbolWithEqualSpawnChance() {
-        Symbol[] values = Symbol.values();
-        return values[(int) (Math.random() * values.length)];
-    }
-
     public Integer getSymbolValue(Symbol symbol) {
-        return symbolValueMap.get(symbol);
-    }
-
-    public Float getSymbolSpawnChance(Symbol symbol) {
-        return symbolSpawnChanceMap.get(symbol);
+        return symbol.baseValue() + UpgradesManager.I().symbolValueAdditions(symbol);
     }
 }

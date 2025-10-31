@@ -1,5 +1,6 @@
 package com.avaricious.screens;
 
+import com.avaricious.CreditManager;
 import com.avaricious.Main;
 import com.avaricious.RoundsManager;
 import com.avaricious.slot.SlotMachine;
@@ -146,6 +147,7 @@ public class SlotScreen extends ScreenAdapter {
         updateSlotText();
 
         if(score >= roundsManager.getCurrentTargetScore()) {
+            CreditManager.I().onRoundBeaten(roundsManager.getHandsLeft());
             ScreenManager.I().setScreen(UpgradeSelectionScreen.class);
         } else if(roundsManager.getHandsLeft() == 0) {
             roundText.setText(bigFont, "You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");

@@ -36,5 +36,24 @@ try to score the score target but dont overkill too hard
 -> balance
 
 
-quests
-eg. dont use symbol for one ant -> increase symbol value heavily
+
+
+
+- each upgrade has rarity
+eg. Increase Lemon value:
+common = +3
+uncommon = +5
+rare = +7
+epic = +10
+legendary = +15
+common + common = uncommon
+uncommon + uncommon = rare
+etc.
+
+tft, capped deck -> deckbuilder with upgrades
+
+one quest per round
+eg. dont use lemons -> lootbox can give any kind of rarity upgrade take it or sell for chips
+
+shop: only common upgrades
+- reroll

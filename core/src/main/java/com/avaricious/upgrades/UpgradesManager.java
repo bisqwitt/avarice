@@ -1,15 +1,15 @@
 package com.avaricious.upgrades;
 
 import com.avaricious.slot.Symbol;
-import com.avaricious.upgrades.chipAdditions.ChipAdditionUpgrade;
+import com.avaricious.upgrades.pointAdditions.PointAdditionUpgrade;
 import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
-import com.avaricious.upgrades.symbol.spawnChance.SymbolSpawnChanceUpgrade;
-import com.badlogic.gdx.Gdx;
+import com.avaricious.upgrades.symbolValue.SymbolValueUpgrade;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UpgradesManager {
 
@@ -18,56 +18,122 @@ public class UpgradesManager {
         return instance == null ? instance = new UpgradesManager() : instance;
     }
 
-    private final List<Upgrade> allUpgrades = new ArrayList<>();
-    private final List<Upgrade> appliedUpgrades = new ArrayList<>();
-
-    public long upgradeMultAdditions(List<Symbol> selection, long count) {
-        return appliedUpgrades.stream()
-            .filter(upgrade -> upgrade instanceof MultAdditionUpgrade)
-            .map(upgrade -> (MultAdditionUpgrade) upgrade)
-            .filter(upgrade -> upgrade.condition(selection, count))
-            .mapToLong(MultAdditionUpgrade::getMulti)
-            .sum();
-    }
-
-    public long upgradeChipAdditions(List<Symbol> selection, long count) {
-        return appliedUpgrades.stream()
-            .filter(upgrade -> upgrade instanceof ChipAdditionUpgrade)
-            .map(upgrade -> (ChipAdditionUpgrade) upgrade)
-            .filter(upgrade -> upgrade.condition(selection, count))
-            .mapToLong(ChipAdditionUpgrade::getChips)
-            .sum();
-    }
-
     private UpgradesManager() {
         Reflections reflections = new Reflections("com.avaricious.upgrades");
         Set<Class<? extends Upgrade>> upgradeClasses = reflections.getSubTypesOf(Upgrade.class);
 
-        upgradeClasses.stream()
+        allUpgrades.addAll(upgradeClasses.stream()
             .filter(c -> !c.isInterface())
             .filter(c -> !Modifier.isAbstract(c.getModifiers()))
-            .filter(c -> !SymbolSpawnChanceUpgrade.class.isAssignableFrom(c))
-            .forEach(upgradeClass -> {
-                try {
-                    allUpgrades.add(upgradeClass.getDeclaredConstructor().newInstance());
-                    Gdx.app.log("UPGRADE: REGISTER", upgradeClass.getName());
-                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    Gdx.app.error("UPGRADE: INSTANCE ERROR", e.getMessage());
-                }
-            });
+            .collect(Collectors.toSet()));
     }
 
-    public List<Upgrade> randomUpgrades() {
-        Collections.shuffle(allUpgrades);
-        return allUpgrades.subList(0, 4);
+    private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();
+    private final List<Upgrade> deck = new ArrayList<>();
+
+    public int symbolValueAdditions(Symbol symbol) {
+        return deck.stream()
+            .filter(SymbolValueUpgrade.class::isInstance)
+            .map(SymbolValueUpgrade.class::cast)
+            .filter(valueUpgrade -> valueUpgrade.getSymbol() == symbol)
+            .mapToInt(SymbolValueUpgrade::getAmount)
+            .sum();
     }
 
-    public void applyUpgrade(Upgrade upgrade) {
-        upgrade.apply();
-        appliedUpgrades.add(upgrade);
+    public int multAdditions(List<Symbol> selection, long count) {
+        return deck.stream()
+            .filter(MultAdditionUpgrade.class::isInstance)
+            .map(MultAdditionUpgrade.class::cast)
+            .filter(upgrade -> upgrade.condition(selection, count))
+            .mapToInt(MultAdditionUpgrade::getMulti)
+            .sum();
     }
 
-    public List<Upgrade> getAppliedUpgrades() {
-        return appliedUpgrades;
+    public int chipAdditions(List<Symbol> selection, long count) {
+        return deck.stream()
+            .filter(PointAdditionUpgrade.class::isInstance)
+            .map(PointAdditionUpgrade.class::cast)
+            .filter(upgrade -> upgrade.condition(selection, count))
+            .mapToInt(PointAdditionUpgrade::getPoints)
+            .sum();
+    }
+
+    public int handAdditions() {
+        return deck.stream()
+            .filter(OneMoreHandPerRoundUpgrade.class::isInstance)
+            .map(OneMoreHandPerRoundUpgrade.class::cast)
+            .mapToInt(OneMoreHandPerRoundUpgrade::getAmount)
+            .sum();
+    }
+
+    public int spinAdditions() {
+        return deck.stream()
+            .filter(OneMoreSpinPerRoundUpgrade.class::isInstance)
+            .map(OneMoreSpinPerRoundUpgrade.class::cast)
+            .mapToInt(OneMoreSpinPerRoundUpgrade::getAmount)
+            .sum();
+    }
+
+    public List<? extends Upgrade> randomUpgrades() {
+        List<Class<? extends Upgrade>> randomUpgrades = List.of(
+            allUpgrades.get((int) (Math.random() * allUpgrades.size())),
+            allUpgrades.get((int) (Math.random() * allUpgrades.size())),
+            allUpgrades.get((int) (Math.random() * allUpgrades.size()))
+        );
+        return randomUpgrades.stream().map(upgradeClass -> {
+            try {
+                return upgradeClass.getDeclaredConstructor(UpgradeRarity.class).newInstance(UpgradeRarity.COMMON);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }).toList();
+    }
+
+    public void addUpgrade(Upgrade upgrade) {
+        deck.add(upgrade);
+        mergeDuplicates();
+    }
+
+    private void mergeDuplicates() {
+        record Key(Class<?> type, UpgradeRarity rarity) {}
+
+        var dupKey = deck.stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                u -> new Key(u.getClass(), u.getRarity())
+            ))
+            .entrySet().stream()
+            .filter(e -> e.getValue().size() >= 2)
+            .map(java.util.Map.Entry::getKey)
+            .findFirst();
+
+        if (dupKey.isEmpty()) return;
+
+        var key = dupKey.get();
+        var pair = deck.stream()
+            .filter(u -> u.getClass() == key.type() && u.getRarity() == key.rarity())
+            .limit(2)
+            .toList();
+
+        if (pair.get(0).getRarity() == UpgradeRarity.LEGENDARY) {
+            return;
+        }
+
+        deck.remove(pair.get(1));
+        pair.get(0).increaseRarity();
+
+        mergeDuplicates();
+    }
+
+    public void removeUpgrade(Upgrade upgrade) {
+        deck.remove(upgrade);
+    }
+
+    public List<Upgrade> getDeck() {
+        return deck;
+    }
+
+    public boolean spaceInDeck() {
+        return deck.size() < 5;
     }
 }

@@ -2,6 +2,7 @@ package com.avaricious;
 
 import com.avaricious.screens.ScreenManager;
 import com.avaricious.screens.SlotScreen;
+import com.avaricious.screens.UpgradeSelectionScreen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;

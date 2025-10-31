@@ -1,9 +1,14 @@
 package com.avaricious;
 
+import com.avaricious.upgrades.UpgradesManager;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class RoundsManager {
+
+    private final int baseHandsPerRound = 4;
+    private final int baseSpinsPerRound = 4;
 
     private static RoundsManager instance;
     public static RoundsManager I() {
@@ -14,11 +19,8 @@ public class RoundsManager {
         currentRound = 0;
         currentTargetScore = targetScorePerRound.get(currentRound);
 
-        handsPerRound = 4;
-        spinsPerRound = 4;
-
-        handsLeft = handsPerRound;
-        spinsLeft = spinsPerRound;
+        handsLeft = baseHandsPerRound;
+        spinsLeft = baseSpinsPerRound;
     }
 
     private final Map<Integer, Long> targetScorePerRound = new HashMap<Integer, Long>() {{
@@ -47,15 +49,12 @@ public class RoundsManager {
     private Integer handsLeft;
     private Integer spinsLeft;
 
-    private Integer handsPerRound;
-    private Integer spinsPerRound;
-
     public void nextRound() {
         currentRound++;
         currentTargetScore = targetScorePerRound.get(currentRound);
 
-        handsLeft = handsPerRound;
-        spinsLeft = spinsPerRound;
+        handsLeft = baseHandsPerRound + UpgradesManager.I().handAdditions();
+        spinsLeft = baseSpinsPerRound + UpgradesManager.I().spinAdditions();;
     }
 
     public Integer getCurrentRound() {
@@ -80,21 +79,5 @@ public class RoundsManager {
 
     public Integer getSpinsLeft() {
         return spinsLeft;
-    }
-
-    public void setHandsPerRound(Integer handsPerRound) {
-        this.handsPerRound = handsPerRound;
-    }
-
-    public void setSpinsPerRound(Integer spinsPerRound) {
-        this.spinsPerRound = spinsPerRound;
-    }
-
-    public Integer getHandsPerRound() {
-        return handsPerRound;
-    }
-
-    public Integer getSpinsPerRound() {
-        return spinsPerRound;
     }
 }

@@ -101,8 +101,8 @@ public class SlotMachine {
             .sum();
 
         long count = countSymbol();
-        scoreFormula = (chips + UpgradesManager.I().upgradeChipAdditions(selection, count))
-            + " x " + ((numOfAKind * selection.size() + UpgradesManager.I().upgradeMultAdditions(selection, count)));
+        scoreFormula = (chips + UpgradesManager.I().chipAdditions(selection, count))
+            + " x " + ((numOfAKind * selection.size() + UpgradesManager.I().multAdditions(selection, count)));
 
         patternText = selection.size() + " x " + numOfAKind + "-of-a-kind";
     }

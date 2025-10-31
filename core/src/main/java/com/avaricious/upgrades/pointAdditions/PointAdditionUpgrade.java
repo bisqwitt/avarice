@@ -1,4 +1,4 @@
-package com.avaricious.upgrades.multAdditions;
+package com.avaricious.upgrades.pointAdditions;
 
 import com.avaricious.slot.Symbol;
 import com.avaricious.upgrades.Upgrade;
@@ -6,14 +6,14 @@ import com.avaricious.upgrades.UpgradeRarity;
 
 import java.util.List;
 
-public abstract class MultAdditionUpgrade extends Upgrade {
+public abstract class PointAdditionUpgrade extends Upgrade {
 
-    public MultAdditionUpgrade(UpgradeRarity rarity) {
+    public PointAdditionUpgrade(UpgradeRarity rarity) {
         super(rarity);
     }
 
     public abstract boolean condition(List<Symbol> selection, long count);
 
-    public abstract int getMulti();
+    public abstract int getPoints();
 
 }
