@@ -29,13 +29,15 @@ public class Assets {
     }
 
     public void load() {
-        atlas = new TextureAtlas(Gdx.files.internal("assets/symbols.atlas"));
+        atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
+        atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
+
         Arrays.asList(Symbol.values()).forEach(symbol -> {
-            String name = symbol.name().toLowerCase();
+            String name = symbol.name().toLowerCase() + "/" + symbol.name().toLowerCase();
             baseMap.put(symbol, atlas.findRegion(name));
 
             Array<TextureAtlas.AtlasRegion> frames = atlas.findRegions(name + "_border");
-            Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.3f, frames, Animation.PlayMode.LOOP);
+            Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.2f, frames, Animation.PlayMode.LOOP);
             borderMap.put(symbol, anim);
         });
         manager.finishLoading();

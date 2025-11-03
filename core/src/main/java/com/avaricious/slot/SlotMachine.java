@@ -46,24 +46,23 @@ public class SlotMachine {
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
                 Slot slot = grid[c][r];
-                if(slot.isSpinning()) slot.changeSymbol();
-                float drawX = slot.posX();
-                float drawY = slot.posY();
-                float drawW = cellW;
-                float drawH = cellH;
-                if(hover == slot.type()) {
-                    drawW *= 1.1f;
-                    drawH *= 1.1f;
-                    drawX -= (drawW - cellW) / 2f;
-                    drawY -= (drawH - cellH) / 2f;
-                }
-                if(selection.contains(slot.type())) {
-                    drawW *= 1.2f;
-                    drawH *= 1.2f;
-                    drawX -= (drawW - cellW) / 2f;
-                    drawY -= (drawH - cellH) / 2f;
-                }
-                batch.draw(slot.getFrame(selection.contains(slot.type()), delta), drawX, drawY, drawW, drawH);
+                if (slot.isSpinning()) slot.changeSymbol();
+
+                boolean selected = selection.contains(slot.type());
+                boolean highlighted = (hover == slot.type()) || selected;
+
+                slot.targetScale = highlighted ? 1.2f : 1f;
+                slot.updatePulse(selected, delta);
+                slot.tickScale(delta);
+
+                float s = slot.scale * slot.pulseScale(); // <-- pulse applied here
+
+                float drawW = cellW * s;
+                float drawH = cellH * s;
+                float drawX = slot.posX() - (drawW - cellW) / 2f;
+                float drawY = slot.posY() - (drawH - cellH) / 2f;
+
+                batch.draw(slot.getFrame(selected, delta), drawX, drawY, drawW, drawH);
             }
         }
     }
@@ -87,7 +86,7 @@ public class SlotMachine {
         Arrays.stream(grid)
             .flatMap(Arrays::stream)
             .filter(slot -> selection.contains(slot.type()))
-            .forEach(Slot::changeSymbol);
+            .forEach(slot -> slot.spin(1));
         clearSelection();
         return score;
     }
