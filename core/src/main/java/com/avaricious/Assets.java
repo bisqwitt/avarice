@@ -1,8 +1,14 @@
 package com.avaricious;
 
 import com.avaricious.slot.Symbol;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.Arrays;
 
@@ -15,18 +21,32 @@ public class Assets {
 
     private final AssetManager manager = new AssetManager();
 
+    private TextureAtlas atlas;
+    private ObjectMap<Symbol, TextureRegion> baseMap = new ObjectMap<>();
+    private ObjectMap<Symbol, Animation<TextureAtlas.AtlasRegion>> borderMap = new ObjectMap<>();
+
     private Assets() {
     }
 
     public void load() {
-        Arrays.asList(Symbol.values()).forEach((symbol) -> {
-            manager.load(symbol.path(), Texture.class);
+        atlas = new TextureAtlas(Gdx.files.internal("assets/symbols.atlas"));
+        Arrays.asList(Symbol.values()).forEach(symbol -> {
+            String name = symbol.name().toLowerCase();
+            baseMap.put(symbol, atlas.findRegion(name));
+
+            Array<TextureAtlas.AtlasRegion> frames = atlas.findRegions(name + "_border");
+            Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.3f, frames, Animation.PlayMode.LOOP);
+            borderMap.put(symbol, anim);
         });
         manager.finishLoading();
     }
 
-    public Texture get(Symbol type) {
-        return manager.get(type.path());
+    public TextureRegion getBase(Symbol s) {
+        return baseMap.get(s);
+    }
+
+    public Animation<TextureAtlas.AtlasRegion> getBorderAnimation(Symbol s) {
+        return borderMap.get(s);
     }
 
 }

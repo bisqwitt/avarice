@@ -4,6 +4,7 @@ import com.avaricious.Assets;
 import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,13 +14,16 @@ import java.util.stream.Collectors;
 public class SlotMachine {
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.75f;
-    private final float cellH = 1.75f;
+    private final float cellW = 1.5f;
+    private final float cellH = 1.5f;
+    private final float spacingX = 0.2f;
+    private final float spacingY = 0.2f;
 
     private final float originX;
     private final float originY;
     private final Slot[][] grid = new Slot[cols][rows];
 
+    private Symbol hover;
     private List<Symbol> selection =  new ArrayList<>();
     private String scoreFormula = "";
     private String patternText = "";
@@ -31,37 +35,51 @@ public class SlotMachine {
 
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
-                grid[c][r] = new Slot(originX + c * cellW, originY + r * cellH);
+                grid[c][r] = new Slot(
+                    originX + c * (cellW + spacingX),
+                    originY + r * (cellH + spacingY));
             }
         }
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, float delta) {
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
                 Slot slot = grid[c][r];
+                if(slot.isSpinning()) slot.changeSymbol();
                 float drawX = slot.posX();
                 float drawY = slot.posY();
                 float drawW = cellW;
                 float drawH = cellH;
+                if(hover == slot.type()) {
+                    drawW *= 1.1f;
+                    drawH *= 1.1f;
+                    drawX -= (drawW - cellW) / 2f;
+                    drawY -= (drawH - cellH) / 2f;
+                }
                 if(selection.contains(slot.type())) {
                     drawW *= 1.2f;
                     drawH *= 1.2f;
                     drawX -= (drawW - cellW) / 2f;
                     drawY -= (drawH - cellH) / 2f;
                 }
-                batch.draw(Assets.I().get(slot.type()), drawX, drawY, drawW, drawH);
+                batch.draw(slot.getFrame(selection.contains(slot.type()), delta), drawX, drawY, drawW, drawH);
             }
         }
     }
 
     public void spin() {
-        Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .forEach(Slot::spin);
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+
+                float duration = 1f
+                    + (i * 0.3f)
+                    + ((grid[i].length - 1 - j) * 0.1f);
+                grid[i][j].spin(duration);
+            }
+        }
 
         clearSelection();
-        updateDisplayTexts();
     }
 
     public long applySelection() {
@@ -69,7 +87,7 @@ public class SlotMachine {
         Arrays.stream(grid)
             .flatMap(Arrays::stream)
             .filter(slot -> selection.contains(slot.type()))
-            .forEach(Slot::spin);
+            .forEach(Slot::changeSymbol);
         clearSelection();
         return score;
     }
@@ -88,7 +106,22 @@ public class SlotMachine {
         updateDisplayTexts();
     }
 
-    private void updateDisplayTexts() {
+    public void hoveringAt(Vector3 mouse) {
+        Rectangle bounds = getBounds();
+        if(!bounds.contains(mouse.x, mouse.y)) {
+            hover = null;
+            return;
+        }
+        int col = (int)((mouse.x - bounds.x) / (cellW + spacingX));
+        int row = (int)((mouse.y - bounds.y) / (cellH + spacingY));
+
+        if (col >= 0 && col < getCols() &&
+            row >= 0 && row < getRows()) {
+            hover = grid[col][row].type();
+        }
+    }
+
+    public void updateDisplayTexts() {
         if(selection.isEmpty()) {
             scoreFormula = "";
             patternText = "";
@@ -132,6 +165,14 @@ public class SlotMachine {
         patternText = "";
     }
 
+    public Slot[][] getGrid() {
+        return grid;
+    }
+
+    public Symbol getHover() {
+        return hover;
+    }
+
     public String getScoreFormula() {
         return scoreFormula;
     }
@@ -141,7 +182,12 @@ public class SlotMachine {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(originX, originY, cols * cellW, rows * cellH);
+        return new Rectangle(
+            originX,
+            originY,
+            cols * (cellW + spacingX),
+            rows * (cellH + spacingY)
+        );
     }
 
     public int getCols() {
@@ -160,6 +206,13 @@ public class SlotMachine {
         return cellW;
     }
 
+    public float getSpacingX() {
+        return spacingX;
+    }
+
+    public float getSpacingY() {
+        return spacingY;
+    }
 
     /*
 

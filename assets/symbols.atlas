@@ -1,0 +1,92 @@
+symbols.png
+size: 806, 26
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+pma: false
+bell/bell
+  bounds: 0, 0, 26, 26
+bell/bell_border
+  bounds: 26, 0, 26, 26
+  index: 0
+bell/bell_border
+  bounds: 52, 0, 26, 26
+  index: 1
+bell/bell_border
+  bounds: 78, 0, 26, 26
+  index: 2
+cherry/cherry
+  bounds: 104, 0, 26, 26
+cherry/cherry_border
+  bounds: 130, 0, 26, 26
+  index: 0
+cherry/cherry_border
+  bounds: 156, 0, 26, 26
+  index: 1
+cherry/cherry_border
+  bounds: 182, 0, 26, 26
+  index: 2
+clover/clover
+  bounds: 208, 0, 26, 26
+clover/clover_border
+  bounds: 234, 0, 26, 26
+  index: 0
+clover/clover_border
+  bounds: 260, 0, 26, 26
+  index: 1
+clover/clover_border
+  bounds: 286, 0, 26, 26
+  index: 2
+clover/clover_border
+  bounds: 312, 0, 26, 26
+  index: 3
+diamond/diamond
+  bounds: 338, 0, 26, 26
+diamond/diamond_border
+  bounds: 364, 0, 26, 26
+  index: 0
+diamond/diamond_border
+  bounds: 390, 0, 26, 26
+  index: 1
+diamond/diamond_border
+  bounds: 416, 0, 26, 26
+  index: 2
+diamond/diamond_border
+  bounds: 442, 0, 26, 26
+  index: 3
+iron/iron
+  bounds: 468, 0, 26, 26
+iron/iron_border
+  bounds: 494, 0, 26, 26
+  index: 0
+iron/iron_border
+  bounds: 520, 0, 26, 26
+  index: 1
+iron/iron_border
+  bounds: 546, 0, 26, 26
+  index: 2
+lemon/lemon
+  bounds: 572, 0, 26, 26
+lemon/lemon_border
+  bounds: 598, 0, 26, 26
+  index: 0
+lemon/lemon_border
+  bounds: 624, 0, 26, 26
+  index: 1
+lemon/lemon_border
+  bounds: 650, 0, 26, 26
+  index: 2
+seven/seven
+  bounds: 676, 0, 26, 26
+seven/seven_border
+  bounds: 702, 0, 26, 26
+  index: 0
+seven/seven_border
+  bounds: 728, 0, 26, 26
+  index: 1
+seven/seven_border
+  bounds: 754, 0, 26, 26
+  index: 2
+seven/seven_border
+  bounds: 780, 0, 26, 26
+  index: 3

@@ -41,12 +41,12 @@ public class SlotScreen extends ScreenAdapter {
 
     public SlotScreen(Main app) {
         this.app = app;
-        slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
 
         roundText = new GlyphLayout();
         scoreFormulaText = new GlyphLayout();
         symbolValueText = new GlyphLayout();
         patternText = new GlyphLayout();
+
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Montserrat.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter bigSize = new FreeTypeFontGenerator.FreeTypeFontParameter();
         bigSize.size = 16;
@@ -64,6 +64,10 @@ public class SlotScreen extends ScreenAdapter {
         spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
         applyButton = new Rectangle(0.5f, 4f, 0.5f, 0.5f);
 
+        slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
+        Arrays.stream(slotMachine.getGrid())
+            .flatMap(Arrays::stream)
+            .forEach(slot -> slot.setListener(finishedSlot -> updateSymbolText()));
         roundsManager = RoundsManager.I();
     }
 
@@ -94,7 +98,7 @@ public class SlotScreen extends ScreenAdapter {
         shapeRenderer.end();
 
         app.getBatch().begin();
-        slotMachine.draw(app.getBatch());
+        slotMachine.draw(app.getBatch(), delta);
         Rectangle slotBounds = slotMachine.getBounds();
 
         bigFont.draw(app.getBatch(), roundText, (app.getViewport().getWorldWidth() - roundText.width) / 2f, slotBounds.y + slotBounds.height + 1.6f);
@@ -112,15 +116,15 @@ public class SlotScreen extends ScreenAdapter {
         mouse.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         app.getViewport().unproject(mouse);
 
+        Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
         if(pressed && !wasPressed) {
             if(spinButton.contains(mouse.x, mouse.y)) onSpinButtonPressed();
             if(applyButton.contains(mouse.x, mouse.y)) onApplyButtonPressed();
 
-            Rectangle slotBounds = slotMachine.getBounds();
             if(slotBounds.contains(mouse.x, mouse.y)) {
-                int col = (int)((mouse.x - slotBounds.x) / slotMachine.getCellW());
-                int row = (int)((mouse.y - slotBounds.y) / slotMachine.getCellH());
+                int col = (int)((mouse.x - slotBounds.x) / (slotMachine.getCellW() + slotMachine.getSpacingX()));
+                int row = (int)((mouse.y - slotBounds.y) / (slotMachine.getCellH() + slotMachine.getSpacingY()));
 
                 if (col >= 0 && col < slotMachine.getCols() &&
                     row >= 0 && row < slotMachine.getRows()) {
@@ -129,6 +133,7 @@ public class SlotScreen extends ScreenAdapter {
                 }
             }
         }
+        slotMachine.hoveringAt(mouse);
 
         wasPressed = pressed;
     }
@@ -157,14 +162,18 @@ public class SlotScreen extends ScreenAdapter {
     private void updateSlotText() {
         scoreFormulaText.setText(bigFont, slotMachine.getScoreFormula());
         patternText.setText(bigFont, slotMachine.getPatternText());
+        updateSymbolText();
+    }
+
+    private void updateSymbolText() {
         StringBuilder sb = new StringBuilder();
         Arrays.stream(Symbol.values()).forEach(symbol
             -> sb.append(symbol.toString(), 0, 2)
-                .append(": ")
-                .append(slotMachine.countSymbol(symbol))
-                .append(" (")
-                .append(SymbolManager.I().getSymbolValue(symbol))
-                .append(")\n"));
+            .append(": ")
+            .append(slotMachine.countSymbol(symbol))
+            .append(" (")
+            .append(SymbolManager.I().getSymbolValue(symbol))
+            .append(")\n"));
         symbolValueText.setText(smallFont, sb.toString());
     }
 }
