@@ -102,7 +102,7 @@ public class SlotScreen extends ScreenAdapter {
 
         batch.begin();
         slotMachine.draw(app, delta);
-        batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
+        //batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
         Rectangle slotBounds = slotMachine.getBounds();
         for(int i = 0; i < symbolValueIcons.size(); i++) {
             batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);

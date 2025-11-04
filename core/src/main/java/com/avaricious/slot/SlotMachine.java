@@ -7,6 +7,7 @@ import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
@@ -34,6 +35,8 @@ public class SlotMachine {
 
     // Reels (one per column)
     private final List<Reel> reels = new ArrayList<>();
+
+    boolean spinning = false;
 
     // UI state
     private Symbol hover;
@@ -64,6 +67,7 @@ public class SlotMachine {
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
         }
+        reels.get(reels.size() -1).setOnSpinFinished(() -> spinning = false);
         Gdx.app.log("WIDTH", "" + (cols * cellW + (cols - 1) * spacingX));
         Gdx.app.log("HEIGHT", "" + rows * cellH + (rows - 1) * spacingY);
     }
@@ -97,7 +101,6 @@ public class SlotMachine {
             float frac = reel.frac(); // 0..1 progress toward next symbol
             float colX = originX + c * stepX;
 
-            // draw a little extra above and below to keep motion continuous
             int extraAbove = 1;
             int extraBelow = 1;
             int drawFrom = -extraAbove;
@@ -107,23 +110,31 @@ public class SlotMachine {
                 boolean isInGrid = (k >= 0 && k < rows);
                 Symbol sym = reel.symbolAtRow(k);
 
-                // continuous Y (shift by frac)
                 float drawX = colX;
                 float drawY = topY - (k + frac) * stepY;
 
-                // selection/highlight only for visible cells
                 boolean selected = false;
                 boolean highlighted = false;
+                boolean hovered = false;
                 float s = 1f;
+
+                TextureRegion region;
+
                 if (isInGrid) {
-                    selected = selection.contains(sym) && !reel.isSpinning(); // hide border while spinning
-                    highlighted = ((hover == sym) || selected);
+                    selected = selection.contains(sym) && !reel.isSpinning();
+                    hovered = (hover == sym);              // NEW: pure hover state
+                    highlighted = (hovered || selected);   // same visual intent
 
                     Slot slot = grid[c][k];
-                    slot.targetScale = highlighted ? 1.2f : 1f;
+                    slot.targetScale = highlighted ? 1.125f : 1f;
+
                     slot.updatePulse(selected, delta);
                     slot.tickScale(delta);
-                    s = slot.scale * slot.pulseScale();
+
+                    // wobble on HOVER entry even if selected
+                    slot.updateHoverWobble(hovered, delta);
+
+                    s = slot.scale * slot.pulseScale() * slot.wobbleScale();
                 }
 
                 float drawW = cellW * s;
@@ -131,13 +142,23 @@ public class SlotMachine {
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
-                if (selected) {
-                    // animated border frame for selected cells (only when stopped)
-                    batch.draw(grid[c][k].getFrame(sym, true, delta), adjX, adjY, drawW, drawH);
-                } else {
-                    // base symbol
-                    batch.draw(Assets.I().getBase(sym), adjX, adjY, drawW, drawH);
-                }
+                // choose frame (keeps your animated border when selected)
+                region = isInGrid
+                    ? grid[c][k].getFrame(sym, selected, delta)
+                    : Assets.I().getBase(sym);
+
+                // NEW: rotate around center using current wobble angle
+                float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
+
+                // Draw with origin at the center, width/height already scaled
+                batch.draw(
+                    region,
+                    adjX, adjY,
+                    drawW / 2f, drawH / 2f,   // originX, originY
+                    drawW, drawH,
+                    1f, 1f,                   // scale already baked into drawW/H
+                    rotation
+                );
             }
         }
 
@@ -147,8 +168,9 @@ public class SlotMachine {
 
     // --- spin control (organic staggered start/stop, aligned to center row) ---
     public void spin() {
+        spinning = true;
         // tuning knobs
-        float startSpeed = 22f;      // symbols/sec target cruise
+        float startSpeed = 16f;      // symbols/sec target cruise
         float startStagger = 0.15f;  // delay between reel starts
         float stopStagger  = 0.35f;  // delay between reel stops (after starts)
 
@@ -182,6 +204,7 @@ public class SlotMachine {
 
     // --- input helpers ---
     public void selectSymbolAt(int col, int rowFromBottom) {
+        if(spinning) return;
         // clamp inputs first
         col = Math.max(0, Math.min(cols - 1, col));
         rowFromBottom = Math.max(0, Math.min(rows - 1, rowFromBottom));
@@ -203,6 +226,7 @@ public class SlotMachine {
     }
 
     public void hoveringAt(Vector3 mouse) {
+        if(spinning) return;
         Rectangle bounds = getBounds();
         if (!bounds.contains(mouse.x, mouse.y)) {
             hover = null;

@@ -32,6 +32,19 @@ public class Reel {
     private float stopTarget;      // absolute pos we want to land on
     private float decelStartPos;   // pos when DECEL begins
 
+    private int lockedBaseIndex = -1;
+    private boolean hasLockedIndex = false;
+
+    // Late-decel visual: use final base index early and animate only frac
+    private boolean forceFracActive = false;
+    private float forcedFrac = 0f;
+    private float forcedFracInit = 0f;
+    private static final float TCROSS = 0.85f; // start "final settle" phase
+
+    private static final float EPS = 1e-4f;
+
+    private Runnable onSpinFinished;
+
     private final Random rng = new Random();
 
     public Reel(List<Symbol> strip, int rowsVisible) {
@@ -46,6 +59,9 @@ public class Reel {
     /** Begin spinning with an organic accel → cruise. */
     public void start(float speedSymbolsPerSec) {
         stopRequested = false;
+        hasLockedIndex = false;
+        forceFracActive = false;   // <-- important
+        forcedFrac = 0f;
 
         // Slight randomness so reels don't look identical
         baseSpeed = speedSymbolsPerSec * (0.95f + rng.nextFloat() * 0.10f);
@@ -67,12 +83,13 @@ public class Reel {
         int size = strip.size();
         float base = (float) Math.floor(pos);
         int centerRow = rowsVisible / 2;
-        int extraRot = 2 + rng.nextInt(3); // give room to decelerate visually
 
+        // More runway for a softer stop
+        int extraRot = 3 + rng.nextInt(3); // 3..5 full rotations
         stopTarget = base + extraRot * size + centerRow;
 
-        // Ensure a minimum distance so decel always looks intentional
-        float minDist = Math.max(3f, size * 0.75f);  // ≥ ~3 symbols or 75% of one rotation
+        // Ensure a decent distance (≥ ~1.25 rotations)
+        float minDist = Math.max(4f, size * 1.25f);
         if (stopTarget - pos < minDist) stopTarget += size;
 
         beginDecelNow();
@@ -105,18 +122,61 @@ public class Reel {
                     beginDecelNow();
                 }
             } break;
-
             case DECEL: {
-                // Position interpolation ensures smooth motion from start to target
                 float t = clamp01(tPhase / phaseDuration);
-                float s = smoothstep(t); // monotonic 0..1
-                pos = lerp(decelStartPos, stopTarget, s);
+
+                // Precompute preTarget 1/4 symbol before final index
+                float preTarget = stopTarget - 0.25f;
+
+                if (t < TCROSS) {
+                    // Phase 1: move towards preTarget with easing
+                    float s = easeOutQuint(t / TCROSS);
+                    pos = lerp(decelStartPos, preTarget, s);
+                } else {
+                    // Phase 2: switch to the PREVIOUS base and animate frac UP to 1.0 (downward motion)
+                    int size = strip.size();
+                    int finalBase = ((int)Math.floor(stopTarget)) % size;
+                    if (finalBase < 0) finalBase += size;
+
+                    if (!hasLockedIndex) {
+                        // Lock to the previous base so frac ↑ 1.0 equals final base at 0.0
+                        lockedBaseIndex = (finalBase - 1 + size) % size;
+                        hasLockedIndex = true;
+
+                        // We approached to preTarget = stopTarget - 0.25 (¼ before final)
+                        // Relative to (finalBase - 1), that's frac = 0.75
+                        forceFracActive = true;
+                        forcedFracInit = 0.75f;
+                        forcedFrac = forcedFracInit;
+                    }
+
+                    float s = easeOutQuint((t - TCROSS) / (1f - TCROSS));
+                    // Animate downward: 0.75 → 1.0
+                    forcedFrac = forcedFracInit + (1f - EPS - forcedFracInit) * s;
+
+                    // Maintain pos for housekeeping; render uses locked base + forced frac
+                    pos = lerp(preTarget, stopTarget, s);
+                }
 
                 if (t >= 1f) {
-                    pos = Math.round(stopTarget); // snap perfectly to symbol index
+                    pos = stopTarget;          // exact land
+
+                    // Keep the previous base locked and hold frac at 1.0 while idle
+                    int size = strip.size();
+                    int finalBase = ((int)Math.floor(stopTarget)) % size;
+                    if (finalBase < 0) finalBase += size;
+
+                    lockedBaseIndex = (finalBase - 1 + size) % size; // <-- keep prev base
+                    hasLockedIndex = true;
+
+                    forceFracActive = true;    // keep using forced frac when idle
+                    forcedFrac = 1f - EPS;           // visual == final index at frac==0
+
                     enter(State.IDLE, 0f);
+                    if (onSpinFinished != null) onSpinFinished.run();
                 }
             } break;
+
         }
 
         wrap();
@@ -127,9 +187,14 @@ public class Reel {
 
     /** Symbol visible at a given row index (0 = top row). */
     public Symbol symbolAtRow(int rowFromTop) {
-        int baseIndex = (int) Math.floor(pos);
-        int idx = (baseIndex + rowFromTop) % strip.size();
-        if (idx < 0) idx += strip.size();
+        int size = strip.size();
+        int baseIndex = hasLockedIndex
+            ? lockedBaseIndex
+            : (int)Math.floor(pos);
+        if (baseIndex < 0) baseIndex += size;
+
+        int idx = (baseIndex + rowFromTop) % size;
+        if (idx < 0) idx += size;
         return strip.get(idx);
     }
 
@@ -138,7 +203,9 @@ public class Reel {
 
     /** Fractional progress (0..1) toward the next symbol. */
     public float frac() {
-        float f = pos - (float) Math.floor(pos);
+        if (forceFracActive) return forcedFrac;        // stays 1.0 when idle
+        if (state == State.IDLE && hasLockedIndex) return 0f;
+        float f = pos - (float)Math.floor(pos);
         return (f < 0f) ? f + 1f : f;
     }
 
@@ -146,6 +213,16 @@ public class Reel {
 
     private void beginDecelNow() {
         decelStartPos = pos;
+
+        float distance = stopTarget - decelStartPos; // forward distance
+        // Map distance to time: ~0.9s at ~1.25R → up to ~1.8s at ~3R
+        float size = strip.size();
+        float dRots = distance / size;
+        float tMin = 0.90f, tMax = 1.80f;
+        float rMin = 1.25f, rMax = 3.0f;
+        float u = clamp01((dRots - rMin) / (rMax - rMin));
+        decelTime = tMin + (tMax - tMin) * u;
+
         enter(State.DECEL, decelTime);
     }
 
@@ -161,8 +238,13 @@ public class Reel {
         if (pos < 0) pos += size;
     }
 
+    public void setOnSpinFinished(Runnable onSpinFinished) {
+        this.onSpinFinished = onSpinFinished;
+    }
+
     private static float clamp01(float x) { return x < 0 ? 0 : Math.min(x, 1); }
     private static float easeOutCubic(float t) { return 1f - (float) Math.pow(1f - t, 3); }
+    private static float easeOutQuint(float t) { return 1f - (float)Math.pow(1f - t, 5); }
     private static float smoothstep(float t) { return t * t * (3f - 2f * t); }
     private static float lerp(float a, float b, float t) { return a + (b - a) * t; }
 }
