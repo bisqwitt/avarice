@@ -1,17 +1,24 @@
 package com.avaricious.slot;
 
 import com.avaricious.Assets;
+import com.avaricious.Main;
+import com.avaricious.screens.SlotScreen;
 import com.avaricious.upgrades.UpgradesManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SlotMachine {
+
+    // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
     private final float cellW = 1.5f;
@@ -21,18 +28,25 @@ public class SlotMachine {
 
     private final float originX;
     private final float originY;
+
+    // Visual cells (for selection pulse/scale)
     private final Slot[][] grid = new Slot[cols][rows];
 
+    // Reels (one per column)
+    private final List<Reel> reels = new ArrayList<>();
+
+    // UI state
     private Symbol hover;
-    private List<Symbol> selection =  new ArrayList<>();
+    private List<Symbol> selection = new ArrayList<>();
     private String scoreFormula = "";
     private String patternText = "";
 
     public SlotMachine(float worldWidth, float worldHeight) {
-        // center the grid
-        originX = (worldWidth - cols * cellW) / 2f;
-        originY = (worldHeight - rows * cellH) / 2f;
+        // center the 5x3 grid within the world
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
+        originY = (worldHeight - rows * (cellH + spacingY)) / 2f;
 
+        // build visual cells
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
                 grid[c][r] = new Slot(
@@ -40,60 +54,143 @@ public class SlotMachine {
                     originY + r * (cellH + spacingY));
             }
         }
+
+        // build basic reel strips (repeat symbol set to avoid short cycles)
+        List<Symbol> baseStrip = new ArrayList<>();
+        baseStrip.addAll(Arrays.asList(Symbol.values()));
+        baseStrip.addAll(Arrays.asList(Symbol.values()));
+        baseStrip.addAll(Arrays.asList(Symbol.values()));
+
+        for (int c = 0; c < cols; c++) {
+            reels.add(new Reel(baseStrip, rows));
+        }
+        Gdx.app.log("WIDTH", "" + (cols * cellW + (cols - 1) * spacingX));
+        Gdx.app.log("HEIGHT", "" + rows * cellH + (rows - 1) * spacingY);
     }
 
-    public void draw(SpriteBatch batch, float delta) {
+    // --- drawing ---
+    public void draw(Main app, float delta) {
+        SpriteBatch batch = app.getBatch();
+        // update reel motion
         for (int c = 0; c < cols; c++) {
-            for (int r = 0; r < rows; r++) {
-                Slot slot = grid[c][r];
-                if (slot.isSpinning()) slot.changeSymbol();
+            reels.get(c).update(delta);
+        }
 
-                boolean selected = selection.contains(slot.type());
-                boolean highlighted = (hover == slot.type()) || selected;
+        // one big clip over the whole machine area
+        Camera cam = app.getViewport().getCamera();
+        cam.update();
 
-                slot.targetScale = highlighted ? 1.2f : 1f;
-                slot.updatePulse(selected, delta);
-                slot.tickScale(delta);
+        Rectangle area = getBounds(); // world-space
+        Rectangle scissors = new Rectangle();
+        ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 
-                float s = slot.scale * slot.pulseScale(); // <-- pulse applied here
+        batch.flush();
+        ScissorStack.pushScissors(scissors);
+
+        // render continuous rolling bands per column
+        final float stepX = (cellW + spacingX);
+        final float stepY = (cellH + spacingY);
+        final float topY = originY + (rows - 1) * stepY; // y of the top grid cell
+
+        for (int c = 0; c < cols; c++) {
+            Reel reel = reels.get(c);
+            float frac = reel.frac(); // 0..1 progress toward next symbol
+            float colX = originX + c * stepX;
+
+            // draw a little extra above and below to keep motion continuous
+            int extraAbove = 1;
+            int extraBelow = 1;
+            int drawFrom = -extraAbove;
+            int drawTo   = rows - 1 + extraBelow;
+
+            for (int k = drawFrom; k <= drawTo; k++) {
+                boolean isInGrid = (k >= 0 && k < rows);
+                Symbol sym = reel.symbolAtRow(k);
+
+                // continuous Y (shift by frac)
+                float drawX = colX;
+                float drawY = topY - (k + frac) * stepY;
+
+                // selection/highlight only for visible cells
+                boolean selected = false;
+                boolean highlighted = false;
+                float s = 1f;
+                if (isInGrid) {
+                    selected = selection.contains(sym) && !reel.isSpinning(); // hide border while spinning
+                    highlighted = ((hover == sym) || selected);
+
+                    Slot slot = grid[c][k];
+                    slot.targetScale = highlighted ? 1.2f : 1f;
+                    slot.updatePulse(selected, delta);
+                    slot.tickScale(delta);
+                    s = slot.scale * slot.pulseScale();
+                }
 
                 float drawW = cellW * s;
                 float drawH = cellH * s;
-                float drawX = slot.posX() - (drawW - cellW) / 2f;
-                float drawY = slot.posY() - (drawH - cellH) / 2f;
+                float adjX = drawX - (drawW - cellW) / 2f;
+                float adjY = drawY - (drawH - cellH) / 2f;
 
-                batch.draw(slot.getFrame(selected, delta), drawX, drawY, drawW, drawH);
+                if (selected) {
+                    // animated border frame for selected cells (only when stopped)
+                    batch.draw(grid[c][k].getFrame(sym, true, delta), adjX, adjY, drawW, drawH);
+                } else {
+                    // base symbol
+                    batch.draw(Assets.I().getBase(sym), adjX, adjY, drawW, drawH);
+                }
             }
         }
+
+        batch.flush();
+        ScissorStack.popScissors();
     }
 
+    // --- spin control (organic staggered start/stop, aligned to center row) ---
     public void spin() {
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
+        // tuning knobs
+        float startSpeed = 22f;      // symbols/sec target cruise
+        float startStagger = 0.15f;  // delay between reel starts
+        float stopStagger  = 0.35f;  // delay between reel stops (after starts)
 
-                float duration = 1f
-                    + (i * 0.3f)
-                    + ((grid[i].length - 1 - j) * 0.1f);
-                grid[i][j].spin(duration);
-            }
+        // start + schedule stop per reel
+        for (int c = 0; c < cols; c++) {
+            final int col = c;
+            float startDelay = c * startStagger;
+            float stopDelay  = cols * startStagger + c * stopStagger;
+
+            Timer.schedule(new Timer.Task() {
+                @Override public void run() { reels.get(col).start(startSpeed); }
+            }, startDelay);
+
+            Timer.schedule(new Timer.Task() {
+                @Override public void run() {
+                    reels.get(col).stopSoonAlignCenter();
+                }
+            }, stopDelay);
         }
 
         clearSelection();
     }
 
+    // --- apply selection (score + quick nudge feedback) ---
     public long applySelection() {
         long score = calcScore();
-        Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .filter(slot -> selection.contains(slot.type()))
-            .forEach(slot -> slot.spin(1));
         clearSelection();
+        spin();
         return score;
     }
 
-    public void selectSymbolAt(int col, int row) {
-        Symbol type = grid[col][row].type();
-        if(selection.contains(type)) {
+    // --- input helpers ---
+    public void selectSymbolAt(int col, int rowFromBottom) {
+        // clamp inputs first
+        col = Math.max(0, Math.min(cols - 1, col));
+        rowFromBottom = Math.max(0, Math.min(rows - 1, rowFromBottom));
+
+        // convert: bottom-indexed (0=bottom) -> top-indexed (0=top)
+        int rowFromTop = rows - 1 - rowFromBottom;
+
+        Symbol type = getSymbolAt(col, rowFromTop);
+        if (selection.contains(type)) {
             selection.remove(type);
         } else {
             long symbolCount = countSymbol(type);
@@ -107,21 +204,32 @@ public class SlotMachine {
 
     public void hoveringAt(Vector3 mouse) {
         Rectangle bounds = getBounds();
-        if(!bounds.contains(mouse.x, mouse.y)) {
+        if (!bounds.contains(mouse.x, mouse.y)) {
             hover = null;
             return;
         }
-        int col = (int)((mouse.x - bounds.x) / (cellW + spacingX));
-        int row = (int)((mouse.y - bounds.y) / (cellH + spacingY));
 
-        if (col >= 0 && col < getCols() &&
-            row >= 0 && row < getRows()) {
-            hover = grid[col][row].type();
+        float stepX = (cellW + spacingX);
+        float stepY = (cellH + spacingY);
+
+        int col = (int)((mouse.x - bounds.x) / stepX);
+        int rowFromBottom = (int)((mouse.y - bounds.y) / stepY);
+
+        // clamp to grid
+        if (col < 0 || col >= cols || rowFromBottom < 0 || rowFromBottom >= rows) {
+            hover = null;
+            return;
         }
+
+        // convert to top-indexed row for rendering/query
+        int rowFromTop = rows - 1 - rowFromBottom;
+        hover = getSymbolAt(col, rowFromTop);
     }
 
+
+    // --- scoring/labels ---
     public void updateDisplayTexts() {
-        if(selection.isEmpty()) {
+        if (selection.isEmpty()) {
             scoreFormula = "";
             patternText = "";
             return;
@@ -140,22 +248,29 @@ public class SlotMachine {
     }
 
     private long calcScore() {
+        if (scoreFormula == null || scoreFormula.isEmpty()) return 0L;
         String[] parts = scoreFormula.split(" x ");
         return Long.parseLong(parts[0]) * Long.parseLong(parts[1]);
     }
 
+    // --- symbol queries on current visible grid ---
+    public Symbol getSymbolAt(int col, int row) {
+        return reels.get(col).symbolAtRow(row);
+    }
+
     public long countSymbol() {
-        return Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .filter(slot -> slot.type() == selection.get(0))
-            .count();
+        Symbol target = selection.get(0);
+        return countSymbol(target);
     }
 
     public long countSymbol(Symbol type) {
-        return Arrays.stream(grid)
-            .flatMap(Arrays::stream)
-            .filter(slot -> slot.type() == type)
-            .count();
+        long count = 0;
+        for (int c = 0; c < cols; c++) {
+            for (int r = 0; r < rows; r++) {
+                if (getSymbolAt(c, r) == type) count++;
+            }
+        }
+        return count;
     }
 
     public void clearSelection() {
@@ -164,21 +279,11 @@ public class SlotMachine {
         patternText = "";
     }
 
-    public Slot[][] getGrid() {
-        return grid;
-    }
-
-    public Symbol getHover() {
-        return hover;
-    }
-
-    public String getScoreFormula() {
-        return scoreFormula;
-    }
-
-    public String getPatternText() {
-        return patternText;
-    }
+    // --- getters ---
+    public Slot[][] getGrid() { return grid; }
+    public Symbol getHover() { return hover; }
+    public String getScoreFormula() { return scoreFormula; }
+    public String getPatternText() { return patternText; }
 
     public Rectangle getBounds() {
         return new Rectangle(
@@ -189,57 +294,14 @@ public class SlotMachine {
         );
     }
 
-    public int getCols() {
-        return cols;
+    public int getCols() { return cols; }
+    public int getRows() { return rows; }
+    public float getCellH() { return cellH; }
+    public float getCellW() { return cellW; }
+    public float getSpacingX() { return spacingX; }
+    public float getSpacingY() { return spacingY; }
+
+    public List<Reel> getReels() {
+        return reels;
     }
-
-    public int getRows() {
-        return rows;
-    }
-
-    public float getCellH() {
-        return cellH;
-    }
-
-    public float getCellW() {
-        return cellW;
-    }
-
-    public float getSpacingX() {
-        return spacingX;
-    }
-
-    public float getSpacingY() {
-        return spacingY;
-    }
-
-    /*
-
-    ----- OLD SCORE CALCULATION ------
-
-    private long calcScore() {
-        int chips = selection.stream()
-            .mapToInt(symbol -> SymbolManager.I().getSymbolValue(symbol))
-            .sum();
-        return chips * (selection.size() + countSymbol(selection.get(0)));
-    }
-
-    private void updateScoreFormula() {
-        if(selection.isEmpty()) {
-            scoreFormula = "";
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder("(");
-        for(int i = 0; i < selection.size(); i++) {
-            if(i != 0) sb.append(" + ");
-            Symbol symbol = selection.get(i);
-            sb.append(SymbolManager.I().getSymbolValue(symbol)).append("-").append(symbol.toString(), 0, 2);
-        }
-        sb.append(") * (").append(selection.size()).append(" + ").append(countSymbol(selection.get(0))).append(")");
-        scoreFormula = sb.toString();
-    }
-
-    */
-
 }

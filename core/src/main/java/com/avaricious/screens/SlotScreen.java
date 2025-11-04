@@ -1,5 +1,6 @@
 package com.avaricious.screens;
 
+import com.avaricious.Assets;
 import com.avaricious.CreditManager;
 import com.avaricious.Main;
 import com.avaricious.RoundsManager;
@@ -11,13 +12,18 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
 
@@ -29,10 +35,12 @@ public class SlotScreen extends ScreenAdapter {
     private final Vector3 mouse = new Vector3();
     private boolean wasPressed = false;
 
-    private final GlyphLayout roundText;
-    private final GlyphLayout scoreFormulaText;
-    private final GlyphLayout patternText;
-    private final GlyphLayout symbolValueText;
+    private final GlyphLayout roundText = new GlyphLayout();
+    private final GlyphLayout scoreText = new GlyphLayout();
+    private final GlyphLayout scoreFormulaText = new GlyphLayout();
+    private final GlyphLayout patternText = new GlyphLayout();
+    private final GlyphLayout symbolValueText = new GlyphLayout();
+    private final List<TextureRegion> symbolValueIcons = new ArrayList<>();
     private final BitmapFont bigFont;
     private final BitmapFont smallFont;
     private final ShapeRenderer shapeRenderer;
@@ -42,32 +50,25 @@ public class SlotScreen extends ScreenAdapter {
     public SlotScreen(Main app) {
         this.app = app;
 
-        roundText = new GlyphLayout();
-        scoreFormulaText = new GlyphLayout();
-        symbolValueText = new GlyphLayout();
-        patternText = new GlyphLayout();
+        Arrays.stream(Symbol.values()).forEach(symbol -> symbolValueIcons.add(Assets.I().getBase(symbol)));
+        Collections.reverse(symbolValueIcons);
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Montserrat.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelifySans.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter bigSize = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        bigSize.size = 16;
+        bigSize.size = 56;
         FreeTypeFontGenerator.FreeTypeFontParameter smallSize = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        smallSize.size = 12;
+        smallSize.size = 56;
         bigFont = generator.generateFont(bigSize);
         smallFont = generator.generateFont(smallSize);
         generator.dispose();
         bigFont.setUseIntegerPositions(false);
-        bigFont.getData().setScale(0.05f);
         smallFont.setUseIntegerPositions(false);
-        smallFont.getData().setScale(0.05f);
 
         shapeRenderer = new ShapeRenderer();
         spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
         applyButton = new Rectangle(0.5f, 4f, 0.5f, 0.5f);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
-        Arrays.stream(slotMachine.getGrid())
-            .flatMap(Arrays::stream)
-            .forEach(slot -> slot.setListener(finishedSlot -> updateSymbolText()));
         roundsManager = RoundsManager.I();
     }
 
@@ -75,6 +76,7 @@ public class SlotScreen extends ScreenAdapter {
     public void show() {
         roundsManager.nextRound();
         roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
+        scoreText.setText(bigFont, "Score: " + score);
         slotMachine.clearSelection();
         slotMachine.spin();
         updateSlotText();
@@ -84,11 +86,12 @@ public class SlotScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+        SpriteBatch batch = app.getBatch();
         handleInput();
 
         ScreenUtils.clear(Color.BLACK);
         app.getViewport().apply();
-        app.getBatch().setProjectionMatrix(app.getViewport().getCamera().combined);
+        batch.setProjectionMatrix(app.getViewport().getCamera().combined);
 
         shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -97,18 +100,26 @@ public class SlotScreen extends ScreenAdapter {
         shapeRenderer.rect(spinButton.x, spinButton.y, spinButton.width, spinButton.height);
         shapeRenderer.end();
 
-        app.getBatch().begin();
-        slotMachine.draw(app.getBatch(), delta);
+        batch.begin();
+        slotMachine.draw(app, delta);
+        batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
         Rectangle slotBounds = slotMachine.getBounds();
+        for(int i = 0; i < symbolValueIcons.size(); i++) {
+            batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
+        }
+        batch.end();
 
-        bigFont.draw(app.getBatch(), roundText, (app.getViewport().getWorldWidth() - roundText.width) / 2f, slotBounds.y + slotBounds.height + 1.6f);
-        bigFont.draw(app.getBatch(), "Score: " + score, slotBounds.x, slotBounds.y + slotBounds.height + 0.8f);
-        bigFont.draw(app.getBatch(), scoreFormulaText, (slotBounds.x / 2f) - scoreFormulaText.width / 2f, applyButton.y + 3);
-        bigFont.draw(app.getBatch(), patternText, (app.getViewport().getWorldWidth() - patternText.width) / 2f, slotBounds.y - 0.5f);
-        smallFont.draw(app.getBatch(), symbolValueText, slotBounds.x + slotBounds.width + 0.75f, 7f);
+        app.getUiViewport().apply();
+        batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
+        batch.begin();
+        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 775);
+        bigFont.draw(batch, scoreText, (app.getUiViewport().getWorldWidth() - scoreText.width) / 2f, 725);
+        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 600f);
+        bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
+        smallFont.draw(batch, symbolValueText, 1275f, 610f);
 
-        bigFont.draw(app.getBatch(), roundsManager.getHandsLeft().toString(), applyButton.x + 0.75f, applyButton.y + applyButton.height);
-        bigFont.draw(app.getBatch(), roundsManager.getSpinsLeft().toString(), spinButton.x + 0.75f, spinButton.y + spinButton.height);
+        smallFont.draw(batch, "Hands: " + roundsManager.getHandsLeft().toString(), 45f, 350f);
+        smallFont.draw(batch, "Spins: " + roundsManager.getSpinsLeft().toString(), 45f, 215f);
         app.getBatch().end();
     }
 
@@ -142,12 +153,12 @@ public class SlotScreen extends ScreenAdapter {
         if(roundsManager.getSpinsLeft() == 0) return;
         slotMachine.spin();
         roundsManager.minusOneSpin();
-        updateSlotText();
     }
 
     private void onApplyButtonPressed() {
         if(roundsManager.getHandsLeft() == 0) return;
         score += slotMachine.applySelection();
+        scoreText.setText(bigFont, "Score: " + score);
         roundsManager.minusOneHand();
         updateSlotText();
 
@@ -159,21 +170,15 @@ public class SlotScreen extends ScreenAdapter {
         }
     }
 
-    private void updateSlotText() {
+    public void updateSlotText() {
         scoreFormulaText.setText(bigFont, slotMachine.getScoreFormula());
         patternText.setText(bigFont, slotMachine.getPatternText());
-        updateSymbolText();
-    }
 
-    private void updateSymbolText() {
         StringBuilder sb = new StringBuilder();
         Arrays.stream(Symbol.values()).forEach(symbol
-            -> sb.append(symbol.toString(), 0, 2)
-            .append(": ")
-            .append(slotMachine.countSymbol(symbol))
-            .append(" (")
-            .append(SymbolManager.I().getSymbolValue(symbol))
-            .append(")\n"));
+            -> sb.append(SymbolManager.I().getSymbolValue(symbol))
+            .append("$\n"));
         symbolValueText.setText(smallFont, sb.toString());
     }
+
 }

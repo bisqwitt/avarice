@@ -29,6 +29,8 @@ public class Assets {
     }
 
     public void load() {
+        manager.load("SlotMachineBorder.png", Texture.class);
+
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
 
@@ -37,7 +39,7 @@ public class Assets {
             baseMap.put(symbol, atlas.findRegion(name));
 
             Array<TextureAtlas.AtlasRegion> frames = atlas.findRegions(name + "_border");
-            Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.2f, frames, Animation.PlayMode.LOOP);
+            Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.1f, frames, Animation.PlayMode.LOOP);
             borderMap.put(symbol, anim);
         });
         manager.finishLoading();
@@ -49,6 +51,10 @@ public class Assets {
 
     public Animation<TextureAtlas.AtlasRegion> getBorderAnimation(Symbol s) {
         return borderMap.get(s);
+    }
+
+    public Texture getSlotMachineBorder() {
+        return manager.get("SlotMachineBorder.png", Texture.class);
     }
 
 }
