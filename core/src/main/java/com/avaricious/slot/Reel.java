@@ -125,52 +125,48 @@ public class Reel {
             case DECEL: {
                 float t = clamp01(tPhase / phaseDuration);
 
-                // Precompute preTarget 1/4 symbol before final index
-                float preTarget = stopTarget - 0.25f;
+                // Overshoot 1/4 symbol *after* the final stop (downward), then settle back up
+                float preTarget = stopTarget + 0.25f;
 
                 if (t < TCROSS) {
                     // Phase 1: move towards preTarget with easing
                     float s = easeOutQuint(t / TCROSS);
                     pos = lerp(decelStartPos, preTarget, s);
                 } else {
-                    // Phase 2: switch to the PREVIOUS base and animate frac UP to 1.0 (downward motion)
+                    // Phase 2: lock to the FINAL base and animate frac DOWN 0.25 -> ~0.0 (settling upward)
                     int size = strip.size();
-                    int finalBase = ((int)Math.floor(stopTarget)) % size;
+                    int finalBase = ((int) Math.floor(stopTarget)) % size;
                     if (finalBase < 0) finalBase += size;
 
                     if (!hasLockedIndex) {
-                        // Lock to the previous base so frac ↑ 1.0 equals final base at 0.0
-                        lockedBaseIndex = (finalBase - 1 + size) % size;
+                        lockedBaseIndex = finalBase;     // lock to final base, not previous
                         hasLockedIndex = true;
 
-                        // We approached to preTarget = stopTarget - 0.25 (¼ before final)
-                        // Relative to (finalBase - 1), that's frac = 0.75
                         forceFracActive = true;
-                        forcedFracInit = 0.75f;
-                        forcedFrac = forcedFracInit;
+                        forcedFracInit = 0.25f;          // we overshot by +0.25
+                        forcedFrac = forcedFracInit;     // start from 0.25
                     }
 
                     float s = easeOutQuint((t - TCROSS) / (1f - TCROSS));
-                    // Animate downward: 0.75 → 1.0
-                    forcedFrac = forcedFracInit + (1f - EPS - forcedFracInit) * s;
+                    // Animate frac downward: 0.25 -> ~0.0
+                    forcedFrac = forcedFracInit - (forcedFracInit - EPS) * s;
 
-                    // Maintain pos for housekeeping; render uses locked base + forced frac
+                    // Move position back from preTarget to stopTarget
                     pos = lerp(preTarget, stopTarget, s);
                 }
 
                 if (t >= 1f) {
-                    pos = stopTarget;          // exact land
+                    pos = stopTarget; // exact land
 
-                    // Keep the previous base locked and hold frac at 1.0 while idle
                     int size = strip.size();
-                    int finalBase = ((int)Math.floor(stopTarget)) % size;
+                    int finalBase = ((int) Math.floor(stopTarget)) % size;
                     if (finalBase < 0) finalBase += size;
 
-                    lockedBaseIndex = (finalBase - 1 + size) % size; // <-- keep prev base
+                    lockedBaseIndex = finalBase; // stay locked on the final base while idle
                     hasLockedIndex = true;
 
-                    forceFracActive = true;    // keep using forced frac when idle
-                    forcedFrac = 1f - EPS;           // visual == final index at frac==0
+                    forceFracActive = true;
+                    forcedFrac = EPS; // ~0.0 so visual == final index at frac==0
 
                     enter(State.IDLE, 0f);
                     if (onSpinFinished != null) onSpinFinished.run();

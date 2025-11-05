@@ -68,8 +68,6 @@ public class SlotMachine {
             reels.add(new Reel(baseStrip, rows));
         }
         reels.get(reels.size() -1).setOnSpinFinished(() -> spinning = false);
-        Gdx.app.log("WIDTH", "" + (cols * cellW + (cols - 1) * spacingX));
-        Gdx.app.log("HEIGHT", "" + rows * cellH + (rows - 1) * spacingY);
     }
 
     // --- drawing ---
