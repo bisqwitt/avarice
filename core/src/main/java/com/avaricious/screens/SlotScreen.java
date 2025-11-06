@@ -62,7 +62,9 @@ public class SlotScreen extends ScreenAdapter {
         smallFont = generator.generateFont(smallSize);
         generator.dispose();
         bigFont.setUseIntegerPositions(false);
+        bigFont.getData().markupEnabled = true;
         smallFont.setUseIntegerPositions(false);
+        smallFont.getData().markupEnabled = true;
 
         shapeRenderer = new ShapeRenderer();
         spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
@@ -75,13 +77,13 @@ public class SlotScreen extends ScreenAdapter {
     @Override
     public void show() {
         roundsManager.nextRound();
+        score = 0L;
+
         roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
         scoreText.setText(bigFont, "Score: " + score);
         slotMachine.clearSelection();
         slotMachine.spin();
         updateSlotText();
-
-        score = 0L;
     }
 
     @Override
@@ -153,6 +155,7 @@ public class SlotScreen extends ScreenAdapter {
         if(roundsManager.getSpinsLeft() == 0) return;
         slotMachine.spin();
         roundsManager.minusOneSpin();
+        updateSlotText();
     }
 
     private void onApplyButtonPressed() {
@@ -171,12 +174,19 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     public void updateSlotText() {
-        scoreFormulaText.setText(bigFont, slotMachine.getScoreFormula());
-        patternText.setText(bigFont, slotMachine.getPatternText());
+        Assets assetManager = Assets.I();
+
+        String[] parts = slotMachine.getScoreFormula().split(" x ");
+        scoreFormulaText.setText(bigFont, parts.length > 1 ? assetManager.colorBlue(parts[0])
+            + " x " + assetManager.colorRed(parts[1]) : "");
+
+        String pattern = slotMachine.getPatternText();
+        int splitIndex = pattern.indexOf(" of a kind");
+        patternText.setText(bigFont, splitIndex == -1 ? "" : assetManager.colorRed(pattern.substring(0, splitIndex)) + pattern.substring(splitIndex));
 
         StringBuilder sb = new StringBuilder();
         Arrays.stream(Symbol.values()).forEach(symbol
-            -> sb.append(SymbolManager.I().getSymbolValue(symbol))
+            -> sb.append(assetManager.colorBlue(SymbolManager.I().getSymbolValue(symbol)))
             .append("$\n"));
         symbolValueText.setText(smallFont, sb.toString());
     }

@@ -2,9 +2,7 @@ package com.avaricious.slot;
 
 import com.avaricious.Assets;
 import com.avaricious.Main;
-import com.avaricious.screens.SlotScreen;
 import com.avaricious.upgrades.UpgradesManager;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -12,7 +10,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -262,11 +259,11 @@ public class SlotMachine {
             .mapToLong(symbol -> numOfAKind * SymbolManager.I().getSymbolValue(symbol))
             .sum();
 
-        long count = countSymbol();
-        scoreFormula = (chips + UpgradesManager.I().chipAdditions(selection, count))
-            + " x " + ((numOfAKind * selection.size() + UpgradesManager.I().multAdditions(selection, count)));
+        Assets assetManager = Assets.I();
+        scoreFormula = (chips + UpgradesManager.I().chipAdditions(selection, numOfAKind))
+            + " x " + (numOfAKind * selection.size() + UpgradesManager.I().multAdditions(selection, numOfAKind));
 
-        patternText = selection.size() + " x " + numOfAKind + "-of-a-kind";
+        patternText = (selection.size() + " x " + numOfAKind) + " of a kind";
     }
 
     private long calcScore() {

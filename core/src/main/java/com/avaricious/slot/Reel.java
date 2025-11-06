@@ -1,6 +1,7 @@
 package com.avaricious.slot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -62,6 +63,8 @@ public class Reel {
         hasLockedIndex = false;
         forceFracActive = false;   // <-- important
         forcedFrac = 0f;
+
+        Collections.shuffle(strip);
 
         // Slight randomness so reels don't look identical
         baseSpeed = speedSymbolsPerSec * (0.95f + rng.nextFloat() * 0.10f);

@@ -57,4 +57,20 @@ public class Assets {
         return manager.get("SlotMachineBorder.png", Texture.class);
     }
 
+    public String colorBlue(String txt) {
+        return "[#2A8AC8]" + txt + "[]";
+    }
+
+    public String colorBlue(long l) {
+        return colorBlue(String.valueOf(l));
+    }
+
+    public String colorRed(String txt) {
+        return "[#CA6055]" + txt + "[]";
+    }
+
+    public String colorRed(long l) {
+        return colorRed(String.valueOf(l));
+    }
+
 }
