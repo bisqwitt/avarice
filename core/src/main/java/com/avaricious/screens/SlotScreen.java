@@ -30,8 +30,8 @@ public class SlotScreen extends ScreenAdapter {
     private final Main app;
     private final SlotMachine slotMachine;
     private final RoundsManager roundsManager;
-
     private Long score = 0L;
+    private Long displayedScore = 0L;
     private final Vector3 mouse = new Vector3();
     private boolean wasPressed = false;
 
@@ -78,9 +78,10 @@ public class SlotScreen extends ScreenAdapter {
     public void show() {
         roundsManager.nextRound();
         score = 0L;
+        displayedScore = 0L;
 
         roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
-        scoreText.setText(bigFont, "Score: " + score);
+        scoreText.setText(bigFont, "Score: " + displayedScore);
         slotMachine.clearSelection();
         slotMachine.spin();
         updateSlotText();
@@ -111,6 +112,12 @@ public class SlotScreen extends ScreenAdapter {
         }
         batch.end();
 
+        if(displayedScore < score) {
+            long diff = score - displayedScore;
+            displayedScore += (long) Math.ceil(diff * 0.1);
+
+            scoreText.setText(bigFont, "Score: " + displayedScore);
+        }
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
         batch.begin();
@@ -161,7 +168,6 @@ public class SlotScreen extends ScreenAdapter {
     private void onApplyButtonPressed() {
         if(roundsManager.getHandsLeft() == 0) return;
         score += slotMachine.applySelection();
-        scoreText.setText(bigFont, "Score: " + score);
         roundsManager.minusOneHand();
         updateSlotText();
 
