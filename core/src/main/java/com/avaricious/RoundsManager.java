@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class RoundsManager {
 
-    private final int baseHandsPerRound = 4;
-    private final int baseSpinsPerRound = 4;
+    private final int baseHandsPerRound = 3;
+    private final int baseSpinsPerRound = 2;
 
     private static RoundsManager instance;
     public static RoundsManager I() {

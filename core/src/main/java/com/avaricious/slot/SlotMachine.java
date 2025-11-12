@@ -6,6 +6,7 @@ import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
@@ -16,11 +17,13 @@ import java.util.stream.Collectors;
 
 public class SlotMachine {
 
+    private final ShapeRenderer shapeRenderer;
+
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.5f;
-    private final float cellH = 1.5f;
+    private final float cellW = 1.25f;
+    private final float cellH = 1.25f;
     private final float spacingX = 0.2f;
     private final float spacingY = 0.2f;
 
@@ -38,10 +41,14 @@ public class SlotMachine {
     // UI state
     private Symbol hover;
     private List<Symbol> selection = new ArrayList<>();
+    private Map<Symbol, Long> picks = new LinkedHashMap<>();
     private String scoreFormula = "";
     private String patternText = "";
 
     public SlotMachine(float worldWidth, float worldHeight) {
+        shapeRenderer = new ShapeRenderer();
+        Arrays.stream(Symbol.values()).forEach(symbol -> picks.put(symbol, 0L));
+
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f);
@@ -89,12 +96,12 @@ public class SlotMachine {
         // render continuous rolling bands per column
         final float stepX = (cellW + spacingX);
         final float stepY = (cellH + spacingY);
-        final float topY = originY + (rows - 1) * stepY; // y of the top grid cell
+        final float topY = (originY + (rows - 1) * stepY) + 0.1f; // y of the top grid cell
 
         for (int c = 0; c < cols; c++) {
             Reel reel = reels.get(c);
             float frac = reel.frac(); // 0..1 progress toward next symbol
-            float colX = originX + c * stepX;
+            float colX = (originX + c * stepX) + 0.1f;
 
             int extraAbove = 1;
             int extraBelow = 1;
@@ -190,11 +197,12 @@ public class SlotMachine {
     }
 
     // --- apply selection (score + quick nudge feedback) ---
-    public long applySelection() {
-        long score = calcScore();
+    public void applySelection() {
+        Arrays.stream(Symbol.values())
+            .filter(s -> selection.contains(s))
+            .forEach(s -> picks.put(s, picks.get(s) + countSymbol(s)));
         clearSelection();
         spin();
-        return score;
     }
 
     // --- input helpers ---
@@ -211,10 +219,10 @@ public class SlotMachine {
         if (selection.contains(type)) {
             selection.remove(type);
         } else {
-            long symbolCount = countSymbol(type);
-            selection = selection.stream()
-                .filter(t -> countSymbol(t) == symbolCount)
-                .collect(Collectors.toList());
+//            long symbolCount = countSymbol(type);
+////            selection = selection.stream()
+////                .filter(t -> countSymbol(t) == symbolCount)
+////                .collect(Collectors.toList());
             selection.add(type);
         }
         updateDisplayTexts();
@@ -296,6 +304,10 @@ public class SlotMachine {
         selection.clear();
         scoreFormula = "";
         patternText = "";
+    }
+
+    public Map<Symbol, Long> getPicks() {
+        return picks;
     }
 
     // --- getters ---
