@@ -1,12 +1,10 @@
 package com.avaricious.screens;
 
-import com.avaricious.Assets;
-import com.avaricious.CreditManager;
-import com.avaricious.Main;
-import com.avaricious.RoundsManager;
+import com.avaricious.*;
 import com.avaricious.slot.SlotMachine;
 import com.avaricious.slot.Symbol;
 import com.avaricious.slot.SymbolManager;
+import com.avaricious.slot.pot.Pot;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -14,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -29,6 +26,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
+    private final Pot pot;
     private final RoundsManager roundsManager;
     private Long score = 0L;
     private Long displayedScore = 0L;
@@ -53,24 +51,15 @@ public class SlotScreen extends ScreenAdapter {
         Arrays.stream(Symbol.values()).forEach(symbol -> symbolValueIcons.add(Assets.I().getBase(symbol)));
         Collections.reverse(symbolValueIcons);
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelifySans.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter bigSize = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        bigSize.size = 56;
-        FreeTypeFontGenerator.FreeTypeFontParameter smallSize = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        smallSize.size = 56;
-        bigFont = generator.generateFont(bigSize);
-        smallFont = generator.generateFont(smallSize);
-        generator.dispose();
-        bigFont.setUseIntegerPositions(false);
-        bigFont.getData().markupEnabled = true;
-        smallFont.setUseIntegerPositions(false);
-        smallFont.getData().markupEnabled = true;
+        bigFont = Assets.I().getBigFont();
+        smallFont = Assets.I().getSmallFont();
 
         shapeRenderer = new ShapeRenderer();
         spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
         applyButton = new Rectangle(0.5f, 4f, 0.5f, 0.5f);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
+        pot = new Pot(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
         roundsManager = RoundsManager.I();
     }
 
@@ -103,14 +92,25 @@ public class SlotScreen extends ScreenAdapter {
         shapeRenderer.rect(spinButton.x, spinButton.y, spinButton.width, spinButton.height);
         shapeRenderer.end();
 
+        Rectangle slotBounds = slotMachine.getBounds();
+
+        shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(slotBounds.x, slotBounds.y, slotBounds.width, slotBounds.height);
+        Rectangle potBounds = pot.getBounds();
+        shapeRenderer.rect(potBounds.x, potBounds.y, potBounds.width, potBounds.height);
+        shapeRenderer.end();
+
         batch.begin();
         slotMachine.draw(app, delta);
         //batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
-        Rectangle slotBounds = slotMachine.getBounds();
+
         for(int i = 0; i < symbolValueIcons.size(); i++) {
             batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
         }
         batch.end();
+        pot.draw(app, delta);
 
         if(displayedScore < score) {
             long diff = score - displayedScore;
@@ -121,15 +121,22 @@ public class SlotScreen extends ScreenAdapter {
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
         batch.begin();
-        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 775);
-        bigFont.draw(batch, scoreText, (app.getUiViewport().getWorldWidth() - scoreText.width) / 2f, 725);
-        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 600f);
+        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 800);
+        bigFont.draw(batch, scoreText, (app.getUiViewport().getWorldWidth() - scoreText.width) / 2f, 750);
+        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 650f);
         bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
-        smallFont.draw(batch, symbolValueText, 1275f, 610f);
+        bigFont.draw(batch, symbolValueText, 1275f, 675f);
 
         smallFont.draw(batch, "Hands: " + roundsManager.getHandsLeft().toString(), 45f, 350f);
         smallFont.draw(batch, "Spins: " + roundsManager.getSpinsLeft().toString(), 45f, 215f);
         app.getBatch().end();
+
+        if(displayedScore >= roundsManager.getCurrentTargetScore()) {
+            CreditManager.I().onRoundBeaten(roundsManager.getHandsLeft());
+            ScreenManager.I().setScreen(UpgradeSelectionScreen.class);
+        } else if(roundsManager.getHandsLeft() == 0) {
+            roundText.setText(bigFont, "You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");
+        }
     }
 
     private void handleInput() {
@@ -154,6 +161,7 @@ public class SlotScreen extends ScreenAdapter {
             }
         }
         slotMachine.hoveringAt(mouse);
+        pot.hoveringAt(mouse);
 
         wasPressed = pressed;
     }
@@ -170,13 +178,6 @@ public class SlotScreen extends ScreenAdapter {
         score += slotMachine.applySelection();
         roundsManager.minusOneHand();
         updateSlotText();
-
-        if(score >= roundsManager.getCurrentTargetScore()) {
-            CreditManager.I().onRoundBeaten(roundsManager.getHandsLeft());
-            ScreenManager.I().setScreen(UpgradeSelectionScreen.class);
-        } else if(roundsManager.getHandsLeft() == 0) {
-            roundText.setText(bigFont, "You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");
-        }
     }
 
     public void updateSlotText() {
@@ -194,7 +195,7 @@ public class SlotScreen extends ScreenAdapter {
         Arrays.stream(Symbol.values()).forEach(symbol
             -> sb.append(assetManager.colorBlue(SymbolManager.I().getSymbolValue(symbol)))
             .append("$\n"));
-        symbolValueText.setText(smallFont, sb.toString());
+        symbolValueText.setText(bigFont, sb.toString());
     }
 
 }

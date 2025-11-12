@@ -26,6 +26,9 @@ public class UpgradesManager {
             .filter(c -> !c.isInterface())
             .filter(c -> !Modifier.isAbstract(c.getModifiers()))
             .collect(Collectors.toSet()));
+
+//        randomUpgrades().forEach(this::addUpgrade);
+//        randomUpgrades().forEach(this::addUpgrade);
     }
 
     private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();
@@ -95,6 +98,10 @@ public class UpgradesManager {
         mergeDuplicates();
     }
 
+    public List<Upgrade> getUpgrades() {
+        return deck;
+    }
+
     private void mergeDuplicates() {
         record Key(Class<?> type, UpgradeRarity rarity) {}
 
@@ -134,6 +141,6 @@ public class UpgradesManager {
     }
 
     public boolean spaceInDeck() {
-        return deck.size() < 5;
+        return deck.size() < 7;
     }
 }

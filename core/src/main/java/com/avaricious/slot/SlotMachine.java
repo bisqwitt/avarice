@@ -44,7 +44,7 @@ public class SlotMachine {
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f);
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
@@ -298,9 +298,6 @@ public class SlotMachine {
         patternText = "";
     }
 
-    // --- getters ---
-    public Slot[][] getGrid() { return grid; }
-    public Symbol getHover() { return hover; }
     public String getScoreFormula() { return scoreFormula; }
     public String getPatternText() { return patternText; }
 
