@@ -8,6 +8,7 @@ import com.avaricious.slot.pot.Pot;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -33,6 +34,9 @@ public class SlotScreen extends ScreenAdapter {
     private final Vector3 mouse = new Vector3();
     private boolean wasPressed = false;
 
+    private final Texture slotMachineImg;
+    private final Texture slotButtons;
+
     private final GlyphLayout roundText = new GlyphLayout();
     private final GlyphLayout scoreText = new GlyphLayout();
     private final GlyphLayout scoreFormulaText = new GlyphLayout();
@@ -50,6 +54,8 @@ public class SlotScreen extends ScreenAdapter {
 
         Arrays.stream(Symbol.values()).forEach(symbol -> symbolValueIcons.add(Assets.I().getBase(symbol)));
         Collections.reverse(symbolValueIcons);
+        slotMachineImg = Assets.I().getSlotMachineBorder();
+        slotButtons = Assets.I().getButtons();
 
         bigFont = Assets.I().getBigFont();
         smallFont = Assets.I().getSmallFont();
@@ -84,6 +90,10 @@ public class SlotScreen extends ScreenAdapter {
         ScreenUtils.clear(Color.BLACK);
         app.getViewport().apply();
         batch.setProjectionMatrix(app.getViewport().getCamera().combined);
+        batch.begin();
+        batch.draw(slotMachineImg, 3.15f, 1.75f, 9.6f, 6f);
+        batch.draw(slotButtons, 5f, 0.3f, 4.6f, 1.36f);
+        batch.end();
 
         shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -97,15 +107,14 @@ public class SlotScreen extends ScreenAdapter {
         shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(slotBounds.x, slotBounds.y, slotBounds.width, slotBounds.height);
+//        shapeRenderer.rect(slotBounds.x, slotBounds.y, slotBounds.width, slotBounds.height);
         Rectangle potBounds = pot.getBounds();
-        shapeRenderer.rect(potBounds.x, potBounds.y, potBounds.width, potBounds.height);
+//        shapeRenderer.rect(potBounds.x, potBounds.y, potBounds.width, potBounds.height);
         shapeRenderer.end();
 
         batch.begin();
         slotMachine.draw(app, delta);
         //batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
-
         for(int i = 0; i < symbolValueIcons.size(); i++) {
             batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
         }

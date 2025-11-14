@@ -21,8 +21,8 @@ public class SlotMachine {
     private final int rows = 3;
     private final float cellW = 1.5f;
     private final float cellH = 1.5f;
-    private final float spacingX = 0.2f;
-    private final float spacingY = 0.2f;
+    private final float spacingX = 0.05f;
+    private final float spacingY = 0.1f;
 
     private final float originX;
     private final float originY;
@@ -44,7 +44,7 @@ public class SlotMachine {
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.25f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {

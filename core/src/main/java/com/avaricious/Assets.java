@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import org.w3c.dom.Text;
 
 import java.util.Arrays;
 
@@ -36,6 +37,7 @@ public class Assets {
     public void load() {
         manager.load("SlotMachineBorder.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
+        manager.load("buttons.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -72,12 +74,16 @@ public class Assets {
         return borderMap.get(s);
     }
 
+    public Texture getPokerChip() {
+        return manager.get("base-poker-chip.png", Texture.class);
+    }
+
     public Texture getSlotMachineBorder() {
         return manager.get("SlotMachineBorder.png", Texture.class);
     }
 
-    public Texture getPokerChip() {
-        return manager.get("base-poker-chip.png", Texture.class);
+    public Texture getButtons() {
+        return manager.get("buttons.png", Texture.class);
     }
 
     public String colorBlue(String txt) {
