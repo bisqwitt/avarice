@@ -43,8 +43,8 @@ public class SlotMachine {
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.25f;
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 2f;
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
@@ -80,6 +80,8 @@ public class SlotMachine {
         cam.update();
 
         Rectangle area = getBounds(); // world-space
+        area.setY(area.y - 0.15f);
+        area.setHeight(area.height + 0.255f);
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 

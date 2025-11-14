@@ -3,6 +3,7 @@ package com.avaricious;
 import com.avaricious.slot.Symbol;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -36,8 +37,14 @@ public class Assets {
 
     public void load() {
         manager.load("SlotMachineBorder.png", Texture.class);
+        manager.load("ScoreBorder.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
-        manager.load("buttons.png", Texture.class);
+
+        manager.load("buttons/button-board.png", Texture.class);
+        manager.load("buttons/apply-button.png", Texture.class);
+        manager.load("buttons/apply-button-pressed.png", Texture.class);
+        manager.load("buttons/spin-button.png", Texture.class);
+        manager.load("buttons/spin-button-pressed.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -53,7 +60,7 @@ public class Assets {
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelifySans.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.size = 56;
+        param.size = 66;
         bigFont = generator.generateFont(param);
         bigFont.setUseIntegerPositions(false);
         bigFont.getData().markupEnabled = true;
@@ -82,8 +89,28 @@ public class Assets {
         return manager.get("SlotMachineBorder.png", Texture.class);
     }
 
-    public Texture getButtons() {
-        return manager.get("buttons.png", Texture.class);
+    public Texture getScoreBorder() {
+        return manager.get("ScoreBorder.png", Texture.class);
+    }
+
+    public Texture getButtonBoard() {
+        return manager.get("buttons/button-board.png", Texture.class);
+    }
+
+    public Texture getApplyButton() {
+        return manager.get("buttons/apply-button.png", Texture.class);
+    }
+
+    public Texture getApplyButtonPressed() {
+        return manager.get("buttons/apply-button-pressed.png", Texture.class);
+    }
+
+    public Texture getSpinButton() {
+        return manager.get("buttons/spin-button.png", Texture.class);
+    }
+
+    public Texture getSpinButtonPressed() {
+        return manager.get("buttons/spin-button-pressed.png", Texture.class);
     }
 
     public String colorBlue(String txt) {
@@ -96,6 +123,10 @@ public class Assets {
 
     public String colorRed(String txt) {
         return "[#CA6055]" + txt + "[]";
+    }
+
+    public Color lightColor() {
+        return new Color(1f, 0.996f, 0.8117f, 1f);
     }
 
     public BitmapFont getBigFont() {

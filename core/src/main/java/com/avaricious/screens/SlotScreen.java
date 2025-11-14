@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
@@ -35,7 +36,10 @@ public class SlotScreen extends ScreenAdapter {
     private boolean wasPressed = false;
 
     private final Texture slotMachineImg;
-    private final Texture slotButtons;
+    private final Texture buttonBoard;
+    private final Texture scoreBorder;
+    private TextureRegion applyButtonTexture;
+    private TextureRegion spinButtonTexture;
 
     private final GlyphLayout roundText = new GlyphLayout();
     private final GlyphLayout scoreText = new GlyphLayout();
@@ -44,10 +48,16 @@ public class SlotScreen extends ScreenAdapter {
     private final GlyphLayout symbolValueText = new GlyphLayout();
     private final List<TextureRegion> symbolValueIcons = new ArrayList<>();
     private final BitmapFont bigFont;
-    private final BitmapFont smallFont;
     private final ShapeRenderer shapeRenderer;
     private final Rectangle spinButton;
     private final Rectangle applyButton;
+
+    private boolean hoveringApply = false;
+    private boolean hoveringSpin = false;
+    private boolean hoverApplyJustEntered = false;
+    private boolean hoverSpinJustEntered = false;
+    private float hoverAnimTime = 0f;
+
 
     public SlotScreen(Main app) {
         this.app = app;
@@ -55,14 +65,16 @@ public class SlotScreen extends ScreenAdapter {
         Arrays.stream(Symbol.values()).forEach(symbol -> symbolValueIcons.add(Assets.I().getBase(symbol)));
         Collections.reverse(symbolValueIcons);
         slotMachineImg = Assets.I().getSlotMachineBorder();
-        slotButtons = Assets.I().getButtons();
+        buttonBoard = Assets.I().getButtonBoard();
+        scoreBorder = Assets.I().getScoreBorder();
+        applyButtonTexture = new TextureRegion(Assets.I().getApplyButton());
+        spinButtonTexture = new TextureRegion(Assets.I().getSpinButton());
 
         bigFont = Assets.I().getBigFont();
-        smallFont = Assets.I().getSmallFont();
 
         shapeRenderer = new ShapeRenderer();
-        spinButton = new Rectangle(0.5f, 2.5f, 0.5f, 0.5f);
-        applyButton = new Rectangle(0.5f, 4f, 0.5f, 0.5f);
+        spinButton = new Rectangle(10.675f, 0.6f, 1f, 0.88f);
+        applyButton = new Rectangle(8.05f, 0.6f, 2.15f, 0.95f);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
         pot = new Pot(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
@@ -76,7 +88,7 @@ public class SlotScreen extends ScreenAdapter {
         displayedScore = 0L;
 
         roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
-        scoreText.setText(bigFont, "Score: " + displayedScore);
+        scoreText.setText(bigFont, "" + displayedScore, Assets.I().lightColor(), 400f, Align.right, true);
         slotMachine.clearSelection();
         slotMachine.spin();
         updateSlotText();
@@ -87,37 +99,33 @@ public class SlotScreen extends ScreenAdapter {
         SpriteBatch batch = app.getBatch();
         handleInput();
 
-        ScreenUtils.clear(Color.BLACK);
+        ScreenUtils.clear(0.396f, 0.137f, 0.141f, 1f);
+//        ScreenUtils.clear(0f, 0.349f, 0.204f, 1f);
+
         app.getViewport().apply();
         batch.setProjectionMatrix(app.getViewport().getCamera().combined);
         batch.begin();
-        batch.draw(slotMachineImg, 3.15f, 1.75f, 9.6f, 6f);
-        batch.draw(slotButtons, 5f, 0.3f, 4.6f, 1.36f);
+        batch.draw(slotMachineImg, 5.15f, 2.1f, 9.6f, 6f);
+        batch.draw(scoreBorder, 0.75f, 6.5f, 3.84f, 1.32f);
+        batch.draw(buttonBoard, 7.55f, 0.3f, 4.6f, 1.36f);
+        //batch.draw(applyButtonTexture, 5.55f, 0.3f, 4.6f, 1.36f);
+        drawApplyButton(batch, delta);
+        drawSpinButton(batch, delta);
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(applyButton.x, applyButton.y, applyButton.width, applyButton.height);
-        shapeRenderer.rect(spinButton.x, spinButton.y, spinButton.width, spinButton.height);
-        shapeRenderer.end();
-
-        Rectangle slotBounds = slotMachine.getBounds();
-
-        shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.WHITE);
-//        shapeRenderer.rect(slotBounds.x, slotBounds.y, slotBounds.width, slotBounds.height);
-        Rectangle potBounds = pot.getBounds();
+//        shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//        shapeRenderer.setColor(Color.WHITE);
+//        shapeRenderer.rect(spinButton.x, spinButton.y, spinButton.width, spinButton.height);
 //        shapeRenderer.rect(potBounds.x, potBounds.y, potBounds.width, potBounds.height);
-        shapeRenderer.end();
+//        shapeRenderer.end();
 
         batch.begin();
         slotMachine.draw(app, delta);
         //batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
-        for(int i = 0; i < symbolValueIcons.size(); i++) {
-            batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
-        }
+//        for(int i = 0; i < symbolValueIcons.size(); i++) {
+//            batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
+//        }
         batch.end();
         pot.draw(app, delta);
 
@@ -125,19 +133,19 @@ public class SlotScreen extends ScreenAdapter {
             long diff = score - displayedScore;
             displayedScore += (long) Math.ceil(diff * 0.1);
 
-            scoreText.setText(bigFont, "Score: " + displayedScore);
+            scoreText.setText(bigFont, "" + displayedScore, Assets.I().lightColor(), 400f, Align.right, true);
         }
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
         batch.begin();
-        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 800);
-        bigFont.draw(batch, scoreText, (app.getUiViewport().getWorldWidth() - scoreText.width) / 2f, 750);
-        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 650f);
-        bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
-        bigFont.draw(batch, symbolValueText, 1275f, 675f);
+//        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 800);
+        bigFont.draw(batch, scoreText, -35, 672);
+//        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 650f);
+//        bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
+//        bigFont.draw(batch, symbolValueText, 1275f, 675f);
 
-        smallFont.draw(batch, "Hands: " + roundsManager.getHandsLeft().toString(), 45f, 350f);
-        smallFont.draw(batch, "Spins: " + roundsManager.getSpinsLeft().toString(), 45f, 215f);
+//        smallFont.draw(batch, "Hands: " + roundsManager.getHandsLeft().toString(), 45f, 350f);
+//        smallFont.draw(batch, "Spins: " + roundsManager.getSpinsLeft().toString(), 45f, 215f);
         app.getBatch().end();
 
         if(displayedScore >= roundsManager.getCurrentTargetScore()) {
@@ -154,9 +162,18 @@ public class SlotScreen extends ScreenAdapter {
 
         Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
+
+        boolean isHoveringNow = applyButton.contains(mouse.x, mouse.y);
+        hoverApplyJustEntered = !hoveringApply && isHoveringNow; // mouse entered
+        hoveringApply = isHoveringNow; // update state
+
+        boolean isHoveringSpinNow = spinButton.contains(mouse.x, mouse.y);
+        hoverSpinJustEntered = !hoveringSpin && isHoveringSpinNow;
+        hoveringSpin = isHoveringSpinNow;
+
         if(pressed && !wasPressed) {
-            if(spinButton.contains(mouse.x, mouse.y)) onSpinButtonPressed();
-            if(applyButton.contains(mouse.x, mouse.y)) onApplyButtonPressed();
+            if(applyButton.contains(mouse.x, mouse.y)) applyButtonTexture = new TextureRegion(Assets.I().getApplyButtonPressed());
+            if(spinButton.contains(mouse.x, mouse.y)) spinButtonTexture = new TextureRegion(Assets.I().getSpinButtonPressed());
 
             if(slotBounds.contains(mouse.x, mouse.y)) {
                 int col = (int)((mouse.x - slotBounds.x) / (slotMachine.getCellW() + slotMachine.getSpacingX()));
@@ -168,6 +185,13 @@ public class SlotScreen extends ScreenAdapter {
                     updateSlotText();
                 }
             }
+        }
+
+        if(!pressed && wasPressed) {
+            applyButtonTexture = new TextureRegion(Assets.I().getApplyButton());
+            spinButtonTexture = new TextureRegion(Assets.I().getSpinButton());
+            if(applyButton.contains(mouse.x, mouse.y)) onApplyButtonPressed();
+            if(spinButton.contains(mouse.x, mouse.y)) onSpinButtonPressed();
         }
         slotMachine.hoveringAt(mouse);
         pot.hoveringAt(mouse);
@@ -205,6 +229,80 @@ public class SlotScreen extends ScreenAdapter {
             -> sb.append(assetManager.colorBlue(SymbolManager.I().getSymbolValue(symbol)))
             .append("$\n"));
         symbolValueText.setText(bigFont, sb.toString());
+    }
+
+    private void drawApplyButton(SpriteBatch batch, float delta) {
+        float x = 7.55f;
+        float y = 0.3f;
+        float w = 4.6f;
+        float h = 1.36f;
+
+// start animation on entry
+        if (hoverApplyJustEntered) {
+            hoverAnimTime = 0f;
+        }
+
+// play wiggle if animation active
+        float scale = 1f;
+        if (hoveringApply && hoverAnimTime < 0.25f) {
+            hoverAnimTime += delta;
+
+            // quick "pop" wiggle using sine ease-out
+            float t = hoverAnimTime / 0.25f;       // 0 → 1
+            float wiggle = (float) Math.sin(t * Math.PI * 3f) * (1f - t) * 0.01f;
+
+            scale = 1f + wiggle;
+        }
+
+// draw with scaling from center
+        float originX = w / 2f;
+        float originY = h / 2f;
+
+        batch.draw(applyButtonTexture,
+            x + w/2f - originX * scale,
+            y + h/2f - originY * scale,
+            originX, originY,
+            w, h,
+            scale, scale,
+            0);
+
+    }
+
+    private void drawSpinButton(SpriteBatch batch, float delta) {
+        float x = 7.55f;
+        float y = 0.3f;
+        float w = 4.6f;
+        float h = 1.36f;
+
+// start animation on entry
+        if (hoverSpinJustEntered) {
+            hoverAnimTime = 0f;
+        }
+
+// play wiggle if animation active
+        float scale = 1f;
+        if (hoveringSpin && hoverAnimTime < 0.25f) {
+            hoverAnimTime += delta;
+
+            // quick "pop" wiggle using sine ease-out
+            float t = hoverAnimTime / 0.25f;       // 0 → 1
+            float wiggle = (float) Math.sin(t * Math.PI * 3f) * (1f - t) * 0.025f;
+
+            scale = 1f + wiggle;
+        }
+
+// draw with scaling from center
+        float originX = w / 2f;
+        float originY = h / 2f;
+
+        batch.draw(spinButtonTexture,
+            x + w/2f - originX * scale,
+            y + h/2f - originY * scale,
+            originX, originY,
+            w, h,
+            scale, scale,
+            0);
+
     }
 
 }
