@@ -1,6 +1,6 @@
 package com.avaricious;
 
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import org.w3c.dom.Text;
 
 import java.util.Arrays;
 
@@ -37,9 +36,11 @@ public class Assets {
 
     public void load() {
         manager.load("SlotMachineBorder.png", Texture.class);
+        manager.load("SlotMachineScreen.png", Texture.class);
         manager.load("ScoreBorder.png", Texture.class);
         manager.load("ButtonsLeftDisplay.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
+        manager.load("PatternDisplay.png", Texture.class);
 
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/0.png", Texture.class);
@@ -123,8 +124,16 @@ public class Assets {
         return manager.get("SlotMachineBorder.png", Texture.class);
     }
 
+    public Texture getSlotMachineScreen() {
+        return manager.get("SlotMachineScreen.png", Texture.class);
+    }
+
     public Texture getButtonsLeftDisplay() {
         return manager.get("ButtonsLeftDisplay.png", Texture.class);
+    }
+
+    public Texture getPatternDisplay() {
+        return manager.get("PatternDisplay.png", Texture.class);
     }
 
     public Texture getUncommonStick() {
@@ -171,16 +180,12 @@ public class Assets {
         return manager.get("buttons/spin-button-pressed.png", Texture.class);
     }
 
-    public String colorBlue(String txt) {
-        return "[#2A8AC8]" + txt + "[]";
+    public Color colorBlue() {
+        return new Color(0.1647f, 0.5412f, 0.7843f, 1f);
     }
 
-    public String colorBlue(long l) {
-        return colorBlue(String.valueOf(l));
-    }
-
-    public String colorRed(String txt) {
-        return "[#CA6055]" + txt + "[]";
+    public Color colorRed() {
+        return new Color(0.7922f, 0.3765f, 0.3333f, 1f);
     }
 
     public Color lightColor() {
@@ -195,15 +200,11 @@ public class Assets {
         return smallFont;
     }
 
-    public String colorRed(long l) {
-        return colorRed(String.valueOf(l));
-    }
-
     public Texture unlitNumber() {
         return manager.get("digital-numbers/unlit.png", Texture.class);
     }
 
-    public Texture getDigitalNumber(int number) {
+    public Texture getDigitalNumber(long number) {
         return manager.get("digital-numbers/" + number + ".png", Texture.class);
     }
 

@@ -1,12 +1,16 @@
 package com.avaricious.screens;
 
+import box2dLight.ConeLight;
+import box2dLight.Light;
+import box2dLight.RayHandler;
 import com.avaricious.*;
-import com.avaricious.slot.SlotMachine;
-import com.avaricious.slot.Symbol;
-import com.avaricious.slot.SymbolManager;
+import com.avaricious.components.*;
+import com.avaricious.components.slot.SlotMachine;
+import com.avaricious.components.slot.Symbol;
+import com.avaricious.components.slot.SymbolManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -14,7 +18,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -28,167 +33,190 @@ public class SlotScreen extends ScreenAdapter {
     private final Main app;
     private final SlotMachine slotMachine;
     private final ScoreDisplay scoreDisplay;
+    private final TurnsLeftDisplay turnsLeftDisplay;
+    private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
+    private final ButtonBoard buttonBoard;
     private final RoundsManager roundsManager;
-    private Long score = 0L;
-    private Long displayedScore = 0L;
-    private final Vector3 mouse = new Vector3();
+    private final Vector2 mouse = new Vector2();
     private boolean wasPressed = false;
 
-    private final Texture slotMachineImg;
-    private final Texture buttonBoard;
-    private final Texture buttonsLeftDisplay;
-    private TextureRegion applyButtonTexture;
-    private TextureRegion spinButtonTexture;
-
-    private final GlyphLayout roundText = new GlyphLayout();
-    private final GlyphLayout scoreText = new GlyphLayout();
-    private final GlyphLayout scoreFormulaText = new GlyphLayout();
-    private final GlyphLayout patternText = new GlyphLayout();
-    private final GlyphLayout symbolValueText = new GlyphLayout();
-    private final List<TextureRegion> symbolValueIcons = new ArrayList<>();
+    private final Texture slotMachineBorder;
+    private final Texture slotMachineScreen;
     private final BitmapFont bigFont;
     private final ShapeRenderer shapeRenderer;
-    private final Rectangle spinButton;
-    private final Rectangle applyButton;
 
-    private boolean hoveringApply = false;
-    private boolean hoveringSpin = false;
-    private boolean hoverApplyJustEntered = false;
-    private boolean hoverSpinJustEntered = false;
-    private float hoverAnimTime = 0f;
+    private final World world;
+    private final RayHandler rayHandler;
+    private final ConeLight[] topLights = new ConeLight[5];
+    private float[] baseLightX;
+    private float[] baseLightY;
 
+    // Light shake
+    private boolean lightIsShaking = false;
+    private float lightShakeTime = 0f;
+    private float lightShakeStrength = 0f;
+
+    // Camera shake
+    private boolean cameraIsShaking = false;
+    private float cameraShakeTime = 0f;
+    private float cameraShakeDuration = 0.45f;  // total time of cam shake
+    private float cameraShakeMagnitude = 0.15f; // base magnitude in world units
+    private float baseCamX;
+    private float baseCamY;
 
     public SlotScreen(Main app) {
         this.app = app;
+        slotMachineBorder = Assets.I().getSlotMachineBorder();
+        slotMachineScreen = Assets.I().getSlotMachineScreen();
 
-        Arrays.stream(Symbol.values()).forEach(symbol -> symbolValueIcons.add(Assets.I().getBase(symbol)));
-        Collections.reverse(symbolValueIcons);
-        slotMachineImg = Assets.I().getSlotMachineBorder();
-        buttonBoard = Assets.I().getButtonBoard();
-        buttonsLeftDisplay = Assets.I().getButtonsLeftDisplay();
-        applyButtonTexture = new TextureRegion(Assets.I().getApplyButton());
-        spinButtonTexture = new TextureRegion(Assets.I().getSpinButton());
+        this.world = new World(new Vector2(0, 0), true);
+        rayHandler = new RayHandler(world);
 
         bigFont = Assets.I().getBigFont();
 
         shapeRenderer = new ShapeRenderer();
-        spinButton = new Rectangle(10.675f, 0.6f, 1f, 0.88f);
-        applyButton = new Rectangle(8.05f, 0.6f, 2.15f, 0.95f);
-
-        slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
+        slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight(), rayHandler);
         upgradeSticks = new UpgradeSticks();
         scoreDisplay = new ScoreDisplay();
+        turnsLeftDisplay = new TurnsLeftDisplay();
+        patternDisplay = new PatternDisplay();
+        buttonBoard = new ButtonBoard();
         roundsManager = RoundsManager.I();
     }
 
     @Override
     public void show() {
         roundsManager.nextRound();
-        score = 0L;
-        displayedScore = 0L;
-        scoreDisplay.setScore(0);
+        scoreDisplay.resetScore();
+        turnsLeftDisplay.setAppliesLeft(roundsManager.getAppliesLeft());
+        turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
 
-        roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
-        scoreText.setText(bigFont, "" + displayedScore, Assets.I().lightColor(), 400f, Align.right, true);
+        // Store base camera position for shake
+        Camera cam = app.getViewport().getCamera();
+        baseCamX = cam.position.x;
+        baseCamY = cam.position.y;
+
+        // Reset shake states
+        lightIsShaking = false;
+        lightShakeTime = 0f;
+        lightShakeStrength = 0f;
+
+        cameraIsShaking = false;
+        cameraShakeTime = 0f;
+        cameraShakeMagnitude = 0.15f;
+
+        rayHandler.setAmbientLight(0.7f);
+
+        float startX = 2f;
+        float stepX  = 3f;
+        float y      = 11f;
+        float distance = 14f;
+        float direction = 270f;
+        float coneDegrees = 20f;
+
+        baseLightX = new float[topLights.length];
+        baseLightY = new float[topLights.length];
+
+        for (int i = 0; i < topLights.length; i++) {
+            float x = startX + i * stepX;
+            baseLightX[i] = x;
+            baseLightY[i] = y;
+
+            topLights[i] = new ConeLight(
+                rayHandler,
+                120,
+                Assets.I().lightColor(),
+                distance,
+                x, y,
+                direction,
+                coneDegrees
+            );
+        }
         slotMachine.clearSelection();
         slotMachine.spin();
-        updateSlotText();
     }
 
     @Override
     public void render(float delta) {
         SpriteBatch batch = app.getBatch();
         handleInput();
-
         ScreenUtils.clear(0.396f, 0.137f, 0.141f, 1f);
-//        ScreenUtils.clear(0f, 0.349f, 0.204f, 1f)
+
+        // First apply the viewport so the camera is in its default place
         app.getViewport().apply();
-        batch.setProjectionMatrix(app.getViewport().getCamera().combined);
+
+        // Then update shakes (they will modify this camera)
+        updateLightShake(delta);
+        updateCameraShake(delta);
+
+
+        Camera camera = app.getViewport().getCamera();
+        rayHandler.setCombinedMatrix(
+            camera.combined,
+            camera.position.x,
+            camera.position.y,
+            app.getViewport().getWorldWidth(),
+            app.getViewport().getWorldHeight()
+        );
+        rayHandler.updateAndRender();
+
+        // Now draw world using the already-shaken camera
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
         upgradeSticks.draw(batch);
-        batch.draw(slotMachineImg, 5.15f, 2.1f, 9.6f, 6f);
+        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch);
-        batch.draw(buttonsLeftDisplay, 0.75f, 3.75f, 3.84f, 2.6f);
-        batch.draw(buttonBoard, 7.55f, 0.3f, 4.6f, 1.36f);
-        //batch.draw(applyButtonTexture, 5.55f, 0.3f, 4.6f, 1.36f);
-        drawApplyButton(batch, delta);
-        drawSpinButton(batch, delta);
+        turnsLeftDisplay.draw(batch);
+        patternDisplay.draw(batch);
+        buttonBoard.draw(batch, delta);
         batch.end();
-
-//        shapeRenderer.setProjectionMatrix(app.getViewport().getCamera().combined);
-//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//        shapeRenderer.setColor(Color.WHITE);
-//        shapeRenderer.rect(spinButton.x, spinButton.y, spinButton.width, spinButton.height);
-//        shapeRenderer.rect(potBounds.x, potBounds.y, potBounds.width, potBounds.height);
-//        shapeRenderer.end();
 
         batch.begin();
         slotMachine.draw(app, delta);
-        //batch.draw(Assets.I().getSlotMachineBorder(), 2.5f, 1.05f, 8.3f * 1.3f, 4.9f * 1.3f);
-//        for(int i = 0; i < symbolValueIcons.size(); i++) {
-//            batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
-//        }
+        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
         batch.end();
 
-        if(displayedScore < score) {
-            long diff = score - displayedScore;
-            displayedScore += (long) Math.ceil(diff * 0.1);
-            scoreDisplay.setScore(Math.toIntExact(displayedScore));
-        }
+        // ... rest of your code stays the same ...
+
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
         batch.begin();
-//        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 800);
         scoreDisplay.draw(batch);
-//        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 650f);
-//        bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
-//        bigFont.draw(batch, symbolValueText, 1275f, 675f);
-        app.getBatch().end();
-
-        if(displayedScore >= roundsManager.getCurrentTargetScore()) {
-            CreditManager.I().onRoundBeaten(roundsManager.getHandsLeft());
-        } else if(roundsManager.getHandsLeft() == 0) {
-            roundText.setText(bigFont, "You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");
-        }
+        batch.end();
     }
 
+
     private void handleInput() {
-        mouse.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        mouse.set(Gdx.input.getX(), Gdx.input.getY());
         app.getViewport().unproject(mouse);
 
         Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
 
-        boolean isHoveringNow = applyButton.contains(mouse.x, mouse.y);
-        hoverApplyJustEntered = !hoveringApply && isHoveringNow; // mouse entered
-        hoveringApply = isHoveringNow; // update state
+        buttonBoard.handleInput(mouse);
 
-        boolean isHoveringSpinNow = spinButton.contains(mouse.x, mouse.y);
-        hoverSpinJustEntered = !hoveringSpin && isHoveringSpinNow;
-        hoveringSpin = isHoveringSpinNow;
+        if (pressed && !wasPressed) {
+            if (buttonBoard.getApplyButton().contains(mouse.x, mouse.y)) buttonBoard.setApplyPressed(true);
+            if (buttonBoard.getSpinButton().contains(mouse.x, mouse.y)) buttonBoard.setSpinPressed(true);
 
-        if(pressed && !wasPressed) {
-            if(applyButton.contains(mouse.x, mouse.y)) applyButtonTexture = new TextureRegion(Assets.I().getApplyButtonPressed());
-            if(spinButton.contains(mouse.x, mouse.y)) spinButtonTexture = new TextureRegion(Assets.I().getSpinButtonPressed());
-
-            if(slotBounds.contains(mouse.x, mouse.y)) {
+            if (slotBounds.contains(mouse.x, mouse.y)) {
                 int col = (int)((mouse.x - slotBounds.x) / (slotMachine.getCellW() + slotMachine.getSpacingX()));
                 int row = (int)((mouse.y - slotBounds.y) / (slotMachine.getCellH() + slotMachine.getSpacingY()));
 
                 if (col >= 0 && col < slotMachine.getCols() &&
                     row >= 0 && row < slotMachine.getRows()) {
                     slotMachine.selectSymbolAt(col, row);
-                    updateSlotText();
+                    patternDisplay.setPattern(slotMachine.getScoreFormula());
                 }
             }
         }
 
-        if(!pressed && wasPressed) {
-            applyButtonTexture = new TextureRegion(Assets.I().getApplyButton());
-            spinButtonTexture = new TextureRegion(Assets.I().getSpinButton());
-            if(applyButton.contains(mouse.x, mouse.y)) onApplyButtonPressed();
-            if(spinButton.contains(mouse.x, mouse.y)) onSpinButtonPressed();
+        if (!pressed && wasPressed) {
+            buttonBoard.setApplyPressed(false);
+            buttonBoard.setSpinPressed(false);
+            if (buttonBoard.getApplyButton().contains(mouse.x, mouse.y)) onApplyButtonPressed();
+            if (buttonBoard.getSpinButton().contains(mouse.x, mouse.y)) onSpinButtonPressed();
         }
         slotMachine.hoveringAt(mouse);
         upgradeSticks.hoveringAt(mouse);
@@ -197,109 +225,143 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void onSpinButtonPressed() {
-        if(roundsManager.getSpinsLeft() == 0) return;
+        if (roundsManager.getSpinsLeft() == 0) return;
         slotMachine.spin();
         roundsManager.minusOneSpin();
-        updateSlotText();
+        turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
+        patternDisplay.setPattern("");
+
+        // Light shake impulse
+        lightIsShaking = true;
+        lightShakeStrength = Math.min(lightShakeStrength + 1.0f, 1.5f);
+
+        // Camera shake impulse (stronger)
+        triggerCameraShake(1.0f);
     }
 
     private void onApplyButtonPressed() {
-        if(roundsManager.getHandsLeft() == 0) return;
-        score += slotMachine.applySelection();
+        if (roundsManager.getAppliesLeft() == 0) return;
+        scoreDisplay.addToScore(slotMachine.applySelection());
         roundsManager.minusOneHand();
-        updateSlotText();
+        turnsLeftDisplay.setAppliesLeft(roundsManager.getAppliesLeft());
+        patternDisplay.setPattern("");
+
+        // Light shake impulse (smaller)
+        lightIsShaking = true;
+        lightShakeStrength = Math.min(lightShakeStrength + 0.5f, 1.5f);
+
+        // Optional: smaller camera bump
+        triggerCameraShake(0.5f);
     }
 
-    public void updateSlotText() {
-        Assets assetManager = Assets.I();
+    private void triggerCameraShake(float strengthMultiplier) {
+        Camera cam = app.getViewport().getCamera();
 
-        String[] parts = slotMachine.getScoreFormula().split(" x ");
-        scoreFormulaText.setText(bigFont, parts.length > 1 ? assetManager.colorBlue(parts[0])
-            + " x " + assetManager.colorRed(parts[1]) : "");
+        // Capture the *current* camera position as base each time you trigger a shake
+        baseCamX = cam.position.x;
+        baseCamY = cam.position.y;
 
-        String pattern = slotMachine.getPatternText();
-        int splitIndex = pattern.indexOf(" of a kind");
-        patternText.setText(bigFont, splitIndex == -1 ? "" : assetManager.colorRed(pattern.substring(0, splitIndex)) + pattern.substring(splitIndex));
-
-        StringBuilder sb = new StringBuilder();
-        Arrays.stream(Symbol.values()).forEach(symbol
-            -> sb.append(assetManager.colorBlue(SymbolManager.I().getSymbolValue(symbol)))
-            .append("$\n"));
-        symbolValueText.setText(bigFont, sb.toString());
+        cameraIsShaking = true;
+        cameraShakeTime = 0f;
+        cameraShakeMagnitude = 0.15f * strengthMultiplier;
     }
 
-    private void drawApplyButton(SpriteBatch batch, float delta) {
-        float x = 7.55f;
-        float y = 0.3f;
-        float w = 4.6f;
-        float h = 1.36f;
+    private void updateLightShake(float delta) {
+        if (!lightIsShaking) return;
 
-// start animation on entry
-        if (hoverApplyJustEntered) {
-            hoverAnimTime = 0f;
+        lightShakeTime += delta;
+
+        float baseDirection = 270f;
+
+        // Max angle swing at full lightShakeStrength
+        float maxAngle = 10f;
+
+        // How quickly “energy” decays per second
+        float strengthDecayPerSecond = 0.25f; // smaller = longer tail
+
+        // Oscillation speed (how fast it swings left/right)
+        float frequency = 6f;
+
+        // 1) Decay shake strength over time
+        lightShakeStrength -= strengthDecayPerSecond * delta;
+        if (lightShakeStrength <= 0f) {
+            lightShakeStrength = 0f;
+            lightIsShaking = false;
+            // Reset lights to their default pose
+            for (int i = 0; i < topLights.length; i++) {
+                ConeLight light = topLights[i];
+                if (light == null) continue;
+
+                float baseX = baseLightX[i];
+                float baseY = baseLightY[i];
+
+                light.setPosition(baseX, baseY);
+                light.setDirection(baseDirection);
+            }
+            return;
         }
 
-// play wiggle if animation active
-        float scale = 1f;
-        if (hoveringApply && hoverAnimTime < 0.25f) {
-            hoverAnimTime += delta;
+        // 2) Compute current angle amplitude based on remaining strength
+        float amplitude = maxAngle * lightShakeStrength;
 
-            // quick "pop" wiggle using sine ease-out
-            float t = hoverAnimTime / 0.25f;       // 0 → 1
-            float wiggle = (float) Math.sin(t * Math.PI * 3f) * (1f - t) * 0.01f;
+        // 3) Animate each light
+        for (int i = 0; i < topLights.length; i++) {
+            ConeLight light = topLights[i];
+            if (light == null) continue;
 
-            scale = 1f + wiggle;
+            float phaseOffset = i * 0.5f;
+
+            float angleOffset =
+                (float) Math.sin(lightShakeTime * frequency + phaseOffset) * amplitude;
+
+            // Horizontal sway
+            float swayRadius = 0.3f;
+            float offsetX =
+                (float) Math.sin(lightShakeTime * frequency + phaseOffset) * swayRadius * lightShakeStrength;
+
+            // Small vertical bob
+            float swayY = 0.1f;
+            float offsetY =
+                (float) Math.cos(lightShakeTime * frequency + phaseOffset) * swayY * lightShakeStrength;
+
+            float baseX = baseLightX[i];
+            float baseY = baseLightY[i];
+
+            light.setPosition(baseX + offsetX, baseY + offsetY);
+            light.setDirection(baseDirection + angleOffset);
         }
-
-// draw with scaling from center
-        float originX = w / 2f;
-        float originY = h / 2f;
-
-        batch.draw(applyButtonTexture,
-            x + w/2f - originX * scale,
-            y + h/2f - originY * scale,
-            originX, originY,
-            w, h,
-            scale, scale,
-            0);
-
     }
 
-    private void drawSpinButton(SpriteBatch batch, float delta) {
-        float x = 7.55f;
-        float y = 0.3f;
-        float w = 4.6f;
-        float h = 1.36f;
+    private void updateCameraShake(float delta) {
+        if (!cameraIsShaking) return;
 
-// start animation on entry
-        if (hoverSpinJustEntered) {
-            hoverAnimTime = 0f;
+        cameraShakeTime += delta;
+        float t = cameraShakeTime / cameraShakeDuration;
+
+        Camera cam = app.getViewport().getCamera();
+
+        if (t >= 1f) {
+            cameraIsShaking = false;
+            cam.position.set(baseCamX, baseCamY, cam.position.z);
+            cam.update();
+            return;
         }
 
-// play wiggle if animation active
-        float scale = 1f;
-        if (hoveringSpin && hoverAnimTime < 0.25f) {
-            hoverAnimTime += delta;
+        // Fade out over time (ease-out)
+        float fade = (1f - t);
+        fade *= fade; // (1 - t)^2 for smoother tail
 
-            // quick "pop" wiggle using sine ease-out
-            float t = hoverAnimTime / 0.25f;       // 0 → 1
-            float wiggle = (float) Math.sin(t * Math.PI * 3f) * (1f - t) * 0.025f;
+        // Stronger vertical shake, slight horizontal
+        float verticalFreq   = 18f;
+        float horizontalFreq = 11f;
 
-            scale = 1f + wiggle;
-        }
+        float yOffset = (float) Math.sin(t * (float) Math.PI * 2f * verticalFreq)
+            * cameraShakeMagnitude * fade;
 
-// draw with scaling from center
-        float originX = w / 2f;
-        float originY = h / 2f;
+        float xOffset = (float) Math.sin(t * (float) Math.PI * 2f * horizontalFreq + 0.5f)
+            * (cameraShakeMagnitude * 0.5f) * fade;
 
-        batch.draw(spinButtonTexture,
-            x + w/2f - originX * scale,
-            y + h/2f - originY * scale,
-            originX, originY,
-            w, h,
-            scale, scale,
-            0);
-
+        cam.position.set(baseCamX + xOffset, baseCamY + yOffset, cam.position.z);
+        cam.update();
     }
-
 }

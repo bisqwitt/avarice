@@ -1,7 +1,7 @@
 package com.avaricious.upgrades.pointAdditions;
 
 import com.avaricious.RoundsManager;
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.UpgradeRarity;
 
 import java.util.List;

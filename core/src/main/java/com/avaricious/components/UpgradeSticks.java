@@ -1,5 +1,6 @@
-package com.avaricious;
+package com.avaricious.components;
 
+import com.avaricious.Assets;
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradeRarity;
 import com.avaricious.upgrades.UpgradesManager;
@@ -8,9 +9,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class UpgradeSticks {
         }
     }
 
-    public void hoveringAt(Vector3 mouse) {
+    public void hoveringAt(Vector2 mouse) {
         List<Upgrade> upgrades = UpgradesManager.I().getUpgrades();
         ensureCapacity(upgrades.size());
 

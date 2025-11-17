@@ -1,6 +1,6 @@
 package com.avaricious.upgrades;
 
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.pointAdditions.PointAdditionUpgrade;
 import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
 import com.avaricious.upgrades.symbolValue.SymbolValueUpgrade;

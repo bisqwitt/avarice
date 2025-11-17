@@ -1,7 +1,7 @@
 package com.avaricious.upgrades.multAdditions;
 
 import com.avaricious.RoundsManager;
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.UpgradeRarity;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class OnLastHandMultAdditionUpgrade extends MultAdditionUpgrade {
 
     @Override
     public boolean condition(List<Symbol> selection, long count) {
-        return RoundsManager.I().getHandsLeft() == 1;
+        return RoundsManager.I().getAppliesLeft() == 1;
     }
 
     @Override

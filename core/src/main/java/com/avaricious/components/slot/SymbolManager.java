@@ -1,4 +1,4 @@
-package com.avaricious.slot;
+package com.avaricious.components.slot;
 
 import com.avaricious.upgrades.UpgradesManager;
 

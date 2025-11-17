@@ -1,6 +1,6 @@
 package com.avaricious.upgrades.multAdditions;
 
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradeRarity;
 

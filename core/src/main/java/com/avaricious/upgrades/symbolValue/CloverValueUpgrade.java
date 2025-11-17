@@ -1,6 +1,6 @@
 package com.avaricious.upgrades.symbolValue;
 
-import com.avaricious.slot.Symbol;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.UpgradeRarity;
 
 public class CloverValueUpgrade extends SymbolValueUpgrade {

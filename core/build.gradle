@@ -5,7 +5,9 @@ dependencies {
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   implementation "org.reflections:reflections:0.10.2"
+  implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   implementation "com.badlogicgames.box2dlights:box2dlights:1.5"
+  implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
 
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"

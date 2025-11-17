@@ -1,5 +1,6 @@
-package com.avaricious.slot;
+package com.avaricious.components.slot;
 
+import box2dLight.RayHandler;
 import com.avaricious.Assets;
 import com.avaricious.Main;
 import com.avaricious.upgrades.UpgradesManager;
@@ -7,7 +8,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.utils.Timer;
 
@@ -41,7 +42,7 @@ public class SlotMachine {
     private String scoreFormula = "";
     private String patternText = "";
 
-    public SlotMachine(float worldWidth, float worldHeight) {
+    public SlotMachine(float worldWidth, float worldHeight, RayHandler rayHandler) {
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 1.6f;
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
@@ -222,7 +223,7 @@ public class SlotMachine {
         updateDisplayTexts();
     }
 
-    public void hoveringAt(Vector3 mouse) {
+    public void hoveringAt(Vector2 mouse) {
         if(spinning) return;
         Rectangle bounds = getBounds();
         if (!bounds.contains(mouse.x, mouse.y)) {
