@@ -4,7 +4,6 @@ import com.avaricious.*;
 import com.avaricious.slot.SlotMachine;
 import com.avaricious.slot.Symbol;
 import com.avaricious.slot.SymbolManager;
-import com.avaricious.slot.pot.Pot;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -28,7 +27,8 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
-    private final Pot pot;
+    private final ScoreDisplay scoreDisplay;
+    private final UpgradeSticks upgradeSticks;
     private final RoundsManager roundsManager;
     private Long score = 0L;
     private Long displayedScore = 0L;
@@ -37,7 +37,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Texture slotMachineImg;
     private final Texture buttonBoard;
-    private final Texture scoreBorder;
+    private final Texture buttonsLeftDisplay;
     private TextureRegion applyButtonTexture;
     private TextureRegion spinButtonTexture;
 
@@ -66,7 +66,7 @@ public class SlotScreen extends ScreenAdapter {
         Collections.reverse(symbolValueIcons);
         slotMachineImg = Assets.I().getSlotMachineBorder();
         buttonBoard = Assets.I().getButtonBoard();
-        scoreBorder = Assets.I().getScoreBorder();
+        buttonsLeftDisplay = Assets.I().getButtonsLeftDisplay();
         applyButtonTexture = new TextureRegion(Assets.I().getApplyButton());
         spinButtonTexture = new TextureRegion(Assets.I().getSpinButton());
 
@@ -77,7 +77,8 @@ public class SlotScreen extends ScreenAdapter {
         applyButton = new Rectangle(8.05f, 0.6f, 2.15f, 0.95f);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
-        pot = new Pot(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
+        upgradeSticks = new UpgradeSticks();
+        scoreDisplay = new ScoreDisplay();
         roundsManager = RoundsManager.I();
     }
 
@@ -86,6 +87,7 @@ public class SlotScreen extends ScreenAdapter {
         roundsManager.nextRound();
         score = 0L;
         displayedScore = 0L;
+        scoreDisplay.setScore(0);
 
         roundText.setText(bigFont, "Round " + roundsManager.getCurrentRound() + ": Score " + roundsManager.getCurrentTargetScore() + " points");
         scoreText.setText(bigFont, "" + displayedScore, Assets.I().lightColor(), 400f, Align.right, true);
@@ -100,13 +102,14 @@ public class SlotScreen extends ScreenAdapter {
         handleInput();
 
         ScreenUtils.clear(0.396f, 0.137f, 0.141f, 1f);
-//        ScreenUtils.clear(0f, 0.349f, 0.204f, 1f);
-
+//        ScreenUtils.clear(0f, 0.349f, 0.204f, 1f)
         app.getViewport().apply();
         batch.setProjectionMatrix(app.getViewport().getCamera().combined);
         batch.begin();
+        upgradeSticks.draw(batch);
         batch.draw(slotMachineImg, 5.15f, 2.1f, 9.6f, 6f);
-        batch.draw(scoreBorder, 0.75f, 6.5f, 3.84f, 1.32f);
+        scoreDisplay.draw(batch);
+        batch.draw(buttonsLeftDisplay, 0.75f, 3.75f, 3.84f, 2.6f);
         batch.draw(buttonBoard, 7.55f, 0.3f, 4.6f, 1.36f);
         //batch.draw(applyButtonTexture, 5.55f, 0.3f, 4.6f, 1.36f);
         drawApplyButton(batch, delta);
@@ -127,30 +130,24 @@ public class SlotScreen extends ScreenAdapter {
 //            batch.draw(symbolValueIcons.get(i), slotBounds.x + slotBounds.width + 1f, slotBounds.y - 0.25f + (i*0.75f), 0.75f, 0.75f);
 //        }
         batch.end();
-        pot.draw(app, delta);
 
         if(displayedScore < score) {
             long diff = score - displayedScore;
             displayedScore += (long) Math.ceil(diff * 0.1);
-
-            scoreText.setText(bigFont, "" + displayedScore, Assets.I().lightColor(), 400f, Align.right, true);
+            scoreDisplay.setScore(Math.toIntExact(displayedScore));
         }
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
         batch.begin();
 //        bigFont.draw(batch, roundText, (app.getUiViewport().getWorldWidth() - roundText.width) / 2f, 800);
-        bigFont.draw(batch, scoreText, -35, 672);
+        scoreDisplay.draw(batch);
 //        bigFont.draw(batch, scoreFormulaText, 135f - scoreFormulaText.width / 2f, 650f);
 //        bigFont.draw(batch, patternText, (app.getUiViewport().getWorldWidth() - patternText.width) / 2f, 75f);
 //        bigFont.draw(batch, symbolValueText, 1275f, 675f);
-
-//        smallFont.draw(batch, "Hands: " + roundsManager.getHandsLeft().toString(), 45f, 350f);
-//        smallFont.draw(batch, "Spins: " + roundsManager.getSpinsLeft().toString(), 45f, 215f);
         app.getBatch().end();
 
         if(displayedScore >= roundsManager.getCurrentTargetScore()) {
             CreditManager.I().onRoundBeaten(roundsManager.getHandsLeft());
-            ScreenManager.I().setScreen(UpgradeSelectionScreen.class);
         } else if(roundsManager.getHandsLeft() == 0) {
             roundText.setText(bigFont, "You lost (Score needed: " + roundsManager.getCurrentTargetScore() + ")");
         }
@@ -194,7 +191,7 @@ public class SlotScreen extends ScreenAdapter {
             if(spinButton.contains(mouse.x, mouse.y)) onSpinButtonPressed();
         }
         slotMachine.hoveringAt(mouse);
-        pot.hoveringAt(mouse);
+        upgradeSticks.hoveringAt(mouse);
 
         wasPressed = pressed;
     }

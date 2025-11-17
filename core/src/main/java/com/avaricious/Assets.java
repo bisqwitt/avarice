@@ -38,13 +38,40 @@ public class Assets {
     public void load() {
         manager.load("SlotMachineBorder.png", Texture.class);
         manager.load("ScoreBorder.png", Texture.class);
+        manager.load("ButtonsLeftDisplay.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
+
+        manager.load("digital-numbers/unlit.png", Texture.class);
+        manager.load("digital-numbers/0.png", Texture.class);
+        manager.load("digital-numbers/1.png", Texture.class);
+        manager.load("digital-numbers/2.png", Texture.class);
+        manager.load("digital-numbers/3.png", Texture.class);
+        manager.load("digital-numbers/4.png", Texture.class);
+        manager.load("digital-numbers/5.png", Texture.class);
+        manager.load("digital-numbers/6.png", Texture.class);
+        manager.load("digital-numbers/7.png", Texture.class);
+        manager.load("digital-numbers/8.png", Texture.class);
+        manager.load("digital-numbers/9.png", Texture.class);
+
+        manager.load("sticks/uncommon-stick.png", Texture.class);
+        manager.load("sticks/common-stick.png", Texture.class);
+        manager.load("sticks/rare-stick.png", Texture.class);
+        manager.load("sticks/epic-stick.png", Texture.class);
+        manager.load("sticks/legendary-stick.png", Texture.class);
 
         manager.load("buttons/button-board.png", Texture.class);
         manager.load("buttons/apply-button.png", Texture.class);
         manager.load("buttons/apply-button-pressed.png", Texture.class);
         manager.load("buttons/spin-button.png", Texture.class);
         manager.load("buttons/spin-button-pressed.png", Texture.class);
+
+        manager.load("lemon.png", Texture.class);
+        manager.load("cherry.png", Texture.class);
+        manager.load("clover.png", Texture.class);
+        manager.load("bell.png", Texture.class);
+        manager.load("iron.png", Texture.class);
+        manager.load("diamond.png", Texture.class);
+        manager.load("seven.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -74,6 +101,13 @@ public class Assets {
     }
 
     public TextureRegion getBase(Symbol s) {
+        if(s == Symbol.LEMON) return new TextureRegion(manager.get("lemon.png", Texture.class));
+        if(s == Symbol.CHERRY) return new TextureRegion(manager.get("cherry.png", Texture.class));
+        if(s == Symbol.CLOVER) return new TextureRegion(manager.get("clover.png", Texture.class));
+        if(s == Symbol.BELL) return new TextureRegion(manager.get("bell.png", Texture.class));
+        if(s == Symbol.IRON) return new TextureRegion(manager.get("iron.png", Texture.class));
+        if(s == Symbol.DIAMOND) return new TextureRegion(manager.get("diamond.png", Texture.class));
+        if(s == Symbol.SEVEN) return new TextureRegion(manager.get("seven.png", Texture.class));
         return baseMap.get(s);
     }
 
@@ -87,6 +121,30 @@ public class Assets {
 
     public Texture getSlotMachineBorder() {
         return manager.get("SlotMachineBorder.png", Texture.class);
+    }
+
+    public Texture getButtonsLeftDisplay() {
+        return manager.get("ButtonsLeftDisplay.png", Texture.class);
+    }
+
+    public Texture getUncommonStick() {
+        return manager.get("sticks/uncommon-stick.png", Texture.class);
+    }
+
+    public Texture getCommonStick() {
+        return manager.get("sticks/common-stick.png", Texture.class);
+    }
+
+    public Texture getRareStick() {
+        return manager.get("sticks/rare-stick.png", Texture.class);
+    }
+
+    public Texture getEpicStick() {
+        return manager.get("sticks/epic-stick.png", Texture.class);
+    }
+
+    public Texture getLegendaryStick() {
+        return manager.get("sticks/legendary-stick.png", Texture.class);
     }
 
     public Texture getScoreBorder() {
@@ -139,6 +197,14 @@ public class Assets {
 
     public String colorRed(long l) {
         return colorRed(String.valueOf(l));
+    }
+
+    public Texture unlitNumber() {
+        return manager.get("digital-numbers/unlit.png", Texture.class);
+    }
+
+    public Texture getDigitalNumber(int number) {
+        return manager.get("digital-numbers/" + number + ".png", Texture.class);
     }
 
 }

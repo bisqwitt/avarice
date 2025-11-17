@@ -25,7 +25,6 @@ public class ScreenManager {
     private ScreenManager(Main app) {
         this.app = app;
         screens.put(SlotScreen.class, new SlotScreen(app));
-        screens.put(UpgradeSelectionScreen.class, new UpgradeSelectionScreen(app));
     }
 
     public void setScreen(Class<? extends ScreenAdapter> screenClass) {

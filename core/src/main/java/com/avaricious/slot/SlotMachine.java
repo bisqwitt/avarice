@@ -19,8 +19,8 @@ public class SlotMachine {
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.5f;
-    private final float cellH = 1.5f;
+    private final float cellW = 1.4f;
+    private final float cellH = 1.4f;
     private final float spacingX = 0.05f;
     private final float spacingY = 0.1f;
 
@@ -43,7 +43,7 @@ public class SlotMachine {
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 2f;
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 1.6f;
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
 
         // build visual cells
@@ -80,8 +80,8 @@ public class SlotMachine {
         cam.update();
 
         Rectangle area = getBounds(); // world-space
-        area.setY(area.y - 0.15f);
-        area.setHeight(area.height + 0.255f);
+        area.setY(area.y - 0.3f);
+        area.setHeight(area.height + 0.55f);
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 
