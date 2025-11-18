@@ -44,6 +44,7 @@ public class Assets {
         manager.load("ButtonsLeftDisplay.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
         manager.load("PatternDisplay.png", Texture.class);
+        manager.load("cable.png", Texture.class);
 
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/0.png", Texture.class);
@@ -137,6 +138,10 @@ public class Assets {
 
     public Texture getPatternDisplay() {
         return manager.get("PatternDisplay.png", Texture.class);
+    }
+
+    public Texture getCable() {
+        return manager.get("cable.png", Texture.class);
     }
 
     public Texture getUncommonStick() {

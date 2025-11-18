@@ -27,6 +27,7 @@ public class SlotScreen extends ScreenAdapter {
     private final Texture slotMachineScreen;
 
     private final ScoreDisplay scoreDisplay;
+    private final Texture cable;
     private final TurnsLeftDisplay turnsLeftDisplay;
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
@@ -53,6 +54,7 @@ public class SlotScreen extends ScreenAdapter {
         slotMachineScreen = Assets.I().getSlotMachineScreen();
 
         scoreDisplay = new ScoreDisplay();
+        cable = Assets.I().getCable();
         turnsLeftDisplay = new TurnsLeftDisplay();
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
@@ -102,6 +104,7 @@ public class SlotScreen extends ScreenAdapter {
         upgradeSticks.draw(batch);
         batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch);
+        batch.draw(cable, 0.18f, 5.8f, 14f / 25f, 34f / 25f);
         turnsLeftDisplay.draw(batch);
         patternDisplay.draw(batch, delta);
         buttonBoard.draw(batch, delta);
