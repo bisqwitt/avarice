@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.components.displays;
 
 import com.avaricious.Assets;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,11 +11,19 @@ public class PatternDisplay {
     private final Texture[] pointDigitalNumbers = new Texture[3];
     private final Texture[] multiDigitalNumbers = new Texture[3];
 
-    private long pointsValue = 0L;
-    private long multiValue = 0L;
+    private float pointsValue = 0L;
+    private float multiValue = 0L;
 
-    private long displayedPoints = 0L;
-    private long displayedMulti = 0L;
+    private float displayedPoints = 0L;
+    private float displayedMulti = 0L;
+
+    private float startPoints;
+    private float startMulti;
+    private float targetPoints;
+    private float targetMulti;
+
+    private float animTime = 0f;
+    private float animDuration = 0.5f; // 0.5 seconds, adjust as you like
 
     public PatternDisplay() {
         patternDisplayTexture = Assets.I().getPatternDisplay();
@@ -26,16 +34,28 @@ public class PatternDisplay {
     }
 
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, float delta) {
+        if (animTime < animDuration) {
+            animTime += delta;
+            float t = animTime / animDuration;
+            if (t > 1f) t = 1f;
+
+            // Optional: ease instead of linear
+            float eased = com.badlogic.gdx.math.Interpolation.sineOut.apply(t);
+
+            displayedPoints = com.badlogic.gdx.math.MathUtils.lerp(startPoints,  targetPoints, eased);
+            displayedMulti  = com.badlogic.gdx.math.MathUtils.lerp(startMulti,   targetMulti,  eased);
+        }
+
         if(displayedPoints != pointsValue) {
-            long diff = Math.abs(pointsValue - displayedPoints);
-            long change = (long) Math.ceil(diff * 0.025);
+            float diff = Math.abs(pointsValue - displayedPoints);
+            float change = (float) Math.ceil(diff * 0.025);
             displayedPoints = displayedPoints < pointsValue ? displayedPoints + change : displayedPoints - change;
             updateDisplayedPoints();
         }
         if(displayedMulti != multiValue) {
-            long diff = Math.abs(multiValue - displayedMulti);
-            long change = (long) Math.ceil(diff * 0.025);
+            float diff = Math.abs(multiValue - displayedMulti);
+            float change = (float) Math.ceil(diff * 0.025);
             displayedMulti = displayedMulti < multiValue ? displayedMulti + change : displayedMulti - change;
             updateDisplayedMulti();
         }
@@ -56,12 +76,18 @@ public class PatternDisplay {
         if(pattern.isEmpty()) {
             pointsValue = 0L;
             multiValue = 0L;
-            return;
+        } else {
+            String[] parts = pattern.split(" x ");
+            pointsValue = Long.parseLong(parts[0]);
+            multiValue = Long.parseLong(parts[1]);
         }
-        String[] parts = pattern.split(" x ");
 
-        pointsValue = Long.parseLong(parts[0]);
-        multiValue = Long.parseLong(parts[1]);
+        startPoints = displayedPoints;
+        startMulti = displayedMulti;
+        targetPoints = pointsValue;
+        targetMulti = multiValue;
+
+        animTime = 0f;
     }
 
     private void updateDisplayedPoints() {
@@ -71,9 +97,10 @@ public class PatternDisplay {
                 pointDigitalNumbers[i] = assetManager.unlitNumber();
             }
         } else {
-            this.pointDigitalNumbers[2] = assetManager.getDigitalNumber(displayedPoints % 10);
-            this.pointDigitalNumbers[1] = assetManager.getDigitalNumber((displayedPoints / 10) % 10);
-            this.pointDigitalNumbers[0] = assetManager.getDigitalNumber((displayedPoints / 100) % 10);
+            long asLong = (long) displayedPoints;
+            this.pointDigitalNumbers[2] = assetManager.getDigitalNumber(asLong % 10);
+            this.pointDigitalNumbers[1] = assetManager.getDigitalNumber((asLong / 10) % 10);
+            this.pointDigitalNumbers[0] = assetManager.getDigitalNumber((asLong / 100) % 10);
         }
     }
 
@@ -84,9 +111,10 @@ public class PatternDisplay {
                 multiDigitalNumbers[i] = Assets.I().unlitNumber();
             }
         } else {
-            this.multiDigitalNumbers[2] = assetManager.getDigitalNumber(displayedMulti % 10);
-            this.multiDigitalNumbers[1] = assetManager.getDigitalNumber((displayedMulti / 10) % 10);
-            this.multiDigitalNumbers[0] = assetManager.getDigitalNumber((displayedMulti / 100) % 10);
+            long asLong = (long) displayedMulti;
+            this.multiDigitalNumbers[2] = assetManager.getDigitalNumber(asLong % 10);
+            this.multiDigitalNumbers[1] = assetManager.getDigitalNumber((asLong / 10) % 10);
+            this.multiDigitalNumbers[0] = assetManager.getDigitalNumber((asLong / 100) % 10);
         }
     }
 }

@@ -16,13 +16,19 @@ public class ButtonBoard {
     private final Rectangle applyButton;
     private final Rectangle spinButton;
 
+    private final Runnable onApplyPressed;
+    private final Runnable onSpinPressed;
+
     private boolean hoveringApply = false;
     private boolean hoveringSpin = false;
     private boolean hoverApplyJustEntered = false;
     private boolean hoverSpinJustEntered = false;
     private float hoverAnimTime = 0f;
 
-    public ButtonBoard() {
+    public ButtonBoard(Runnable onApplyPressed, Runnable onSpinPressed) {
+        this.onApplyPressed = onApplyPressed;
+        this.onSpinPressed = onSpinPressed;
+
         Assets assetManager = Assets.I();
         buttonBoardTexture = assetManager.getButtonBoard();
         applyButtonTexture = new TextureRegion(assetManager.getApplyButton());
@@ -38,7 +44,7 @@ public class ButtonBoard {
         drawButton(batch, delta, "spin");
     }
 
-    public void handleInput(Vector2 mouse) {
+    public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed) {
         boolean isHoveringNow = applyButton.contains(mouse.x, mouse.y);
         hoverApplyJustEntered = !hoveringApply && isHoveringNow; // mouse entered
         hoveringApply = isHoveringNow; // update state
@@ -46,6 +52,16 @@ public class ButtonBoard {
         boolean isHoveringSpinNow = spinButton.contains(mouse.x, mouse.y);
         hoverSpinJustEntered = !hoveringSpin && isHoveringSpinNow;
         hoveringSpin = isHoveringSpinNow;
+
+        if(pressed && !wasPressed) {
+            if (applyButton.contains(mouse.x, mouse.y)) setApplyPressed(true);
+            if (spinButton.contains(mouse.x, mouse.y)) setSpinPressed(true);
+        }else if (!pressed && wasPressed) {
+            setApplyPressed(false);
+            setSpinPressed(false);
+            if (applyButton.contains(mouse.x, mouse.y)) onApplyPressed.run();
+            if (spinButton.contains(mouse.x, mouse.y)) onSpinPressed.run();
+        }
     }
 
     private void drawButton(SpriteBatch batch, float delta, String type) {

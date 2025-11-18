@@ -156,6 +156,8 @@ public class Reel {
 
                     // Move position back from preTarget to stopTarget
                     pos = lerp(preTarget, stopTarget, s);
+
+//                    if(Math.abs(pos - stopTarget) < 0.1f)
                 }
 
                 if (t >= 1f) {
@@ -238,7 +240,15 @@ public class Reel {
     }
 
     public void setOnSpinFinished(Runnable onSpinFinished) {
-        this.onSpinFinished = onSpinFinished;
+        if (this.onSpinFinished != null) {
+            Runnable previous = this.onSpinFinished;
+            this.onSpinFinished = () -> {
+                onSpinFinished.run();
+                previous.run();
+            };
+        } else {
+            this.onSpinFinished = onSpinFinished;
+        }
     }
 
     private static float clamp01(float x) { return x < 0 ? 0 : Math.min(x, 1); }
