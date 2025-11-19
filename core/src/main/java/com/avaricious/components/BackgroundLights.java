@@ -37,15 +37,15 @@ public class BackgroundLights {
             baseLightX[i] = x;
             baseLightY[i] = y;
 
-            topLights[i] = new ConeLight(
-                rayHandler,
-                120,
-                Assets.I().lightColor(),
-                distance,
-                x, y,
-                direction,
-                coneDegrees
-            );
+//            topLights[i] = new ConeLight(
+//                rayHandler,
+//                120,
+//                Assets.I().lightColor(),
+//                distance,
+//                x, y,
+//                direction,
+//                coneDegrees
+//            );
         }
     }
 

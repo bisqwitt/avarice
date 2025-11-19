@@ -11,6 +11,7 @@ import com.avaricious.components.slot.SlotMachine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -25,6 +26,8 @@ public class SlotScreen extends ScreenAdapter {
     private final SlotMachine slotMachine;
     private final Texture slotMachineBorder;
     private final Texture slotMachineScreen;
+    private final Texture cable;
+    private final Texture coinSlot;
 
     private final ScoreDisplay scoreDisplay;
     private final TurnsLeftDisplay turnsLeftDisplay;
@@ -45,12 +48,16 @@ public class SlotScreen extends ScreenAdapter {
     public SlotScreen(Main app) {
         this.app = app;
         this.world = new World(new Vector2(0, 0), true);
+//        RayHandler.setGammaCorrection(true);
+//        RayHandler.useDiffuseLight(true);
         rayHandler = new RayHandler(world);
 
         background = new SmokeBackground();
         backgroundLights = new BackgroundLights(rayHandler);
         slotMachineBorder = Assets.I().getSlotMachineBorder();
         slotMachineScreen = Assets.I().getSlotMachineScreen();
+        cable = Assets.I().getCable();
+        coinSlot = Assets.I().getCoinSlot();
 
         scoreDisplay = new ScoreDisplay();
         turnsLeftDisplay = new TurnsLeftDisplay();
@@ -71,7 +78,7 @@ public class SlotScreen extends ScreenAdapter {
         scoreDisplay.resetScore();
         turnsLeftDisplay.setAppliesLeft(roundsManager.getAppliesLeft());
         turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
-        rayHandler.setAmbientLight(0.7f);
+        rayHandler.setAmbientLight(1f);
 
         slotMachine.clearSelection();
         slotMachine.spin();
@@ -102,14 +109,13 @@ public class SlotScreen extends ScreenAdapter {
         upgradeSticks.draw(batch);
         batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch);
+        batch.draw(cable, 0.18f, 5.8f, 14f / 25f, 34f / 25f);
         turnsLeftDisplay.draw(batch);
         patternDisplay.draw(batch, delta);
         buttonBoard.draw(batch, delta);
-        batch.end();
-
-        batch.begin();
         slotMachine.draw(app, delta);
         batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
+        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
         batch.end();
 
         app.getUiViewport().apply();
