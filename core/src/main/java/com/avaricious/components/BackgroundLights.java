@@ -6,6 +6,8 @@ import com.avaricious.Assets;
 
 public class BackgroundLights {
 
+    private final RayHandler rayHandler;
+
     private final ConeLight[] topLights = new ConeLight[5];
     private float[] baseLightX;
     private float[] baseLightY;
@@ -15,24 +17,26 @@ public class BackgroundLights {
     private float lightShakeStrength;
 
     public BackgroundLights(RayHandler rayHandler) {
+        this.rayHandler = rayHandler;
+
         lightIsShaking = false;
         lightShakeTime = 0f;
 
         float startX = 2f;
         float stepX  = 3f;
         float y      = 11f;
-        float distance = 13f;
+        float distance = 14f;
         float direction = 270f;
-        float coneDegrees = 15f;
+        float coneDegrees = 20f;
 
         baseLightX = new float[topLights.length];
         baseLightY = new float[topLights.length];
 
-//        for (int i = 0; i < topLights.length; i++) {
-//            float x = startX + i * stepX;
-//            baseLightX[i] = x;
-//            baseLightY[i] = y;
-//
+        for (int i = 0; i < topLights.length; i++) {
+            float x = startX + i * stepX;
+            baseLightX[i] = x;
+            baseLightY[i] = y;
+
 //            topLights[i] = new ConeLight(
 //                rayHandler,
 //                120,
@@ -42,14 +46,13 @@ public class BackgroundLights {
 //                direction,
 //                coneDegrees
 //            );
-//        }
+        }
     }
 
     public void triggerLightShake(float strength) {
         lightIsShaking = true;
         lightShakeStrength = strength;
     }
-
     public void render(float delta) {
         if (!lightIsShaking) return;
 

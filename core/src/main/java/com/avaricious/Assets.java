@@ -45,6 +45,7 @@ public class Assets {
         manager.load("base-poker-chip.png", Texture.class);
         manager.load("PatternDisplay.png", Texture.class);
         manager.load("cable.png", Texture.class);
+        manager.load("CoinSlot.png", Texture.class);
 
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/0.png", Texture.class);
@@ -106,13 +107,13 @@ public class Assets {
     }
 
     public TextureRegion getBase(Symbol s) {
-        if(s == Symbol.LEMON) return new TextureRegion(manager.get("lemon.png", Texture.class));
-        if(s == Symbol.CHERRY) return new TextureRegion(manager.get("cherry.png", Texture.class));
-        if(s == Symbol.CLOVER) return new TextureRegion(manager.get("clover.png", Texture.class));
-        if(s == Symbol.BELL) return new TextureRegion(manager.get("bell.png", Texture.class));
-        if(s == Symbol.IRON) return new TextureRegion(manager.get("iron.png", Texture.class));
-        if(s == Symbol.DIAMOND) return new TextureRegion(manager.get("diamond.png", Texture.class));
-        if(s == Symbol.SEVEN) return new TextureRegion(manager.get("seven.png", Texture.class));
+//        if(s == Symbol.LEMON) return new TextureRegion(manager.get("lemon.png", Texture.class));
+//        if(s == Symbol.CHERRY) return new TextureRegion(manager.get("cherry.png", Texture.class));
+//        if(s == Symbol.CLOVER) return new TextureRegion(manager.get("clover.png", Texture.class));
+//        if(s == Symbol.BELL) return new TextureRegion(manager.get("bell.png", Texture.class));
+//        if(s == Symbol.IRON) return new TextureRegion(manager.get("iron.png", Texture.class));
+//        if(s == Symbol.DIAMOND) return new TextureRegion(manager.get("diamond.png", Texture.class));
+//        if(s == Symbol.SEVEN) return new TextureRegion(manager.get("seven.png", Texture.class));
         return baseMap.get(s);
     }
 
@@ -122,6 +123,10 @@ public class Assets {
 
     public Texture getPokerChip() {
         return manager.get("base-poker-chip.png", Texture.class);
+    }
+
+    public Texture getCoinSlot() {
+        return manager.get("CoinSlot.png", Texture.class);
     }
 
     public Texture getSlotMachineBorder() {
