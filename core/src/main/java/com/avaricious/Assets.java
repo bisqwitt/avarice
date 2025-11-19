@@ -46,6 +46,7 @@ public class Assets {
         manager.load("PatternDisplay.png", Texture.class);
         manager.load("cable.png", Texture.class);
         manager.load("CoinSlot.png", Texture.class);
+        manager.load("white.png", Texture.class);
 
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/0.png", Texture.class);
@@ -119,6 +120,10 @@ public class Assets {
 
     public Animation<TextureAtlas.AtlasRegion> getBorderAnimation(Symbol s) {
         return borderMap.get(s);
+    }
+
+    public Texture getWhiteTexture() {
+        return manager.get("white.png", Texture.class);
     }
 
     public Texture getPokerChip() {

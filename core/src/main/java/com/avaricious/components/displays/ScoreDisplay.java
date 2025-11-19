@@ -12,6 +12,8 @@ public class ScoreDisplay {
     private long score;
     private long displayedScore;
 
+    private float hoverTime = 0f;
+
     public ScoreDisplay() {
         scoreDisplayTexture = Assets.I().getScoreBorder();
         for (int i = 0; i < digitalNumbers.length; i++) {
@@ -19,17 +21,23 @@ public class ScoreDisplay {
         }
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, float delta) {
         if(displayedScore < score) {
             long diff = score - displayedScore;
             displayedScore += (long) Math.ceil(diff * 0.025);
             updateDigitalNumbers(displayedScore);
         }
 
-        batch.draw(scoreDisplayTexture, 0.75f, 6.5f, 3.84f, 1.32f);
+        hoverTime += delta;
+        float hoverOffset = (float) Math.sin(hoverTime * 1.5f/*hoverTime*/) * 0.03f/*hoverStrength*/;
+
+        float baseY = 6.775f;
+        float numberBaseY = 7.21f + hoverOffset;
+
+        batch.draw(scoreDisplayTexture, 0.75f, baseY, 3.84f, 1.32f);
         batch.setColor(Assets.I().lightColor());
-        for(int i = 0; i < digitalNumbers.length; i++) {
-            batch.draw(digitalNumbers[i], 1.325f + (i * 0.4f), 6.935f, 0.32f, 0.56f);
+        for (int i = 0; i < digitalNumbers.length; i++) {
+            batch.draw(digitalNumbers[i], 1.325f + (i * 0.4f), numberBaseY, 0.32f, 0.56f);
         }
         batch.setColor(1f, 1f, 1f, 1f);
     }

@@ -11,6 +11,8 @@ public class TurnsLeftDisplay {
     private final Texture[] appliesLeft = new Texture[2];
     private final Texture[] spinsLeft = new Texture[2];
 
+    private float hoverTime = 0f;
+
     public TurnsLeftDisplay() {
         turnsLeftTexture = Assets.I().getButtonsLeftDisplay();
         for(int i = 0; i < 2; i++) {
@@ -19,12 +21,19 @@ public class TurnsLeftDisplay {
         }
     }
 
-    public void draw(SpriteBatch batch) {
-        batch.draw(turnsLeftTexture, 0.75f, 2f, 3.84f, 2.6f);
+    public void draw(SpriteBatch batch, float delta) {
+        hoverTime += delta;
+        float hoverOffset = (float) Math.sin(hoverTime * 1.5f/*hoverTime*/) * 0.03f/*hoverStrength*/;
+
+        float baseY = 2.275f + hoverOffset;
+        float applyNumberBaseY = 3.915f + hoverOffset;
+        float spinNumberBaseY = 2.915f + hoverOffset;
+
+        batch.draw(turnsLeftTexture, 0.75f, baseY, 3.84f, 2.6f);
         batch.setColor(Assets.I().lightColor());
         for(int i = 0; i < 2; i++) {
-            batch.draw(appliesLeft[i], 3.475f + (i * 0.35f), 3.64f, 8 / 30f, 14 / 30f);
-            batch.draw(spinsLeft[i], 3.475f + (i * 0.35f), 2.64f, 8 / 30f, 14 / 30f);
+            batch.draw(appliesLeft[i], 3.475f + (i * 0.35f), applyNumberBaseY, 8 / 30f, 14 / 30f);
+            batch.draw(spinsLeft[i], 3.475f + (i * 0.35f), spinNumberBaseY, 8 / 30f, 14 / 30f);
         }
         batch.setColor(1f, 1f, 1f, 1f);
     }

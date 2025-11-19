@@ -30,7 +30,6 @@ public class SlotScreen extends ScreenAdapter {
     private final Texture coinSlot;
 
     private final ScoreDisplay scoreDisplay;
-    private final Texture cable;
     private final TurnsLeftDisplay turnsLeftDisplay;
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
@@ -39,7 +38,7 @@ public class SlotScreen extends ScreenAdapter {
     private final CameraShaker cameraShaker;
     private final World world;
     private final RayHandler rayHandler;
-    private final SmokeBackground background;
+    private final WarpBackground background;
     private final BackgroundLights backgroundLights;
 
     private final RoundsManager roundsManager;
@@ -53,7 +52,7 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.useDiffuseLight(true);
         rayHandler = new RayHandler(world);
 
-        background = new SmokeBackground();
+        background = new WarpBackground();
         backgroundLights = new BackgroundLights(rayHandler);
         slotMachineBorder = Assets.I().getSlotMachineBorder();
         slotMachineScreen = Assets.I().getSlotMachineScreen();
@@ -61,7 +60,6 @@ public class SlotScreen extends ScreenAdapter {
         coinSlot = Assets.I().getCoinSlot();
 
         scoreDisplay = new ScoreDisplay();
-        cable = Assets.I().getCable();
         turnsLeftDisplay = new TurnsLeftDisplay();
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
@@ -90,7 +88,7 @@ public class SlotScreen extends ScreenAdapter {
     public void render(float delta) {
         SpriteBatch batch = app.getBatch();
         handleInput();
-        background.render(delta);
+        background.render(batch, delta);
         app.getViewport().apply();
 
         backgroundLights.render(delta);
@@ -110,21 +108,22 @@ public class SlotScreen extends ScreenAdapter {
         batch.begin();
         upgradeSticks.draw(batch);
         batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
-        scoreDisplay.draw(batch);
-        batch.draw(cable, 0.18f, 5.8f, 14f / 25f, 34f / 25f);
-        turnsLeftDisplay.draw(batch);
+        scoreDisplay.draw(batch, delta);
+//        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
+        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
         buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
+
+//        batch.end();
+//        background.renderOnTexture(batch, delta, slotMachineBorder, new Rectangle(5.15f, 2.1f, 9.6f, 6f));
         batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
+//        batch.begin();
         batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
         batch.end();
 
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
-        batch.begin();
-        scoreDisplay.draw(batch);
-        batch.end();
     }
 
 
@@ -163,7 +162,7 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.setPattern("");
 
         backgroundLights.triggerLightShake(1f);
-        cameraShaker.trigger(1.0f);
+        cameraShaker.trigger(3f);
     }
 
     private void onApplyButtonPressed() {
@@ -174,6 +173,6 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.setPattern("");
 
         backgroundLights.triggerLightShake(1f);
-        cameraShaker.trigger(1f);
+        cameraShaker.trigger(3f);
     }
 }

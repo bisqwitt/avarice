@@ -25,6 +25,8 @@ public class PatternDisplay {
     private float animTime = 0f;
     private float animDuration = 0.5f; // 0.5 seconds, adjust as you like
 
+    private float hoverTime = 0f;
+
     public PatternDisplay() {
         patternDisplayTexture = Assets.I().getPatternDisplay();
         for(int i = 0; i < 3; i++) {
@@ -35,6 +37,44 @@ public class PatternDisplay {
 
 
     public void draw(SpriteBatch batch, float delta) {
+        updateDisplayedNumbers(delta);
+
+        hoverTime += delta;
+        float hoverOffset = (float) Math.sin(hoverTime * 1.5f/*hoverTime*/) * 0.03f/*hoverStrength*/;
+        float baseY = 5.025f;
+        float numberBaseY = 5.675f + hoverOffset;
+
+        batch.draw(patternDisplayTexture, 0.75f, baseY, 3.84f, 1.6f);
+        for(int i = 0; i < 3; i++) {
+            batch.setColor(Assets.I().colorBlue());
+            batch.draw(pointDigitalNumbers[i],1.21f + (i * 0.35f), numberBaseY, 8 / 30f, 14 / 30f);
+        }
+        for(int i = 0; i < 3; i++) {
+            batch.setColor(Assets.I().colorRed());
+            batch.draw(multiDigitalNumbers[i],3.17f + (i * 0.35f), numberBaseY, 8 / 30f, 14 / 30f);
+        }
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    public void setPattern(String pattern) {
+        if(pattern.isEmpty()) {
+            pointsValue = 0L;
+            multiValue = 0L;
+        } else {
+            String[] parts = pattern.split(" x ");
+            pointsValue = Long.parseLong(parts[0]);
+            multiValue = Long.parseLong(parts[1]);
+        }
+
+        startPoints = displayedPoints;
+        startMulti = displayedMulti;
+        targetPoints = pointsValue;
+        targetMulti = multiValue;
+
+        animTime = 0f;
+    }
+
+    private void updateDisplayedNumbers(float delta) {
         if (animTime < animDuration) {
             animTime += delta;
             float t = animTime / animDuration;
@@ -59,35 +99,6 @@ public class PatternDisplay {
             displayedMulti = displayedMulti < multiValue ? displayedMulti + change : displayedMulti - change;
             updateDisplayedMulti();
         }
-
-        batch.draw(patternDisplayTexture, 0.75f, 4.75f, 3.84f, 1.6f);
-        for(int i = 0; i < 3; i++) {
-            batch.setColor(Assets.I().colorBlue());
-            batch.draw(pointDigitalNumbers[i],1.21f + (i * 0.35f), 5.4f, 8 / 30f, 14 / 30f);
-        }
-        for(int i = 0; i < 3; i++) {
-            batch.setColor(Assets.I().colorRed());
-            batch.draw(multiDigitalNumbers[i],3.17f + (i * 0.35f), 5.4f, 8 / 30f, 14 / 30f);
-        }
-        batch.setColor(1f, 1f, 1f, 1f);
-    }
-
-    public void setPattern(String pattern) {
-        if(pattern.isEmpty()) {
-            pointsValue = 0L;
-            multiValue = 0L;
-        } else {
-            String[] parts = pattern.split(" x ");
-            pointsValue = Long.parseLong(parts[0]);
-            multiValue = Long.parseLong(parts[1]);
-        }
-
-        startPoints = displayedPoints;
-        startMulti = displayedMulti;
-        targetPoints = pointsValue;
-        targetMulti = multiValue;
-
-        animTime = 0f;
     }
 
     private void updateDisplayedPoints() {

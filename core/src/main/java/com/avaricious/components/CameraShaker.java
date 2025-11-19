@@ -9,7 +9,6 @@ public class CameraShaker {
 
     private boolean cameraIsShaking = false;
     private float cameraShakeTime = 0f;
-    private float cameraShakeDuration = 0.45f;  // total time of cam shake
     private float cameraShakeMagnitude = 0.15f; // base magnitude in world units
     private float baseCamX;
     private float baseCamY;
@@ -21,7 +20,6 @@ public class CameraShaker {
         baseCamY = cam.position.y;
         cameraIsShaking = false;
         cameraShakeTime = 0f;
-        cameraShakeMagnitude = 0.15f;
     }
 
     public void trigger(float strengthMultiplier) {
@@ -40,6 +38,8 @@ public class CameraShaker {
         if (!cameraIsShaking) return;
 
         cameraShakeTime += delta;
+        // total time of cam shake
+        float cameraShakeDuration = 0.45f;
         float t = cameraShakeTime / cameraShakeDuration;
 
         Camera cam = app.getViewport().getCamera();
@@ -56,8 +56,8 @@ public class CameraShaker {
         fade *= fade; // (1 - t)^2 for smoother tail
 
         // Stronger vertical shake, slight horizontal
-        float verticalFreq   = 18f;
-        float horizontalFreq = 11f;
+        float verticalFreq   = 8f;
+        float horizontalFreq = 18f;
 
         float yOffset = (float) Math.sin(t * (float) Math.PI * 2f * verticalFreq)
             * cameraShakeMagnitude * fade;
