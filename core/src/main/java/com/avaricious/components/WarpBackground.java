@@ -29,7 +29,7 @@ public class WarpBackground {
     }
 
     public void render(SpriteBatch batch, float delta) {
-        time += delta;
+        time += delta / 2;
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -37,11 +37,6 @@ public class WarpBackground {
         batch.begin();
 
         shader.setUniformf("u_time", time);
-
-        // Example: 64 blocks across screen → pixelSize = 1/64
-        float blocks = 192f;
-        float pixelSize = 1.0f / blocks;
-        shader.setUniformf("u_pixelSize", pixelSize);
 
         // Draw full-screen quad / texture
         batch.draw(whiteTexture,
@@ -51,28 +46,4 @@ public class WarpBackground {
         batch.end();
         batch.setShader(null);
     }
-
-//    public void renderOnTexture(SpriteBatch batch, float delta, Texture texture, Rectangle rectangle) {
-//        time += delta;
-//
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//
-//        batch.setShader(shader);
-//        batch.begin();
-//
-//        shader.setUniformf("u_time", time);
-//
-//        // Example: 64 blocks across screen → pixelSize = 1/64
-//        float blocks = 176f;
-//        float pixelSize = 1.0f / blocks;
-//        shader.setUniformf("u_pixelSize", pixelSize);
-//
-//        // Draw full-screen quad / texture
-//        batch.draw(texture,
-//            rectangle.x, rectangle.y,
-//            rectangle.width, rectangle.height);
-//
-//        batch.end();
-//        batch.setShader(null);
-//    }
 }

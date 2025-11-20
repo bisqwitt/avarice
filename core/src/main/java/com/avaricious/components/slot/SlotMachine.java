@@ -81,8 +81,8 @@ public class SlotMachine {
         cam.update();
 
         Rectangle area = getBounds(); // world-space
-        area.setY(area.y - 0.3f);
-        area.setHeight(area.height + 0.55f);
+        area.setY(area.y - 0.15f);
+        area.setHeight(area.height);
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 

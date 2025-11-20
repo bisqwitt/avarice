@@ -48,6 +48,14 @@ public class Assets {
         manager.load("CoinSlot.png", Texture.class);
         manager.load("white.png", Texture.class);
 
+        manager.load("symbolShadows/lemon-shadow.png", Texture.class);
+        manager.load("symbolShadows/cherry-shadow.png", Texture.class);
+        manager.load("symbolShadows/clover-shadow.png", Texture.class);
+        manager.load("symbolShadows/bell-shadow.png", Texture.class);
+        manager.load("symbolShadows/iron-shadow.png", Texture.class);
+        manager.load("symbolShadows/diamond-shadow.png", Texture.class);
+        manager.load("symbolShadows/seven-shadow.png", Texture.class);
+
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/0.png", Texture.class);
         manager.load("digital-numbers/1.png", Texture.class);
@@ -124,6 +132,33 @@ public class Assets {
 
     public Texture getWhiteTexture() {
         return manager.get("white.png", Texture.class);
+    }
+
+    public TextureRegion getSymbolShadow(Symbol symbol) {
+        switch (symbol) {
+            case LEMON -> {
+                return new TextureRegion(manager.get("symbolShadows/lemon-shadow.png", Texture.class));
+            }
+            case CHERRY -> {
+                return new TextureRegion(manager.get("symbolShadows/cherry-shadow.png", Texture.class));
+            }
+            case CLOVER -> {
+                return new TextureRegion(manager.get("symbolShadows/clover-shadow.png", Texture.class));
+            }
+            case BELL -> {
+                return new TextureRegion(manager.get("symbolShadows/bell-shadow.png", Texture.class));
+            }
+            case IRON -> {
+                return new TextureRegion(manager.get("symbolShadows/iron-shadow.png", Texture.class));
+            }
+            case DIAMOND -> {
+                return new TextureRegion(manager.get("symbolShadows/diamond-shadow.png", Texture.class));
+            }
+            case SEVEN -> {
+                return new TextureRegion(manager.get("symbolShadows/seven-shadow.png", Texture.class));
+            }
+        }
+        return null;
     }
 
     public Texture getPokerChip() {
