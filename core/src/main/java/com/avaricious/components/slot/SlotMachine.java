@@ -20,8 +20,8 @@ public class SlotMachine {
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.4f;
-    private final float cellH = 1.4f;
+    private final float cellW = 1.3f;
+    private final float cellH = 1.3f;
     private final float spacingX = 0.05f;
     private final float spacingY = 0.1f;
 
@@ -44,8 +44,8 @@ public class SlotMachine {
 
     public SlotMachine(float worldWidth, float worldHeight, RayHandler rayHandler) {
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 1.6f;
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.75f;
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 2.25f;
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.5f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
@@ -65,7 +65,10 @@ public class SlotMachine {
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
         }
-        reels.get(reels.size() -1).setOnSpinFinished(() -> spinning = false);
+        reels.get(reels.size() -1).setOnSpinFinished(() -> {
+            spinning = false;
+            checkResult();
+        });
     }
 
     // --- drawing ---
@@ -140,6 +143,11 @@ public class SlotMachine {
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
+                float shadowW = drawW * 1.1f;
+                float shadowH = drawH * 1.1f;
+                float shadowX = drawX - (shadowW - cellW) / 2f;
+                float shadowY = drawY - (shadowH - cellH) / 2f;
+
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
                     ? grid[c][k].getFrame(sym, selected, delta)
@@ -147,6 +155,15 @@ public class SlotMachine {
 
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
+
+                batch.setColor(0f, 0f, 0f, 0.5f);
+                batch.draw(
+                    Assets.I().getSymbolShadow(sym),
+                    shadowX + 0.05f, shadowY - 0.05f,
+                    shadowW / 2f, shadowH / 2f,
+                    shadowW, shadowH,
+                    1f, 1f, rotation);
+                batch.setColor(1f, 1f, 1f, 1f);
 
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
@@ -267,6 +284,19 @@ public class SlotMachine {
             + " x " + (numOfAKind * selection.size() + UpgradesManager.I().multAdditions(selection, numOfAKind));
 
         patternText = (selection.size() + " x " + numOfAKind) + " of a kind";
+    }
+
+    private void checkResult() {
+
+        Symbol[][] symbolMap = new Symbol[5][3];
+
+        for(int i = 0; i < reels.size(); i++) {
+            for (int row = 0; row < 3; row++) {
+                symbolMap[i][row] = reels.get(i).symbolAtRow(row);
+            }
+        }
+
+        List<Match> matches = PatternFinder.findMatches(symbolMap);
     }
 
     private long calcScore() {

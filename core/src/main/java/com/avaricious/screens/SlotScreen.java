@@ -106,16 +106,16 @@ public class SlotScreen extends ScreenAdapter {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        upgradeSticks.draw(batch);
-        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
+//        upgradeSticks.draw(batch);
+//        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
-        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
-        turnsLeftDisplay.draw(batch, delta);
-        patternDisplay.draw(batch, delta);
-        buttonBoard.draw(batch, delta);
+//        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
+//        turnsLeftDisplay.draw(batch, delta);
+//        patternDisplay.draw(batch, delta);
+//        buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
-        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
-        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
+//        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
+//        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
         batch.end();
 
         app.getUiViewport().apply();

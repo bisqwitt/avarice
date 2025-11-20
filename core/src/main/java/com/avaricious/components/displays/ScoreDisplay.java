@@ -32,12 +32,12 @@ public class ScoreDisplay {
         float hoverOffset = (float) Math.sin(hoverTime * 1.5f/*hoverTime*/) * 0.03f/*hoverStrength*/;
 
         float baseY = 6.775f;
-        float numberBaseY = 7.21f + hoverOffset;
+        float numberBaseY = 7.5f + hoverOffset;
 
-        batch.draw(scoreDisplayTexture, 0.75f, baseY, 3.84f, 1.32f);
+//        batch.draw(scoreDisplayTexture, 0.75f, baseY, 3.84f, 1.32f);
         batch.setColor(Assets.I().lightColor());
         for (int i = 0; i < digitalNumbers.length; i++) {
-            batch.draw(digitalNumbers[i], 1.325f + (i * 0.4f), numberBaseY, 0.32f, 0.56f);
+            batch.draw(digitalNumbers[i], 8.175f + (i * 0.6f), numberBaseY, 0.32f * 1.5f, 0.56f * 1.5f);
         }
         batch.setColor(1f, 1f, 1f, 1f);
     }
