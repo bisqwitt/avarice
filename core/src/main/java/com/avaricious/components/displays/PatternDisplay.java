@@ -19,8 +19,6 @@ public class PatternDisplay {
 
     private float startPoints;
     private float startMulti;
-    private float targetPoints;
-    private float targetMulti;
 
     private float animTime = 0f;
     private float animDuration = 0.5f; // 0.5 seconds, adjust as you like
@@ -30,8 +28,8 @@ public class PatternDisplay {
     public PatternDisplay() {
         patternDisplayTexture = Assets.I().getPatternDisplay();
         for(int i = 0; i < 3; i++) {
-            pointDigitalNumbers[i] = Assets.I().unlitNumber();
-            multiDigitalNumbers[i] = Assets.I().unlitNumber();
+            pointDigitalNumbers[i] = Assets.I().getDigitalNumber(0);
+            multiDigitalNumbers[i] = Assets.I().getDigitalNumber(0);
         }
     }
 
@@ -44,7 +42,7 @@ public class PatternDisplay {
         float baseY = 5.025f;
         float numberBaseY = 5.675f + hoverOffset;
 
-        batch.draw(patternDisplayTexture, 0.75f, baseY, 3.84f, 1.6f);
+//        batch.draw(patternDisplayTexture, 0.75f, baseY, 3.84f, 1.6f);
         for(int i = 0; i < 3; i++) {
             batch.setColor(Assets.I().colorBlue());
             batch.draw(pointDigitalNumbers[i],1.21f + (i * 0.35f), numberBaseY, 8 / 30f, 14 / 30f);
@@ -68,10 +66,18 @@ public class PatternDisplay {
 
         startPoints = displayedPoints;
         startMulti = displayedMulti;
-        targetPoints = pointsValue;
-        targetMulti = multiValue;
 
         animTime = 0f;
+    }
+
+    public void addPoints(float points) {
+        pointsValue += points;
+        startPoints = displayedPoints;
+    }
+
+    public void addMulti(float multi) {
+        multiValue += multi;
+        startMulti = displayedMulti;
     }
 
     private void updateDisplayedNumbers(float delta) {
@@ -83,8 +89,8 @@ public class PatternDisplay {
             // Optional: ease instead of linear
             float eased = com.badlogic.gdx.math.Interpolation.sineOut.apply(t);
 
-            displayedPoints = com.badlogic.gdx.math.MathUtils.lerp(startPoints,  targetPoints, eased);
-            displayedMulti  = com.badlogic.gdx.math.MathUtils.lerp(startMulti,   targetMulti,  eased);
+            displayedPoints = com.badlogic.gdx.math.MathUtils.lerp(startPoints,  pointsValue, eased);
+            displayedMulti  = com.badlogic.gdx.math.MathUtils.lerp(startMulti,   multiValue,  eased);
         }
 
         if(displayedPoints != pointsValue) {

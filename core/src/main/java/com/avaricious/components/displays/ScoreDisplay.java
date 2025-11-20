@@ -37,7 +37,7 @@ public class ScoreDisplay {
 //        batch.draw(scoreDisplayTexture, 0.75f, baseY, 3.84f, 1.32f);
         batch.setColor(Assets.I().lightColor());
         for (int i = 0; i < digitalNumbers.length; i++) {
-            batch.draw(digitalNumbers[i], 8.175f + (i * 0.6f), numberBaseY, 0.32f * 1.5f, 0.56f * 1.5f);
+            batch.draw(digitalNumbers[i], 1.175f + (i * 0.6f), numberBaseY, 0.32f * 1.5f, 0.56f * 1.5f);
         }
         batch.setColor(1f, 1f, 1f, 1f);
     }

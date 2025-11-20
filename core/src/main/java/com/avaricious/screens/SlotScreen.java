@@ -7,6 +7,7 @@ import com.avaricious.components.SmokeBackground;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
+import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -19,6 +20,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.utils.Timer;
 
 public class SlotScreen extends ScreenAdapter {
 
@@ -80,6 +83,15 @@ public class SlotScreen extends ScreenAdapter {
         turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
         rayHandler.setAmbientLight(1f);
 
+        slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(() -> {
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    calcSelection();
+                }
+            }, 5);
+        });
+
         slotMachine.clearSelection();
         slotMachine.spin();
     }
@@ -111,7 +123,7 @@ public class SlotScreen extends ScreenAdapter {
         scoreDisplay.draw(batch, delta);
 //        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
 //        turnsLeftDisplay.draw(batch, delta);
-//        patternDisplay.draw(batch, delta);
+        patternDisplay.draw(batch, delta);
 //        buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
 //        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
@@ -140,7 +152,7 @@ public class SlotScreen extends ScreenAdapter {
                 if (col >= 0 && col < slotMachine.getCols() &&
                     row >= 0 && row < slotMachine.getRows()) {
                     slotMachine.selectSymbolAt(col, row);
-                    patternDisplay.setPattern(slotMachine.getScoreFormula());
+//                    patternDisplay.setPattern(slotMachine.getScoreFormula());
                 }
             }
         }
@@ -148,6 +160,41 @@ public class SlotScreen extends ScreenAdapter {
         upgradeSticks.hoveringAt(mouse);
 
         wasPressed = pressed;
+    }
+
+    private void calcSelection() {
+        float[] delayCounter = {0f};
+        slotMachine.getSelectedSlots().forEach(((symbol, slots) -> {
+            slots.forEach(slot -> {
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        slot.wobble();
+                        slot.pulse();
+                        patternDisplay.addPoints(symbol.baseValue());
+                    }
+                }, delayCounter[0]);
+                delayCounter[0] += 0.5f;
+            });
+
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    slots.forEach(slot -> {
+                        slot.wobble();
+                        slot.pulse();
+                    });
+                    patternDisplay.addMulti(slots.size());
+                }
+            },  delayCounter[0]);
+            delayCounter[0] += 0.5f;
+        }));
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                onApplyButtonPressed();
+            }
+        }, delayCounter[0] + 0.5f);
     }
 
     private void onSpinButtonPressed() {

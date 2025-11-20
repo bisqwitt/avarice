@@ -75,6 +75,14 @@ public class Slot {
         wasHovered = isHovered;
     }
 
+    public void wobble() {
+        wobbleTime = 0f;
+    }
+
+    public void pulse() {
+        pulseTime = 0f;
+    }
+
     /** Current wobble rotation in degrees (damped sine). */
     public float wobbleAngleDeg() {
         if (wobbleTime >= wobbleDuration) return 0f;

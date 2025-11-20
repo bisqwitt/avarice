@@ -67,7 +67,6 @@ public class SlotMachine {
         }
         reels.get(reels.size() -1).setOnSpinFinished(() -> {
             spinning = false;
-            checkResult();
         });
     }
 
@@ -143,8 +142,8 @@ public class SlotMachine {
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
-                float shadowW = drawW * 1.1f;
-                float shadowH = drawH * 1.1f;
+                float shadowW = drawW * 1.05f;
+                float shadowH = drawH * 1.05f;
                 float shadowX = drawX - (shadowW - cellW) / 2f;
                 float shadowY = drawY - (shadowH - cellH) / 2f;
 
@@ -159,7 +158,7 @@ public class SlotMachine {
                 batch.setColor(0f, 0f, 0f, 0.5f);
                 batch.draw(
                     Assets.I().getSymbolShadow(sym),
-                    shadowX + 0.05f, shadowY - 0.05f,
+                    shadowX, shadowY - 0.05f,
                     shadowW / 2f, shadowH / 2f,
                     shadowW, shadowH,
                     1f, 1f, rotation);
@@ -288,15 +287,15 @@ public class SlotMachine {
 
     private void checkResult() {
 
-        Symbol[][] symbolMap = new Symbol[5][3];
-
-        for(int i = 0; i < reels.size(); i++) {
-            for (int row = 0; row < 3; row++) {
-                symbolMap[i][row] = reels.get(i).symbolAtRow(row);
-            }
-        }
-
-        List<Match> matches = PatternFinder.findMatches(symbolMap);
+//        Symbol[][] symbolMap = new Symbol[5][3];
+//
+//        for(int i = 0; i < reels.size(); i++) {
+//            for (int row = 0; row < 3; row++) {
+//                symbolMap[i][row] = reels.get(i).symbolAtRow(row);
+//            }
+//        }
+//
+//        List<Match> matches = PatternFinder.findMatches(symbolMap);
     }
 
     private long calcScore() {
@@ -329,6 +328,23 @@ public class SlotMachine {
         selection.clear();
         scoreFormula = "";
         patternText = "";
+    }
+
+    public Map<Symbol, List<Slot>> getSelectedSlots() {
+        Map<Symbol, List<Slot>> result = new HashMap<>();
+        selection.forEach(symbol -> result.put(symbol, new ArrayList<>()));
+
+        for(int col = 0; col < reels.size(); col++) {
+            for(int row = 0; row < 3; row++) {
+                Symbol symbol = reels.get(col).symbolAtRow(row);
+                if(selection.contains(symbol)) result.get(symbol).add(grid[col][row]);
+            }
+        }
+        return result;
+    }
+
+    public Slot getSlotAt(int col, int row) {
+        return grid[col][row + 1];
     }
 
     public String getScoreFormula() { return scoreFormula; }
