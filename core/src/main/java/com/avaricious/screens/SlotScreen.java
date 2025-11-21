@@ -43,6 +43,7 @@ public class SlotScreen extends ScreenAdapter {
     private final RayHandler rayHandler;
     private final WarpBackground background;
     private final BackgroundLights backgroundLights;
+    private final PopupManager popupManager;
 
     private final RoundsManager roundsManager;
     private final Vector2 mouse = new Vector2();
@@ -55,6 +56,7 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.useDiffuseLight(true);
         rayHandler = new RayHandler(world);
 
+        popupManager = new PopupManager();
         background = new WarpBackground();
         backgroundLights = new BackgroundLights(rayHandler);
         slotMachineBorder = Assets.I().getSlotMachineBorder();
@@ -88,6 +90,7 @@ public class SlotScreen extends ScreenAdapter {
                 @Override
                 public void run() {
                     calcSelection();
+                    slotMachine.lockHoverAndSelect();
                 }
             }, 5);
         });
@@ -102,6 +105,8 @@ public class SlotScreen extends ScreenAdapter {
         handleInput();
         background.render(batch, delta);
         app.getViewport().apply();
+
+        popupManager.update(delta);
 
         backgroundLights.render(delta);
         cameraShaker.render(delta);
@@ -126,6 +131,7 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.draw(batch, delta);
 //        buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
+        popupManager.render(batch);
 //        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
 //        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
         batch.end();
@@ -172,6 +178,7 @@ public class SlotScreen extends ScreenAdapter {
                         slot.wobble();
                         slot.pulse();
                         patternDisplay.addPoints(symbol.baseValue());
+                        popupManager.spawn(Assets.I().getDigitalNumber(symbol.baseValue()), Assets.I().colorBlue(), 10f, 8f);
                     }
                 }, delayCounter[0]);
                 delayCounter[0] += 0.5f;
@@ -185,6 +192,7 @@ public class SlotScreen extends ScreenAdapter {
                         slot.pulse();
                     });
                     patternDisplay.addMulti(slots.size());
+                    popupManager.spawn(Assets.I().getDigitalNumber(slotMachine.countSymbol(symbol)), Assets.I().colorRed(), 10f, 8f);
                 }
             },  delayCounter[0]);
             delayCounter[0] += 0.5f;
@@ -194,7 +202,7 @@ public class SlotScreen extends ScreenAdapter {
             public void run() {
                 onApplyButtonPressed();
             }
-        }, delayCounter[0] + 0.5f);
+        }, delayCounter[0]);
     }
 
     private void onSpinButtonPressed() {

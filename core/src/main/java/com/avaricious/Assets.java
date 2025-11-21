@@ -48,25 +48,26 @@ public class Assets {
         manager.load("CoinSlot.png", Texture.class);
         manager.load("white.png", Texture.class);
 
-        manager.load("symbolShadows/lemon-shadow.png", Texture.class);
-        manager.load("symbolShadows/cherry-shadow.png", Texture.class);
-        manager.load("symbolShadows/clover-shadow.png", Texture.class);
-        manager.load("symbolShadows/bell-shadow.png", Texture.class);
-        manager.load("symbolShadows/iron-shadow.png", Texture.class);
-        manager.load("symbolShadows/diamond-shadow.png", Texture.class);
-        manager.load("symbolShadows/seven-shadow.png", Texture.class);
+//        manager.load("symbolShadows/lemon-shadow.png", Texture.class);
+//        manager.load("symbolShadows/cherry-shadow.png", Texture.class);
+//        manager.load("symbolShadows/clover-shadow.png", Texture.class);
+//        manager.load("symbolShadows/bell-shadow.png", Texture.class);
+//        manager.load("symbolShadows/iron-shadow.png", Texture.class);
+//        manager.load("symbolShadows/diamond-shadow.png", Texture.class);
+//        manager.load("symbolShadows/seven-shadow.png", Texture.class);
 
+        manager.load("digital-numbers/plus.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
-        manager.load("digital-numbers/0.png", Texture.class);
-        manager.load("digital-numbers/1.png", Texture.class);
-        manager.load("digital-numbers/2.png", Texture.class);
-        manager.load("digital-numbers/3.png", Texture.class);
-        manager.load("digital-numbers/4.png", Texture.class);
-        manager.load("digital-numbers/5.png", Texture.class);
-        manager.load("digital-numbers/6.png", Texture.class);
-        manager.load("digital-numbers/7.png", Texture.class);
-        manager.load("digital-numbers/8.png", Texture.class);
-        manager.load("digital-numbers/9.png", Texture.class);
+        manager.load("digital-numbers/shadowed/0.png", Texture.class);
+        manager.load("digital-numbers/shadowed/1.png", Texture.class);
+        manager.load("digital-numbers/shadowed/2.png", Texture.class);
+        manager.load("digital-numbers/shadowed/3.png", Texture.class);
+        manager.load("digital-numbers/shadowed/4.png", Texture.class);
+        manager.load("digital-numbers/shadowed/5.png", Texture.class);
+        manager.load("digital-numbers/shadowed/6.png", Texture.class);
+        manager.load("digital-numbers/shadowed/7.png", Texture.class);
+        manager.load("digital-numbers/shadowed/8.png", Texture.class);
+        manager.load("digital-numbers/shadowed/9.png", Texture.class);
 
         manager.load("sticks/uncommon-stick.png", Texture.class);
         manager.load("sticks/common-stick.png", Texture.class);
@@ -134,32 +135,32 @@ public class Assets {
         return manager.get("white.png", Texture.class);
     }
 
-    public TextureRegion getSymbolShadow(Symbol symbol) {
-        switch (symbol) {
-            case LEMON -> {
-                return new TextureRegion(manager.get("symbolShadows/lemon-shadow.png", Texture.class));
-            }
-            case CHERRY -> {
-                return new TextureRegion(manager.get("symbolShadows/cherry-shadow.png", Texture.class));
-            }
-            case CLOVER -> {
-                return new TextureRegion(manager.get("symbolShadows/clover-shadow.png", Texture.class));
-            }
-            case BELL -> {
-                return new TextureRegion(manager.get("symbolShadows/bell-shadow.png", Texture.class));
-            }
-            case IRON -> {
-                return new TextureRegion(manager.get("symbolShadows/iron-shadow.png", Texture.class));
-            }
-            case DIAMOND -> {
-                return new TextureRegion(manager.get("symbolShadows/diamond-shadow.png", Texture.class));
-            }
-            case SEVEN -> {
-                return new TextureRegion(manager.get("symbolShadows/seven-shadow.png", Texture.class));
-            }
-        }
-        return null;
-    }
+//    public TextureRegion getSymbolShadow(Symbol symbol) {
+//        switch (symbol) {
+//            case LEMON -> {
+//                return new TextureRegion(manager.get("symbolShadows/lemon-shadow.png", Texture.class));
+//            }
+//            case CHERRY -> {
+//                return new TextureRegion(manager.get("symbolShadows/cherry-shadow.png", Texture.class));
+//            }
+//            case CLOVER -> {
+//                return new TextureRegion(manager.get("symbolShadows/clover-shadow.png", Texture.class));
+//            }
+//            case BELL -> {
+//                return new TextureRegion(manager.get("symbolShadows/bell-shadow.png", Texture.class));
+//            }
+//            case IRON -> {
+//                return new TextureRegion(manager.get("symbolShadows/iron-shadow.png", Texture.class));
+//            }
+//            case DIAMOND -> {
+//                return new TextureRegion(manager.get("symbolShadows/diamond-shadow.png", Texture.class));
+//            }
+//            case SEVEN -> {
+//                return new TextureRegion(manager.get("symbolShadows/seven-shadow.png", Texture.class));
+//            }
+//        }
+//        return null;
+//    }
 
     public Texture getPokerChip() {
         return manager.get("base-poker-chip.png", Texture.class);
@@ -167,6 +168,10 @@ public class Assets {
 
     public Texture getCoinSlot() {
         return manager.get("CoinSlot.png", Texture.class);
+    }
+
+    public Texture getPlusSymbol() {
+        return manager.get("digital-numbers/plus.png", Texture.class);
     }
 
     public Texture getSlotMachineBorder() {
@@ -258,7 +263,7 @@ public class Assets {
     }
 
     public Texture getDigitalNumber(long number) {
-        return manager.get("digital-numbers/" + number + ".png", Texture.class);
+        return manager.get("digital-numbers/shadowed/" + number + ".png", Texture.class);
     }
 
 }

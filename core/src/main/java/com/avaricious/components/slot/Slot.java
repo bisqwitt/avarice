@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Slot {
     private float stateTime = 0f;
-    private final float posX;
-    private final float posY;
 
     public float scale = 1f;
     public float targetScale = 1f;
@@ -22,11 +20,6 @@ public class Slot {
     private final float wobbleDuration = 0.25f;  // seconds
     private final float wobbleAmpDeg = 7f;       // peak rotation in degrees
     private final float wobbleScaleAmp = 0.03f;  // tiny elastic bump
-
-    public Slot(float posX, float posY) {
-        this.posX = posX;
-        this.posY = posY;
-    }
 
     public TextureRegion getFrame(Symbol symbol, boolean selected, float delta) {
         if (selected) stateTime += delta;
@@ -100,7 +93,4 @@ public class Slot {
         float oscill = (float)Math.sin((float)(Math.PI * 2.5 * t));
         return 1f + Math.abs(oscill) * decay * wobbleScaleAmp;
     }
-
-    public float posX() { return posX; }
-    public float posY() { return posY; }
 }

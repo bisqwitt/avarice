@@ -50,9 +50,7 @@ public class SlotMachine {
         // build visual cells
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
-                grid[c][r] = new Slot(
-                    originX + c * (cellW + spacingX),
-                    originY + r * (cellH + spacingY));
+                grid[c][r] = new Slot();
             }
         }
 
@@ -142,10 +140,10 @@ public class SlotMachine {
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
-                float shadowW = drawW * 1.05f;
-                float shadowH = drawH * 1.05f;
-                float shadowX = drawX - (shadowW - cellW) / 2f;
-                float shadowY = drawY - (shadowH - cellH) / 2f;
+//                float shadowW = drawW * 1.05f;
+//                float shadowH = drawH * 1.05f;
+//                float shadowX = drawX - (shadowW - cellW) / 2f;
+//                float shadowY = drawY - (shadowH - cellH) / 2f;
 
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
@@ -155,14 +153,14 @@ public class SlotMachine {
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
 
-                batch.setColor(0f, 0f, 0f, 0.5f);
-                batch.draw(
-                    Assets.I().getSymbolShadow(sym),
-                    shadowX, shadowY - 0.05f,
-                    shadowW / 2f, shadowH / 2f,
-                    shadowW, shadowH,
-                    1f, 1f, rotation);
-                batch.setColor(1f, 1f, 1f, 1f);
+//                batch.setColor(0f, 0f, 0f, 0.5f);
+//                batch.draw(
+//                    Assets.I().getSymbolShadow(sym),
+//                    shadowX, shadowY - 0.05f,
+//                    shadowW / 2f, shadowH / 2f,
+//                    shadowW, shadowH,
+//                    1f, 1f, rotation);
+//                batch.setColor(1f, 1f, 1f, 1f);
 
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
@@ -368,5 +366,9 @@ public class SlotMachine {
 
     public List<Reel> getReels() {
         return reels;
+    }
+
+    public void lockHoverAndSelect() {
+        spinning = true;
     }
 }
