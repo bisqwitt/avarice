@@ -27,6 +27,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
+    private final TimedProgressBar progressBar;
     private final Texture slotMachineBorder;
     private final Texture slotMachineScreen;
     private final Texture cable;
@@ -63,6 +64,7 @@ public class SlotScreen extends ScreenAdapter {
         slotMachineScreen = Assets.I().getSlotMachineScreen();
         cable = Assets.I().getCable();
         coinSlot = Assets.I().getCoinSlot();
+        progressBar = new TimedProgressBar(5f);
 
         scoreDisplay = new ScoreDisplay();
         turnsLeftDisplay = new TurnsLeftDisplay();
@@ -126,6 +128,7 @@ public class SlotScreen extends ScreenAdapter {
 //        upgradeSticks.draw(batch);
 //        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
+//        progressBar.render(batch, delta);
 //        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
 //        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);

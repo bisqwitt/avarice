@@ -48,6 +48,10 @@ public class Assets {
         manager.load("CoinSlot.png", Texture.class);
         manager.load("white.png", Texture.class);
 
+        manager.load("progressbar/ProgressBarBorder.png", Texture.class);
+        manager.load("progressbar/ProgressBarLit.png", Texture.class);
+        manager.load("progressbar/ProgressBarUnlit.png", Texture.class);
+
 //        manager.load("symbolShadows/lemon-shadow.png", Texture.class);
 //        manager.load("symbolShadows/cherry-shadow.png", Texture.class);
 //        manager.load("symbolShadows/clover-shadow.png", Texture.class);
@@ -164,6 +168,18 @@ public class Assets {
 
     public Texture getPokerChip() {
         return manager.get("base-poker-chip.png", Texture.class);
+    }
+
+    public Texture getProgressBarBorder() {
+        return manager.get("progressbar/ProgressBarBorder.png", Texture.class);
+    }
+
+    public Texture getProgressLit() {
+        return manager.get("progressbar/ProgressBarLit.png", Texture.class);
+    }
+
+    public Texture getProgressUnlit() {
+        return manager.get("progressbar/ProgressBarUnlit.png", Texture.class);
     }
 
     public Texture getCoinSlot() {
