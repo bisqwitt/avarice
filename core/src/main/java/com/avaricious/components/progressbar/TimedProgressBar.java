@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.components.progressbar;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

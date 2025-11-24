@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.components.progressbar;
 
 import com.avaricious.Assets;
 import com.badlogic.gdx.graphics.Texture;

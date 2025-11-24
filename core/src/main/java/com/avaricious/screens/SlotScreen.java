@@ -8,8 +8,9 @@ import com.avaricious.components.background.WarpBackground;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
+import com.avaricious.components.progressbar.HealthBar;
+import com.avaricious.components.progressbar.TimedProgressBar;
 import com.avaricious.components.slot.SlotMachine;
-import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
@@ -24,7 +25,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
-    private final TimedProgressBar progressBar;
+    private final HealthBar progressBar;
     private final Texture slotMachineBorder;
     private final Texture slotMachineScreen;
     private final Texture slotMachineShadow;
@@ -64,7 +65,7 @@ public class SlotScreen extends ScreenAdapter {
         slotMachineShadow = Assets.I().getSlotMachineShadow();
         cable = Assets.I().getCable();
         coinSlot = Assets.I().getCoinSlot();
-        progressBar = new TimedProgressBar(4f);
+        progressBar = new HealthBar(100f);
         upgradeBar = new UpgradeBar();
 
         scoreDisplay = new ScoreDisplay();
@@ -89,14 +90,14 @@ public class SlotScreen extends ScreenAdapter {
         rayHandler.setAmbientLight(1f);
 
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(() -> {
-            progressBar.restart(5);
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    calcSelection();
-                    slotMachine.lockHoverAndSelect();
-                }
-            }, 5);
+            progressBar.damage(10f);
+//            Timer.schedule(new Timer.Task() {
+//                @Override
+//                public void run() {
+//                    calcSelection();
+//                    slotMachine.lockHoverAndSelect();
+//                }
+//            }, 5);
         });
 
         slotMachine.clearSelection();
@@ -133,12 +134,12 @@ public class SlotScreen extends ScreenAdapter {
         //        upgradeSticks.draw(batch);
 //        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
-//        progressBar.render(batch, delta);
+        progressBar.render(batch);
 //        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
 //        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
         upgradeBar.draw(batch);
-//        buttonBoard.draw(batch, delta);
+        buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
         popupManager.render(batch);
 //        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
@@ -157,7 +158,7 @@ public class SlotScreen extends ScreenAdapter {
         Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
 
-//        buttonBoard.handleInput(mouse, pressed, wasPressed);
+        buttonBoard.handleInput(mouse, pressed, wasPressed);
         upgradeBar.handleInput(mouse, pressed, wasPressed, delta);
 
         if (pressed && !wasPressed) {
