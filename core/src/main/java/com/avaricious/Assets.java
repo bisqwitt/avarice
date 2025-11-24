@@ -47,6 +47,9 @@ public class Assets {
         manager.load("cable.png", Texture.class);
         manager.load("CoinSlot.png", Texture.class);
         manager.load("white.png", Texture.class);
+        manager.load("SlotMachineShadow.png", Texture.class);
+        manager.load("Joker.png", Texture.class);
+        manager.load("JokerShadow.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -85,13 +88,13 @@ public class Assets {
         manager.load("buttons/spin-button.png", Texture.class);
         manager.load("buttons/spin-button-pressed.png", Texture.class);
 
-        manager.load("lemon.png", Texture.class);
-        manager.load("cherry.png", Texture.class);
-        manager.load("clover.png", Texture.class);
-        manager.load("bell.png", Texture.class);
-        manager.load("iron.png", Texture.class);
-        manager.load("diamond.png", Texture.class);
-        manager.load("seven.png", Texture.class);
+        manager.load("symbols/64/lemon.png", Texture.class);
+        manager.load("symbols/64/cherry.png", Texture.class);
+        manager.load("symbols/64/clover.png", Texture.class);
+        manager.load("symbols/64/bell.png", Texture.class);
+        manager.load("symbols/iron.png", Texture.class);
+        manager.load("symbols/diamond.png", Texture.class);
+        manager.load("symbols/seven.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -121,10 +124,10 @@ public class Assets {
     }
 
     public TextureRegion getBase(Symbol s) {
-//        if(s == Symbol.LEMON) return new TextureRegion(manager.get("lemon.png", Texture.class));
-//        if(s == Symbol.CHERRY) return new TextureRegion(manager.get("cherry.png", Texture.class));
-//        if(s == Symbol.CLOVER) return new TextureRegion(manager.get("clover.png", Texture.class));
-//        if(s == Symbol.BELL) return new TextureRegion(manager.get("bell.png", Texture.class));
+//        if(s == Symbol.LEMON) return new TextureRegion(manager.get("symbols/64/lemon.png", Texture.class));
+//        if(s == Symbol.CHERRY) return new TextureRegion(manager.get("symbols/64/cherry.png", Texture.class));
+//        if(s == Symbol.CLOVER) return new TextureRegion(manager.get("symbols/64/clover.png", Texture.class));
+//        if(s == Symbol.BELL) return new TextureRegion(manager.get("symbols/64/bell.png", Texture.class));
 //        if(s == Symbol.IRON) return new TextureRegion(manager.get("iron.png", Texture.class));
 //        if(s == Symbol.DIAMOND) return new TextureRegion(manager.get("diamond.png", Texture.class));
 //        if(s == Symbol.SEVEN) return new TextureRegion(manager.get("seven.png", Texture.class));
@@ -168,6 +171,18 @@ public class Assets {
 
     public Texture getPokerChip() {
         return manager.get("base-poker-chip.png", Texture.class);
+    }
+
+    public Texture getSlotMachineShadow() {
+        return manager.get("SlotMachineShadow.png", Texture.class);
+    }
+
+    public Texture getJokerCard() {
+        return manager.get("Joker.png", Texture.class);
+    }
+
+    public Texture getJokerCardShadow() {
+        return manager.get("JokerShadow.png", Texture.class);
     }
 
     public Texture getProgressBarBorder() {

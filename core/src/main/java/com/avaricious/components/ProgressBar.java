@@ -25,12 +25,11 @@ public class ProgressBar {
         }
     }
 
-
     protected void render(SpriteBatch batch) {
         for(int i = 0; i < progress.length; i++) {
-            batch.draw(progress[i], 14.05f, 2.56f + (i * 0.0505f), 3 / 22f, 2 / 22f);
+            batch.draw(progress[i], 14.85f, 3.76f + (i * 0.04325f), 3 / 22f, 2 / 22f);
         }
-        batch.draw(border, 14f, 2.5f, 14 / 60f, 310 / 60f);
+        batch.draw(border, 14.8f, 3.7f, 14 / 70f, 310 / 70f);
     }
 
     private void updateProgressTextures() {

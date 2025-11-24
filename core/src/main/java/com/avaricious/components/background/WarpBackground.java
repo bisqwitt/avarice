@@ -1,11 +1,10 @@
-package com.avaricious.components;
+package com.avaricious.components.background;
 
 import com.avaricious.Assets;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class WarpBackground {

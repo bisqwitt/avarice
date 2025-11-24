@@ -3,24 +3,21 @@ package com.avaricious.screens;
 import box2dLight.RayHandler;
 import com.avaricious.*;
 import com.avaricious.components.*;
-import com.avaricious.components.SmokeBackground;
+import com.avaricious.components.background.BackgroundLights;
+import com.avaricious.components.background.WarpBackground;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
-import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
+import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Timer;
 
 public class SlotScreen extends ScreenAdapter {
@@ -30,6 +27,7 @@ public class SlotScreen extends ScreenAdapter {
     private final TimedProgressBar progressBar;
     private final Texture slotMachineBorder;
     private final Texture slotMachineScreen;
+    private final Texture slotMachineShadow;
     private final Texture cable;
     private final Texture coinSlot;
 
@@ -38,6 +36,7 @@ public class SlotScreen extends ScreenAdapter {
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
     private final ButtonBoard buttonBoard;
+    private final UpgradeBar upgradeBar;
 
     private final CameraShaker cameraShaker;
     private final World world;
@@ -62,9 +61,11 @@ public class SlotScreen extends ScreenAdapter {
         backgroundLights = new BackgroundLights(rayHandler);
         slotMachineBorder = Assets.I().getSlotMachineBorder();
         slotMachineScreen = Assets.I().getSlotMachineScreen();
+        slotMachineShadow = Assets.I().getSlotMachineShadow();
         cable = Assets.I().getCable();
         coinSlot = Assets.I().getCoinSlot();
-        progressBar = new TimedProgressBar(5f);
+        progressBar = new TimedProgressBar(4f);
+        upgradeBar = new UpgradeBar();
 
         scoreDisplay = new ScoreDisplay();
         turnsLeftDisplay = new TurnsLeftDisplay();
@@ -88,6 +89,7 @@ public class SlotScreen extends ScreenAdapter {
         rayHandler.setAmbientLight(1f);
 
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(() -> {
+            progressBar.restart(5);
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
@@ -104,7 +106,7 @@ public class SlotScreen extends ScreenAdapter {
     @Override
     public void render(float delta) {
         SpriteBatch batch = app.getBatch();
-        handleInput();
+        handleInput(delta);
         background.render(batch, delta);
         app.getViewport().apply();
 
@@ -125,13 +127,17 @@ public class SlotScreen extends ScreenAdapter {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-//        upgradeSticks.draw(batch);
+        batch.setColor(1f, 1f, 1f, 0.5f);
+//        batch.draw(slotMachineShadow, slotMachine.getOriginX() - 0.5f, slotMachine.getOriginY() - 0.3f, 150 / 20f, 90 / 20f);
+        batch.setColor(1f, 1f, 1f, 1f);
+        //        upgradeSticks.draw(batch);
 //        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
 //        progressBar.render(batch, delta);
 //        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
 //        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
+        upgradeBar.draw(batch);
 //        buttonBoard.draw(batch, delta);
         slotMachine.draw(app, delta);
         popupManager.render(batch);
@@ -144,14 +150,15 @@ public class SlotScreen extends ScreenAdapter {
     }
 
 
-    private void handleInput() {
+    private void handleInput(float delta) {
         mouse.set(Gdx.input.getX(), Gdx.input.getY());
         app.getViewport().unproject(mouse);
 
         Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
 
-        buttonBoard.handleInput(mouse, pressed, wasPressed);
+//        buttonBoard.handleInput(mouse, pressed, wasPressed);
+        upgradeBar.handleInput(mouse, pressed, wasPressed, delta);
 
         if (pressed && !wasPressed) {
             if (slotBounds.contains(mouse.x, mouse.y)) {
@@ -164,9 +171,11 @@ public class SlotScreen extends ScreenAdapter {
 //                    patternDisplay.setPattern(slotMachine.getScoreFormula());
                 }
             }
+//            upgradeBar.setSelected(upgradeBar.getBounds().contains(mouse));
         }
         slotMachine.hoveringAt(mouse);
         upgradeSticks.hoveringAt(mouse);
+//        upgradeBar.setHovered(upgradeBar.getBounds().contains(mouse));
 
         wasPressed = pressed;
     }
@@ -181,7 +190,8 @@ public class SlotScreen extends ScreenAdapter {
                         slot.wobble();
                         slot.pulse();
                         patternDisplay.addPoints(symbol.baseValue());
-                        popupManager.spawn(Assets.I().getDigitalNumber(symbol.baseValue()), Assets.I().colorBlue(), 10f, 8f);
+                        popupManager.spawn(Assets.I().getDigitalNumber(symbol.baseValue()),
+                            Assets.I().colorBlue(), slot.getPos().x + 1f, slot.getPos().y + 1f);
                     }
                 }, delayCounter[0]);
                 delayCounter[0] += 0.5f;
@@ -195,7 +205,8 @@ public class SlotScreen extends ScreenAdapter {
                         slot.pulse();
                     });
                     patternDisplay.addMulti(slots.size());
-                    popupManager.spawn(Assets.I().getDigitalNumber(slotMachine.countSymbol(symbol)), Assets.I().colorRed(), 10f, 8f);
+                    popupManager.spawn(Assets.I().getDigitalNumber(slotMachine.countSymbol(symbol)),
+                        Assets.I().colorRed(), 11f, 6f);
                 }
             },  delayCounter[0]);
             delayCounter[0] += 0.5f;
@@ -203,9 +214,12 @@ public class SlotScreen extends ScreenAdapter {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                onApplyButtonPressed();
+//                progressBar.restart(4);
+//                onApplyButtonPressed();
             }
         }, delayCounter[0]);
+
+//        UpgradesManager.I().getUpgrades().stream().filter(upgrade -> )
     }
 
     private void onSpinButtonPressed() {

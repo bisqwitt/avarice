@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.components.background;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;

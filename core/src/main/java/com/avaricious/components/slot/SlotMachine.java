@@ -44,21 +44,47 @@ public class SlotMachine {
 
     public SlotMachine(float worldWidth, float worldHeight, RayHandler rayHandler) {
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 2.25f;
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 0.5f;
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 3f;
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 1.5f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
-                grid[c][r] = new Slot();
+                if(r == 0) grid[c][r] = new Slot(new Vector2(
+                    originX + c * (cellW + spacingX),
+                    originY + 2 * (cellH + spacingY)
+                ));
+                if(r == 1) grid[c][r] = new Slot(new Vector2(
+                    originX + c * (cellW + spacingX),
+                    originY + 1 * (cellH + spacingY)
+                ));
+                if(r == 2) grid[c][r] = new Slot(new Vector2(
+                    originX + c * (cellW + spacingX),
+                    originY + 0 * (cellH + spacingY)
+                ));
             }
         }
 
         // build basic reel strips (repeat symbol set to avoid short cycles)
         List<Symbol> baseStrip = new ArrayList<>();
-        baseStrip.addAll(Arrays.asList(Symbol.values()));
-        baseStrip.addAll(Arrays.asList(Symbol.values()));
-        baseStrip.addAll(Arrays.asList(Symbol.values()));
+
+        for(int i = 0; i < 12; i++) {
+            baseStrip.add(Symbol.LEMON);
+            baseStrip.add(Symbol.CHERRY);
+        }
+        for(int i = 0; i < 8; i++) {
+            baseStrip.add(Symbol.CLOVER);
+            baseStrip.add(Symbol.BELL);
+        }
+        for(int i = 0; i < 4; i++) {
+            baseStrip.add(Symbol.IRON);
+            baseStrip.add(Symbol.DIAMOND);
+        }
+        baseStrip.add(Symbol.SEVEN);
+        baseStrip.add(Symbol.SEVEN);
+//        baseStrip.addAll(Arrays.asList(Symbol.values()));
+//        baseStrip.addAll(Arrays.asList(Symbol.values()));
+//        baseStrip.addAll(Arrays.asList(Symbol.values()));
 
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
@@ -363,6 +389,14 @@ public class SlotMachine {
     public float getCellW() { return cellW; }
     public float getSpacingX() { return spacingX; }
     public float getSpacingY() { return spacingY; }
+
+    public float getOriginX() {
+        return originX;
+    }
+
+    public float getOriginY() {
+        return originY;
+    }
 
     public List<Reel> getReels() {
         return reels;

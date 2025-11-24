@@ -31,4 +31,9 @@ public class TimedProgressBar extends ProgressBar {
         elapsed = 0f;
         setCurrentValue(0f);
     }
+
+    public void restart(float reachInSeconds) {
+        setMaxValue(reachInSeconds);
+        reset();
+    }
 }

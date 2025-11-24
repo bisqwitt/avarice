@@ -1,8 +1,7 @@
-package com.avaricious.components;
+package com.avaricious.components.background;
 
 import box2dLight.ConeLight;
 import box2dLight.RayHandler;
-import com.avaricious.Assets;
 
 public class BackgroundLights {
 

@@ -2,6 +2,7 @@ package com.avaricious.components.slot;
 
 import com.avaricious.Assets;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 
 public class Slot {
     private float stateTime = 0f;
@@ -20,6 +21,11 @@ public class Slot {
     private final float wobbleDuration = 0.25f;  // seconds
     private final float wobbleAmpDeg = 7f;       // peak rotation in degrees
     private final float wobbleScaleAmp = 0.03f;  // tiny elastic bump
+    private final Vector2 pos;
+
+    public Slot(Vector2 pos) {
+        this.pos = pos;
+    }
 
     public TextureRegion getFrame(Symbol symbol, boolean selected, float delta) {
         if (selected) stateTime += delta;
@@ -92,5 +98,9 @@ public class Slot {
         float decay = 1f - t;
         float oscill = (float)Math.sin((float)(Math.PI * 2.5 * t));
         return 1f + Math.abs(oscill) * decay * wobbleScaleAmp;
+    }
+
+    public Vector2 getPos() {
+        return pos;
     }
 }
