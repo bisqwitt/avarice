@@ -1,40 +1,10 @@
-package com.avaricious.components.slot;
+package com.avaricious.components.slot.pattern;
+
+import com.avaricious.components.slot.Symbol;
 
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
-
-// Optional: adjust as you like
-enum Direction {
-    HORIZONTAL,
-    VERTICAL,
-    DIAGONAL_DOWN,   // top-left -> bottom-right
-    DIAGONAL_UP      // bottom-left -> top-right
-}
-
-class Match {
-    public final Symbol symbol;
-    public final int length;
-    public final List<Point> positions; // x = col, y = row
-    public final Direction direction;
-
-    public Match(Symbol symbol, int length, List<Point> positions, Direction direction) {
-        this.symbol = symbol;
-        this.length = length;
-        this.positions = positions;
-        this.direction = direction;
-    }
-
-    @Override
-    public String toString() {
-        return "Match{" +
-            "symbol=" + symbol +
-            ", length=" + length +
-            ", direction=" + direction +
-            ", positions=" + positions +
-            '}';
-    }
-}
 
 public class PatternFinder {
 
@@ -42,8 +12,8 @@ public class PatternFinder {
      * Finds all matches of length >= 3 in the given symbol grid.
      * Assumes symbolMap[x][y] => x = column, y = row.
      */
-    public static List<Match> findMatches(Symbol[][] symbolMap) {
-        List<Match> matches = new ArrayList<>();
+    public static List<PatternMatch> findMatches(Symbol[][] symbolMap) {
+        List<PatternMatch> matches = new ArrayList<>();
 
         int cols = symbolMap.length;
         if (cols == 0) return matches;
@@ -56,12 +26,7 @@ public class PatternFinder {
             { 1,  1}, // diagonal down
             { 1, -1}  // diagonal up
         };
-        Direction[] dirEnums = {
-            Direction.HORIZONTAL,
-            Direction.VERTICAL,
-            Direction.DIAGONAL_DOWN,
-            Direction.DIAGONAL_UP
-        };
+        PatternDirection[] dirEnums = PatternDirection.values();
 
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
@@ -95,7 +60,7 @@ public class PatternFinder {
 
                     int length = positions.size();
                     if (length >= 3) {
-                        matches.add(new Match(base, length, positions, dirEnums[d]));
+                        matches.add(new PatternMatch(base, length, positions, dirEnums[d]));
                     }
                 }
             }
@@ -108,17 +73,9 @@ public class PatternFinder {
         return x >= 0 && x < cols && y >= 0 && y < rows;
     }
 
-    /**
-     * Adjust this depending on your Symbol type:
-     *  - If Symbol is an enum, '==' is fine.
-     *  - If it's a class, you likely want equals().
-     */
     private static boolean equalsSymbol(Symbol a, Symbol b) {
         if (a == null || b == null) return false;
-        // If Symbol is enum:
         return a == b;
-        // If Symbol is not enum, use:
-        // return a.equals(b);
     }
 }
 

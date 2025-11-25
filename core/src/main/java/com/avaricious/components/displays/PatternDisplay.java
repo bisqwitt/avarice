@@ -7,31 +7,30 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class PatternDisplay {
 
-    private final Texture patternDisplayTexture;
+    private final Texture multTexture;
 
     private final TextureRegion[] pointDigitalNumbers = new TextureRegion[3];
     private final TextureRegion[] multiDigitalNumbers = new TextureRegion[3];
+    private final TextureRegion[] xMultiDigitalNumbers = new TextureRegion[2];
 
     private float pointsValue = 0L;
     private float multiValue = 0L;
+    private float xMultiValue = 0L;
 
-    private float animTime = 0f;
-    private float animDuration = 0.5f; // 0.5 seconds, adjust as you like
-
-    // Pulse animation for the numbers (Balatro-style bump)
     private float pointsPulseTime = 0f;
     private float multiPulseTime  = 0f;
-    private final float pulseDuration = 0.2f; // seconds for the pulse
-
+    private float xMultiPulseTime = 0f;
 
     private float hoverTime = 0f;
 
     public PatternDisplay() {
-        patternDisplayTexture = Assets.I().getPatternDisplay();
+        multTexture = Assets.I().mult();
         for(int i = 0; i < 3; i++) {
             pointDigitalNumbers[i] = new TextureRegion(Assets.I().getDigitalNumber(0));
             multiDigitalNumbers[i] = new TextureRegion(Assets.I().getDigitalNumber(0));
         }
+        xMultiDigitalNumbers[0] = new TextureRegion(Assets.I().getDigitalNumber(0));
+        xMultiDigitalNumbers[1] = new TextureRegion(Assets.I().getDigitalNumber(0));
     }
 
 
@@ -44,6 +43,8 @@ public class PatternDisplay {
         // ----- Pulse + wobble for POINTS -----
         float pointsScale = 1f;
         float pointsRotation = 0f;
+        // seconds for the pulse
+        float pulseDuration = 0.2f;
         if (pointsPulseTime < pulseDuration) {
             pointsPulseTime += delta;
             float t = pointsPulseTime / pulseDuration;
@@ -80,6 +81,25 @@ public class PatternDisplay {
             multiRotation = pulseCurve * wobbleAngle;
         }
 
+        // ----- Pulse + wobble for X MULTI -----
+        float xMultiScale = 1f;
+        float xMultiRotation = 0f;
+        if (xMultiPulseTime < pulseDuration) {
+            xMultiPulseTime += delta;
+            float t = xMultiPulseTime / pulseDuration;
+            if (t > 1f) t = 1f;
+
+            float pulseCurve = 1f - 4f * (t - 0.5f) * (t - 0.5f);
+            if (pulseCurve < 0f) pulseCurve = 0f;
+
+            float baseScale = 1.0f;
+            float pulseScale = 0.35f;
+            xMultiScale = baseScale + pulseCurve * pulseScale;
+
+            float wobbleAngle = 8f;
+            xMultiRotation = pulseCurve * wobbleAngle;
+        }
+
         // Common digit size/origin
         float digitWidth  = 8 / 25f;
         float digitHeight = 14 / 25f;
@@ -89,7 +109,7 @@ public class PatternDisplay {
         // Draw POINTS (blue)
         batch.setColor(Assets.I().colorBlue());
         for (int i = 0; i < 3; i++) {
-            float x = 1.21f + (i * 0.35f);
+            float x = 1.57f + (i * 0.35f);
 
             batch.draw(
                 pointDigitalNumbers[i],
@@ -124,12 +144,31 @@ public class PatternDisplay {
             );
         }
 
+        // Draw X MULTI (red)
+        batch.setColor(Assets.I().colorRed());
+        for (int i = 0; i < 2; i++) {
+            float x = 4.77f + (i * 0.35f);
+
+            batch.draw(
+                xMultiDigitalNumbers[i],
+                x - originX,
+                numberBaseY - originY,
+                originX,
+                originY,
+                digitWidth,
+                digitHeight,
+                xMultiScale,
+                xMultiScale,
+                xMultiRotation
+            );
+        }
+
         batch.setColor(1f, 1f, 1f, 1f);
+        batch.draw(multTexture, 2.56f, numberBaseY - originY, 0.35f, 0.35f);
+        batch.draw(multTexture, 4.16f, numberBaseY - originY, 0.35f, 0.35f);
     }
 
-
-    public void setPattern(String pattern) {
-        animTime = 0f;
+    public void resetBaseValues() {
         pointsPulseTime = 0f;
         multiPulseTime  = 0f;
 
@@ -140,9 +179,16 @@ public class PatternDisplay {
         updateDisplayedMulti();
     }
 
+    public void reset() {
+        resetBaseValues();
+
+        xMultiPulseTime = 0f;
+        xMultiValue = 0f;
+        updateDisplayedXMulti();
+    }
+
     public void addPoints(float points) {
         pointsValue += points;
-        animTime = 0f;
         pointsPulseTime = 0f; // pulse only the points side
 
         updateDisplayedPoints();
@@ -150,37 +196,54 @@ public class PatternDisplay {
 
     public void addMulti(float multi) {
         multiValue += multi;
-        animTime = 0f;
         multiPulseTime = 0f; // pulse only the multi side
 
         updateDisplayedMulti();
     }
 
+    public void addXMulti(float xMulti) {
+        xMultiValue += xMulti;
+        xMultiPulseTime = 0f;
+
+        updateDisplayedXMulti();
+    }
+
     private void updateDisplayedPoints() {
         Assets assetManager = Assets.I();
-//        if(pointsValue == 0L) {
-//            for(int i = 0; i < 3; i++) {
-//                pointDigitalNumbers[i] = new TextureRegion(assetManager.unlitNumber());
-//            }
-//        } else {
-            long asLong = (long) pointsValue;
-            this.pointDigitalNumbers[2] = new TextureRegion(assetManager.getDigitalNumber(asLong % 10));
-            this.pointDigitalNumbers[1] = new TextureRegion(assetManager.getDigitalNumber((asLong / 10) % 10));
-            this.pointDigitalNumbers[0] = new TextureRegion(assetManager.getDigitalNumber((asLong / 100) % 10));
-//        }
+        long asLong = (long) pointsValue;
+        this.pointDigitalNumbers[2] = new TextureRegion(assetManager.getDigitalNumber(asLong % 10));
+        this.pointDigitalNumbers[1] = new TextureRegion(assetManager.getDigitalNumber((asLong / 10) % 10));
+        this.pointDigitalNumbers[0] = new TextureRegion(assetManager.getDigitalNumber((asLong / 100) % 10));
     }
 
     private void updateDisplayedMulti() {
         Assets assetManager = Assets.I();
-//        if(multiValue == 0L) {
-//            for(int i = 0; i < 3; i++) {
-//                multiDigitalNumbers[i] = new TextureRegion(Assets.I().unlitNumber());
-//            }
-//        } else {
-            long asLong = (long) multiValue;
-            this.multiDigitalNumbers[2] = new TextureRegion(assetManager.getDigitalNumber(asLong % 10));
-            this.multiDigitalNumbers[1] = new TextureRegion(assetManager.getDigitalNumber((asLong / 10) % 10));
-            this.multiDigitalNumbers[0] = new TextureRegion(assetManager.getDigitalNumber((asLong / 100) % 10));
-//        }
+        long asLong = (long) multiValue;
+        this.multiDigitalNumbers[2] = new TextureRegion(assetManager.getDigitalNumber(asLong % 10));
+        this.multiDigitalNumbers[1] = new TextureRegion(assetManager.getDigitalNumber((asLong / 10) % 10));
+        this.multiDigitalNumbers[0] = new TextureRegion(assetManager.getDigitalNumber((asLong / 100) % 10));
+    }
+
+    private void updateDisplayedXMulti() {
+        Assets assetManager = Assets.I();
+        long asLong = (long) xMultiValue;
+        this.xMultiDigitalNumbers[1] = new TextureRegion(assetManager.getDigitalNumber(asLong % 10));
+        this.xMultiDigitalNumbers[0] = new TextureRegion(assetManager.getDigitalNumber((asLong / 10) % 10));
+    }
+
+    public float getPoints() {
+        return pointsValue;
+    }
+
+    public float getMulti() {
+        return multiValue;
+    }
+
+    public float getXMulti() {
+        return xMultiValue;
+    }
+
+    public void triggerXMultAnimation() {
+        xMultiPulseTime = 0f;
     }
 }

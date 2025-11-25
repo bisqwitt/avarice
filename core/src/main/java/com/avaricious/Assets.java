@@ -50,6 +50,9 @@ public class Assets {
         manager.load("SlotMachineShadow.png", Texture.class);
         manager.load("Joker.png", Texture.class);
         manager.load("JokerShadow.png", Texture.class);
+        manager.load("TooltipBox.png", Texture.class);
+        manager.load("buttons/spin-again.png", Texture.class);
+        manager.load("buttons/spin-again-pressed.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -64,6 +67,7 @@ public class Assets {
 //        manager.load("symbolShadows/seven-shadow.png", Texture.class);
 
         manager.load("digital-numbers/plus.png", Texture.class);
+        manager.load("digital-numbers/mult.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/shadowed/0.png", Texture.class);
         manager.load("digital-numbers/shadowed/1.png", Texture.class);
@@ -108,9 +112,9 @@ public class Assets {
             borderMap.put(symbol, anim);
         });
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelifySans.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/m6x11plus.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.size = 66;
+        param.size = 36;
         bigFont = generator.generateFont(param);
         bigFont.setUseIntegerPositions(false);
         bigFont.getData().markupEnabled = true;
@@ -187,6 +191,10 @@ public class Assets {
 
     public Texture getProgressBarBorder() {
         return manager.get("progressbar/ProgressBarBorder.png", Texture.class);
+    }
+
+    public Texture getTooltipBox() {
+        return manager.get("TooltipBox.png", Texture.class);
     }
 
     public Texture getProgressLit() {
@@ -269,6 +277,13 @@ public class Assets {
         return manager.get("buttons/spin-button-pressed.png", Texture.class);
     }
 
+    public Texture getSpinAgainButton() {
+        return manager.get("buttons/spin-again.png", Texture.class);
+    }
+
+    public Texture getSpinAgainPressedButton() {
+        return manager.get("buttons/spin-again-pressed.png", Texture.class);
+    }
     public Color colorBlue() {
         return new Color(0.1647f, 0.5412f, 0.7843f, 1f);
     }
@@ -291,6 +306,10 @@ public class Assets {
 
     public Texture unlitNumber() {
         return manager.get("digital-numbers/unlit.png", Texture.class);
+    }
+
+    public Texture mult() {
+        return manager.get("digital-numbers/mult.png", Texture.class);
     }
 
     public Texture getDigitalNumber(long number) {

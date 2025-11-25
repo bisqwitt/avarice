@@ -3,7 +3,6 @@ package com.avaricious.upgrades;
 import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.pointAdditions.PointAdditionUpgrade;
 import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
-import com.avaricious.upgrades.symbolValue.SymbolValueUpgrade;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -34,15 +33,6 @@ public class UpgradesManager {
     private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();
     private final List<Upgrade> deck = new ArrayList<>();
 
-    public int symbolValueAdditions(Symbol symbol) {
-        return deck.stream()
-            .filter(SymbolValueUpgrade.class::isInstance)
-            .map(SymbolValueUpgrade.class::cast)
-            .filter(valueUpgrade -> valueUpgrade.getSymbol() == symbol)
-            .mapToInt(SymbolValueUpgrade::getAmount)
-            .sum();
-    }
-
     public int multAdditions(List<Symbol> selection, long count) {
         return deck.stream()
             .filter(MultAdditionUpgrade.class::isInstance)
@@ -58,22 +48,6 @@ public class UpgradesManager {
             .map(PointAdditionUpgrade.class::cast)
             .filter(upgrade -> upgrade.condition(selection, count))
             .mapToInt(PointAdditionUpgrade::getPoints)
-            .sum();
-    }
-
-    public int handAdditions() {
-        return deck.stream()
-            .filter(OneMoreHandPerRoundUpgrade.class::isInstance)
-            .map(OneMoreHandPerRoundUpgrade.class::cast)
-            .mapToInt(OneMoreHandPerRoundUpgrade::getAmount)
-            .sum();
-    }
-
-    public int spinAdditions() {
-        return deck.stream()
-            .filter(OneMoreSpinPerRoundUpgrade.class::isInstance)
-            .map(OneMoreSpinPerRoundUpgrade.class::cast)
-            .mapToInt(OneMoreSpinPerRoundUpgrade::getAmount)
             .sum();
     }
 

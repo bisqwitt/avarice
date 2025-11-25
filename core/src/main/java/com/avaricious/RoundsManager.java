@@ -52,9 +52,6 @@ public class RoundsManager {
     public void nextRound() {
         currentRound++;
         currentTargetScore = targetScorePerRound.get(currentRound);
-
-        handsLeft = baseHandsPerRound + UpgradesManager.I().handAdditions();
-        spinsLeft = baseSpinsPerRound + UpgradesManager.I().spinAdditions();;
     }
 
     public Integer getCurrentRound() {

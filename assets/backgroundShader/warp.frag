@@ -79,7 +79,7 @@ void main()
     float f = fbm(st + 4.0 * r);
 
     float coef = (f * f * f + (0.6 * f * f) + (0.5 * f));
-    coef = coef * 0.5 + 0.5;
+    //coef = coef * 0.5 + 0.5;
     color *= coef;
 
     gl_FragColor = vec4(color, 1.0) * v_color;

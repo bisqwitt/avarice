@@ -42,8 +42,4 @@ public class SymbolManager {
         // Should never reach here if weights > 0
         return Symbol.LEMON;
     }
-
-    public Integer getSymbolValue(Symbol symbol) {
-        return symbol.baseValue() + UpgradesManager.I().symbolValueAdditions(symbol);
-    }
 }

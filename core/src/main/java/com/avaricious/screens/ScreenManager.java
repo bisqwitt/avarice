@@ -2,6 +2,9 @@ package com.avaricious.screens;
 
 import com.avaricious.Main;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +12,9 @@ import java.util.Map;
 public class ScreenManager {
 
     private static ScreenManager instance;
+
+    private static ScreenViewport uiViewport;
+    private static FitViewport viewport;
 
     public static ScreenManager create(Main app) {
         return (instance = new ScreenManager(app));
@@ -29,6 +35,22 @@ public class ScreenManager {
 
     public void setScreen(Class<? extends ScreenAdapter> screenClass) {
         app.setScreen(screens.get(screenClass));
+    }
+
+    public static void setViewport(FitViewport fitViewport) {
+        viewport = fitViewport;
+    }
+
+    public static FitViewport getViewport() {
+        return viewport;
+    }
+
+    public static void setUiViewport(ScreenViewport viewport) {
+        uiViewport = viewport;
+    }
+
+    public static Viewport getUiViewport() {
+        return uiViewport;
     }
 
 }

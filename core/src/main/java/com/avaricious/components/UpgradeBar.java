@@ -18,24 +18,21 @@ public class UpgradeBar {
     private final TextureRegion jokerCard;
     private final TextureRegion cardShadow;
 
-    private Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
-    private Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
+    private final Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
+    private final Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
 
-    // card layout in world units
-    private final float x;
-    private final float y;
-    private final float baseWidth;
-    private final float baseHeight;
+    private Upgrade hoveringKey = null;
 
     public UpgradeBar() {
         jokerCard = new TextureRegion(Assets.I().getJokerCard());
         cardShadow = new TextureRegion(Assets.I().getJokerCardShadow());
 
         // original values
-        x = 3.5f;
-        y = 0.5f;
-        baseWidth  = 142 / 115f;
-        baseHeight = 190 / 115f;
+        // card layout in world units
+        float x = 3.5f;
+        float y = 0.5f;
+        float baseWidth = 142 / 115f;
+        float baseHeight = 190 / 115f;
 
         List<Upgrade> upgrades = UpgradesManager.I().getUpgrades();
         for(int i = 0; i < upgrades.size(); i++) {
@@ -46,6 +43,7 @@ public class UpgradeBar {
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
+        hoveringKey = null;
         cardBounds.forEach(((upgrade, rectangle) -> {
             boolean hovered = rectangle.contains(mouse);
             boolean selected = ((pressed && !wasPressed) || (!pressed && wasPressed)) && rectangle.contains(mouse);
@@ -59,6 +57,8 @@ public class UpgradeBar {
             cardSlot.updatePulse(selected, delta);
             cardSlot.updateHoverWobble(hovered, delta);
             cardSlot.tickScale(delta);
+
+            if(hovered) hoveringKey = upgrade;
         }));
     }
 
@@ -104,6 +104,22 @@ public class UpgradeBar {
                 rotation
             );
         }));
+    }
+
+    public Upgrade getHoveringUpgrade() {
+        return hoveringKey;
+    }
+
+    public Rectangle getHoveringRectangle() {
+        return cardBounds.get(hoveringKey);
+    }
+
+    public Slot getSlotByUpgrade(Upgrade upgrade) {
+        return cardAnimationManagers.get(upgrade);
+    }
+
+    public Rectangle getRectangleByUpgrade(Upgrade upgrade) {
+        return cardBounds.get(upgrade);
     }
 
 }

@@ -5,21 +5,28 @@ import com.avaricious.*;
 import com.avaricious.components.*;
 import com.avaricious.components.background.BackgroundLights;
 import com.avaricious.components.background.WarpBackground;
+import com.avaricious.components.buttons.ButtonBoard;
+import com.avaricious.components.buttons.SpinAgainButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
+import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
-import com.avaricious.components.progressbar.TimedProgressBar;
+import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
+import com.avaricious.components.slot.pattern.SlotMatch;
+import com.avaricious.upgrades.UpgradesManager;
+import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Timer;
+
+import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
 
@@ -36,7 +43,7 @@ public class SlotScreen extends ScreenAdapter {
     private final TurnsLeftDisplay turnsLeftDisplay;
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
-    private final ButtonBoard buttonBoard;
+    private final SpinAgainButton spinAgainButton;
     private final UpgradeBar upgradeBar;
 
     private final CameraShaker cameraShaker;
@@ -72,7 +79,7 @@ public class SlotScreen extends ScreenAdapter {
         turnsLeftDisplay = new TurnsLeftDisplay();
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
-        buttonBoard = new ButtonBoard(this::onApplyButtonPressed, this::onSpinButtonPressed);
+        spinAgainButton = new SpinAgainButton(this::onSpinButtonPressed);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight(), rayHandler);
         cameraShaker = new CameraShaker(app);
@@ -89,18 +96,8 @@ public class SlotScreen extends ScreenAdapter {
         turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
         rayHandler.setAmbientLight(1f);
 
-        slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(() -> {
-            progressBar.damage(10f);
-//            Timer.schedule(new Timer.Task() {
-//                @Override
-//                public void run() {
-//                    calcSelection();
-//                    slotMachine.lockHoverAndSelect();
-//                }
-//            }, 5);
-        });
-
-        slotMachine.clearSelection();
+        //progressBar.damage(10f);
+        slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(this::runResult);
         slotMachine.spin();
     }
 
@@ -110,8 +107,6 @@ public class SlotScreen extends ScreenAdapter {
         handleInput(delta);
         background.render(batch, delta);
         app.getViewport().apply();
-
-        popupManager.update(delta);
 
         backgroundLights.render(delta);
         cameraShaker.render(delta);
@@ -139,9 +134,9 @@ public class SlotScreen extends ScreenAdapter {
 //        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
         upgradeBar.draw(batch);
-        buttonBoard.draw(batch, delta);
+        spinAgainButton.draw(batch, delta);
         slotMachine.draw(app, delta);
-        popupManager.render(batch);
+        popupManager.render(batch, delta);
 //        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
 //        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
         batch.end();
@@ -155,91 +150,83 @@ public class SlotScreen extends ScreenAdapter {
         mouse.set(Gdx.input.getX(), Gdx.input.getY());
         app.getViewport().unproject(mouse);
 
-        Rectangle slotBounds = slotMachine.getBounds();
         boolean pressed = Gdx.input.isButtonPressed(0);
-
-        buttonBoard.handleInput(mouse, pressed, wasPressed);
+        spinAgainButton.handleInput(mouse, pressed, wasPressed);
         upgradeBar.handleInput(mouse, pressed, wasPressed, delta);
-
-        if (pressed && !wasPressed) {
-            if (slotBounds.contains(mouse.x, mouse.y)) {
-                int col = (int)((mouse.x - slotBounds.x) / (slotMachine.getCellW() + slotMachine.getSpacingX()));
-                int row = (int)((mouse.y - slotBounds.y) / (slotMachine.getCellH() + slotMachine.getSpacingY()));
-
-                if (col >= 0 && col < slotMachine.getCols() &&
-                    row >= 0 && row < slotMachine.getRows()) {
-                    slotMachine.selectSymbolAt(col, row);
-//                    patternDisplay.setPattern(slotMachine.getScoreFormula());
-                }
-            }
-//            upgradeBar.setSelected(upgradeBar.getBounds().contains(mouse));
-        }
-        slotMachine.hoveringAt(mouse);
+        if(upgradeBar.getHoveringUpgrade() != null) popupManager.showTooltip(upgradeBar.getHoveringUpgrade(), upgradeBar.getHoveringRectangle());
         upgradeSticks.hoveringAt(mouse);
-//        upgradeBar.setHovered(upgradeBar.getBounds().contains(mouse));
 
         wasPressed = pressed;
     }
 
-    private void calcSelection() {
+    private void runResult() {
+        List<SlotMatch> matches = slotMachine.findMatches();
+        if(matches.isEmpty()) {
+            slotMachine.getAllSlots();
+            progressBar.damage(10f);
+            return;
+        }
+
         float[] delayCounter = {0f};
-        slotMachine.getSelectedSlots().forEach(((symbol, slots) -> {
-            slots.forEach(slot -> {
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        slot.wobble();
-                        slot.pulse();
-                        patternDisplay.addPoints(symbol.baseValue());
-                        popupManager.spawn(Assets.I().getDigitalNumber(symbol.baseValue()),
-                            Assets.I().colorBlue(), slot.getPos().x + 1f, slot.getPos().y + 1f);
-                    }
-                }, delayCounter[0]);
+        matches.forEach((slotMatch -> {
+            slotMatch.slots().forEach(slot -> {
+                Timer.schedule(TaskFactory.create(() -> {
+                    slot.wobble();
+                    slot.pulse();
+                    patternDisplay.addPoints(slotMatch.symbol().baseValue());
+                    popupManager.spawnNumber(Assets.I().getDigitalNumber(slotMatch.symbol().baseValue()), Assets.I().colorBlue(),
+                        slot.getPos().x + 1f, slot.getPos().y + 1f);
+                }), delayCounter[0]);
                 delayCounter[0] += 0.5f;
             });
-
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    slots.forEach(slot -> {
-                        slot.wobble();
-                        slot.pulse();
-                    });
+            Timer.schedule(TaskFactory.create(() -> {
+                    List<Slot> slots = slotMatch.slots();
+                    slots.forEach(Slot::wobble);
+                    slots.forEach(Slot::pulse);
                     patternDisplay.addMulti(slots.size());
-                    popupManager.spawn(Assets.I().getDigitalNumber(slotMachine.countSymbol(symbol)),
-                        Assets.I().colorRed(), 11f, 6f);
-                }
-            },  delayCounter[0]);
+                    Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
+                    popupManager.spawnNumber(Assets.I().getDigitalNumber(slots.size()), Assets.I().colorRed(),
+                        middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
+            }), delayCounter[0]);
             delayCounter[0] += 0.5f;
-        }));
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-//                progressBar.restart(4);
-//                onApplyButtonPressed();
-            }
-        }, delayCounter[0]);
 
-//        UpgradesManager.I().getUpgrades().stream().filter(upgrade -> )
+            UpgradesManager.I().getUpgrades()
+                .stream().filter(PatternMultAdditionUpgrade.class::isInstance)
+                .map(PatternMultAdditionUpgrade.class::cast)
+                .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
+                .forEach(upgrade -> {
+                    Timer.schedule(TaskFactory.create(() -> {
+                        int multi = upgrade.getMulti();
+                        Slot cardSlot = upgradeBar.getSlotByUpgrade(upgrade);
+                        cardSlot.pulse();
+                        cardSlot.wobble();
+                        patternDisplay.addMulti(multi);
+                        popupManager.spawnNumber(Assets.I().getDigitalNumber(multi), Assets.I().colorRed(),
+                            upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
+                    }), delayCounter[0]);
+                    delayCounter[0] += 0.5f;
+                });
+        }));
+
+        Timer.schedule(TaskFactory.create(() -> patternDisplay.addXMulti(1)), delayCounter[0]);
+        delayCounter[0] += 0.5f;
+        Timer.schedule(TaskFactory.create(() -> {
+            scoreDisplay.addToScore(Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti()));
+            patternDisplay.resetBaseValues();
+            patternDisplay.triggerXMultAnimation();
+        }), delayCounter[0]);
     }
 
     private void onSpinButtonPressed() {
-        if (roundsManager.getSpinsLeft() == 0) return;
         slotMachine.spin();
-        roundsManager.minusOneSpin();
-        turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
-        patternDisplay.setPattern("");
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);
     }
 
     private void onApplyButtonPressed() {
-        if (roundsManager.getAppliesLeft() == 0) return;
-        scoreDisplay.addToScore(slotMachine.applySelection());
-        roundsManager.minusOneHand();
-        turnsLeftDisplay.setAppliesLeft(roundsManager.getAppliesLeft());
-        patternDisplay.setPattern("");
+//        scoreDisplay.addToScore(slotMachine.applySelection());
+        patternDisplay.reset();
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);

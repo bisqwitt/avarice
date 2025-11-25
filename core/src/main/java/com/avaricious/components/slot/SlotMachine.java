@@ -3,6 +3,9 @@ package com.avaricious.components.slot;
 import box2dLight.RayHandler;
 import com.avaricious.Assets;
 import com.avaricious.Main;
+import com.avaricious.components.slot.pattern.PatternFinder;
+import com.avaricious.components.slot.pattern.PatternMatch;
+import com.avaricious.components.slot.pattern.SlotMatch;
 import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -35,12 +38,7 @@ public class SlotMachine {
     private final List<Reel> reels = new ArrayList<>();
 
     boolean spinning = false;
-
-    // UI state
-    private Symbol hover;
     private List<Symbol> selection = new ArrayList<>();
-    private String scoreFormula = "";
-    private String patternText = "";
 
     public SlotMachine(float worldWidth, float worldHeight, RayHandler rayHandler) {
         // center the 5x3 grid within the world
@@ -89,9 +87,9 @@ public class SlotMachine {
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
         }
-        reels.get(reels.size() -1).setOnSpinFinished(() -> {
-            spinning = false;
-        });
+//        reels.get(reels.size() -1).setOnSpinFinished(() -> {
+//            spinning = false;
+//        });
     }
 
     // --- drawing ---
@@ -146,7 +144,6 @@ public class SlotMachine {
 
                 if (isInGrid) {
                     selected = selection.contains(sym) && !reel.isSpinning();
-                    hovered = (hover == sym);              // NEW: pure hover state
                     highlighted = (hovered || selected);   // same visual intent
 
                     Slot slot = grid[c][k];
@@ -228,104 +225,36 @@ public class SlotMachine {
                 }
             }, stopDelay);
         }
-
-        clearSelection();
     }
 
-    // --- apply selection (score + quick nudge feedback) ---
-    public long applySelection() {
-        long score = calcScore();
-        clearSelection();
-        spin();
-        return score;
-    }
+    // Returns each matching line as a List<Slot>
+    public List<SlotMatch> findMatches() {
+        Symbol[][] symbolMap = new Symbol[cols][rows];
 
-    // --- input helpers ---
-    public void selectSymbolAt(int col, int rowFromBottom) {
-        if(spinning) return;
-        // clamp inputs first
-        col = Math.max(0, Math.min(cols - 1, col));
-        rowFromBottom = Math.max(0, Math.min(rows - 1, rowFromBottom));
-
-        // convert: bottom-indexed (0=bottom) -> top-indexed (0=top)
-        int rowFromTop = rows - 1 - rowFromBottom;
-
-        Symbol type = getSymbolAt(col, rowFromTop);
-        if (selection.contains(type)) {
-            selection.remove(type);
-        } else {
-            long symbolCount = countSymbol(type);
-            selection = selection.stream()
-                .filter(t -> countSymbol(t) == symbolCount)
-                .collect(Collectors.toList());
-            selection.add(type);
-        }
-        updateDisplayTexts();
-    }
-
-    public void hoveringAt(Vector2 mouse) {
-        if(spinning) return;
-        Rectangle bounds = getBounds();
-        if (!bounds.contains(mouse.x, mouse.y)) {
-            hover = null;
-            return;
+        for (int c = 0; c < reels.size(); c++) {
+            for (int row = 0; row < rows; row++) {
+                symbolMap[c][row] = reels.get(c).symbolAtRow(row);
+            }
         }
 
-        float stepX = (cellW + spacingX);
-        float stepY = (cellH + spacingY);
+        // Raw matches (symbol + positions)
+        List<PatternMatch> matches = PatternFinder.findMatches(symbolMap);
 
-        int col = (int)((mouse.x - bounds.x) / stepX);
-        int rowFromBottom = (int)((mouse.y - bounds.y) / stepY);
+        // Build final slot-based matches
+        List<SlotMatch> result = new ArrayList<>();
 
-        // clamp to grid
-        if (col < 0 || col >= cols || rowFromBottom < 0 || rowFromBottom >= rows) {
-            hover = null;
-            return;
+        for (PatternMatch match : matches) {
+            Symbol symbol = match.getSymbol();
+
+            List<Slot> slots = new ArrayList<>();
+            for (java.awt.Point p : match.getPositions()) {
+                slots.add(grid[p.x][p.y]);
+            }
+
+            result.add(new SlotMatch(symbol, slots));
         }
 
-        // convert to top-indexed row for rendering/query
-        int rowFromTop = rows - 1 - rowFromBottom;
-        hover = getSymbolAt(col, rowFromTop);
-    }
-
-
-    // --- scoring/labels ---
-    public void updateDisplayTexts() {
-        if (selection.isEmpty()) {
-            scoreFormula = "";
-            patternText = "";
-            return;
-        }
-
-        long numOfAKind = countSymbol();
-        long chips = selection.stream()
-            .mapToLong(symbol -> numOfAKind * SymbolManager.I().getSymbolValue(symbol))
-            .sum();
-
-        Assets assetManager = Assets.I();
-        scoreFormula = (chips + UpgradesManager.I().chipAdditions(selection, numOfAKind))
-            + " x " + (numOfAKind * selection.size() + UpgradesManager.I().multAdditions(selection, numOfAKind));
-
-        patternText = (selection.size() + " x " + numOfAKind) + " of a kind";
-    }
-
-    private void checkResult() {
-
-//        Symbol[][] symbolMap = new Symbol[5][3];
-//
-//        for(int i = 0; i < reels.size(); i++) {
-//            for (int row = 0; row < 3; row++) {
-//                symbolMap[i][row] = reels.get(i).symbolAtRow(row);
-//            }
-//        }
-//
-//        List<Match> matches = PatternFinder.findMatches(symbolMap);
-    }
-
-    private long calcScore() {
-        if (scoreFormula == null || scoreFormula.isEmpty()) return 0L;
-        String[] parts = scoreFormula.split(" x ");
-        return Long.parseLong(parts[0]) * Long.parseLong(parts[1]);
+        return result;
     }
 
     // --- symbol queries on current visible grid ---
@@ -333,46 +262,11 @@ public class SlotMachine {
         return reels.get(col).symbolAtRow(row);
     }
 
-    public long countSymbol() {
-        Symbol target = selection.get(0);
-        return countSymbol(target);
+    public List<Slot> getAllSlots() {
+        List<Slot> slots = new ArrayList<>();
+        Arrays.stream(grid).forEach(rows -> slots.addAll(Arrays.asList(rows)));
+        return slots;
     }
-
-    public long countSymbol(Symbol type) {
-        long count = 0;
-        for (int c = 0; c < cols; c++) {
-            for (int r = 0; r < rows; r++) {
-                if (getSymbolAt(c, r) == type) count++;
-            }
-        }
-        return count;
-    }
-
-    public void clearSelection() {
-        selection.clear();
-        scoreFormula = "";
-        patternText = "";
-    }
-
-    public Map<Symbol, List<Slot>> getSelectedSlots() {
-        Map<Symbol, List<Slot>> result = new HashMap<>();
-        selection.forEach(symbol -> result.put(symbol, new ArrayList<>()));
-
-        for(int col = 0; col < reels.size(); col++) {
-            for(int row = 0; row < 3; row++) {
-                Symbol symbol = reels.get(col).symbolAtRow(row);
-                if(selection.contains(symbol)) result.get(symbol).add(grid[col][row]);
-            }
-        }
-        return result;
-    }
-
-    public Slot getSlotAt(int col, int row) {
-        return grid[col][row + 1];
-    }
-
-    public String getScoreFormula() { return scoreFormula; }
-    public String getPatternText() { return patternText; }
 
     public Rectangle getBounds() {
         return new Rectangle(

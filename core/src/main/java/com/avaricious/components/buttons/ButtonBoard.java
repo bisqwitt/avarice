@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.components.buttons;
 
 import com.avaricious.Assets;
 import com.badlogic.gdx.graphics.Texture;
@@ -34,12 +34,12 @@ public class ButtonBoard {
         applyButtonTexture = new TextureRegion(assetManager.getApplyButton());
         spinButtonTexture = new TextureRegion(assetManager.getSpinButton());
 
-        applyButton = new Rectangle(8.05f, 0.6f, 2.15f, 0.95f);
-        spinButton = new Rectangle(10.675f, 0.6f, 1f, 0.88f);
+        applyButton = new Rectangle(9.55f, 2.6f, 2.15f, 0.95f);
+        spinButton = new Rectangle(12.175f, 2.6f, 1f, 0.88f);
     }
 
     public void draw(SpriteBatch batch, float delta) {
-        batch.draw(buttonBoardTexture, 7.55f, 0.3f, 4.6f, 1.36f);
+//        batch.draw(buttonBoardTexture, 7.55f, 0.3f, 4.6f, 1.36f);
         drawButton(batch, delta, "apply");
         drawButton(batch, delta, "spin");
     }
@@ -65,8 +65,8 @@ public class ButtonBoard {
     }
 
     private void drawButton(SpriteBatch batch, float delta, String type) {
-        float x = 7.55f;
-        float y = 0.3f;
+        float x = 9.05f;
+        float y = 2.3f;
         float w = 4.6f;
         float h = 1.36f;
 
