@@ -53,44 +53,34 @@ public class Assets {
         manager.load("TooltipBox.png", Texture.class);
         manager.load("buttons/spin-again.png", Texture.class);
         manager.load("buttons/spin-again-pressed.png", Texture.class);
+        manager.load("buttons/spin-again-hovered.png", Texture.class);
+        manager.load("buttons/cashout.png", Texture.class);
+        manager.load("buttons/cashout-pressed.png", Texture.class);
+        manager.load("buttons/cashout-hovered.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
         manager.load("progressbar/ProgressBarUnlit.png", Texture.class);
 
-//        manager.load("symbolShadows/lemon-shadow.png", Texture.class);
-//        manager.load("symbolShadows/cherry-shadow.png", Texture.class);
-//        manager.load("symbolShadows/clover-shadow.png", Texture.class);
-//        manager.load("symbolShadows/bell-shadow.png", Texture.class);
-//        manager.load("symbolShadows/iron-shadow.png", Texture.class);
-//        manager.load("symbolShadows/diamond-shadow.png", Texture.class);
-//        manager.load("symbolShadows/seven-shadow.png", Texture.class);
-
         manager.load("digital-numbers/plus.png", Texture.class);
         manager.load("digital-numbers/mult.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
-        manager.load("digital-numbers/fabled/0.png", Texture.class);
-        manager.load("digital-numbers/fabled/1.png", Texture.class);
-        manager.load("digital-numbers/fabled/2.png", Texture.class);
-        manager.load("digital-numbers/fabled/3.png", Texture.class);
-        manager.load("digital-numbers/fabled/4.png", Texture.class);
-        manager.load("digital-numbers/fabled/5.png", Texture.class);
-        manager.load("digital-numbers/fabled/6.png", Texture.class);
-        manager.load("digital-numbers/fabled/7.png", Texture.class);
-        manager.load("digital-numbers/fabled/8.png", Texture.class);
-        manager.load("digital-numbers/fabled/9.png", Texture.class);
+        manager.load("digital-numbers/0.png", Texture.class);
+        manager.load("digital-numbers/1.png", Texture.class);
+        manager.load("digital-numbers/2.png", Texture.class);
+        manager.load("digital-numbers/3.png", Texture.class);
+        manager.load("digital-numbers/4.png", Texture.class);
+        manager.load("digital-numbers/5.png", Texture.class);
+        manager.load("digital-numbers/6.png", Texture.class);
+        manager.load("digital-numbers/7.png", Texture.class);
+        manager.load("digital-numbers/8.png", Texture.class);
+        manager.load("digital-numbers/9.png", Texture.class);
 
         manager.load("sticks/uncommon-stick.png", Texture.class);
         manager.load("sticks/common-stick.png", Texture.class);
         manager.load("sticks/rare-stick.png", Texture.class);
         manager.load("sticks/epic-stick.png", Texture.class);
         manager.load("sticks/legendary-stick.png", Texture.class);
-
-        manager.load("buttons/button-board.png", Texture.class);
-        manager.load("buttons/apply-button.png", Texture.class);
-        manager.load("buttons/apply-button-pressed.png", Texture.class);
-        manager.load("buttons/spin-button.png", Texture.class);
-        manager.load("buttons/spin-button-pressed.png", Texture.class);
 
         manager.load("symbols/64/lemon.png", Texture.class);
         manager.load("symbols/64/cherry.png", Texture.class);
@@ -213,6 +203,22 @@ public class Assets {
         return manager.get("digital-numbers/plus.png", Texture.class);
     }
 
+    public Texture getSpinAgainButtonHovered() {
+        return manager.get("buttons/spin-again-hovered.png", Texture.class);
+    }
+
+    public Texture getCashoutButton() {
+        return manager.get("buttons/cashout.png", Texture.class);
+    }
+
+    public Texture getCashoutButtonPressed() {
+        return manager.get("buttons/cashout-pressed.png", Texture.class);
+    }
+
+    public Texture getCashoutButtonHovered() {
+        return manager.get("buttons/cashout-hovered.png", Texture.class);
+    }
+
     public Texture getSlotMachineBorder() {
         return manager.get("SlotMachineBorder.png", Texture.class);
     }
@@ -313,7 +319,7 @@ public class Assets {
     }
 
     public Texture getDigitalNumber(long number) {
-        return manager.get("digital-numbers/fabled/" + number + ".png", Texture.class);
+        return manager.get("digital-numbers/" + number + ".png", Texture.class);
     }
 
 }

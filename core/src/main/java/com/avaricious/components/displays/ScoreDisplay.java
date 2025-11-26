@@ -27,6 +27,11 @@ public class ScoreDisplay {
             displayedScore += (long) Math.ceil(diff * 0.025);
             updateDigitalNumbers(displayedScore);
         }
+        if(displayedScore > score) {
+            long diff = displayedScore - score;
+            displayedScore -= (long) Math.ceil(diff * 0.025);
+            updateDigitalNumbers(displayedScore);
+        }
 
         hoverTime += delta;
         float hoverOffset = (float) Math.sin(hoverTime * 1.5f/*hoverTime*/) * 0.03f/*hoverStrength*/;
@@ -42,12 +47,16 @@ public class ScoreDisplay {
         batch.setColor(1f, 1f, 1f, 1f);
     }
 
-    public void addToScore(long score) {
-        this.score += score;
+    public void addToScore(long amount) {
+        this.score += amount;
+    }
+
+    public void removeFromScore(long amount) {
+        this.score -= amount;
     }
 
     public void resetScore() {
-        score = 0;
+        score = 300;
         updateDigitalNumbers(0);
     }
 
