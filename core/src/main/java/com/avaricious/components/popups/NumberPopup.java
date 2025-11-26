@@ -43,7 +43,7 @@ public class NumberPopup {
 
         // Fade out over full lifetime
         float initialAlpha = 1f;
-        float alpha = initialAlpha * (1f - progress);
+        float alpha = initialAlpha * (1f - progress / 2);
 
         // ---- SINGLE FAST PULSE + WOBBLE ----
         float pulseDuration = 0.2f; // fraction of lifetime used for the pulse
@@ -64,25 +64,25 @@ public class NumberPopup {
         float rotation = pulseCurve * wobbleAngle;
 
         // Draw centered
-        float width = 8 / 30f;
-        float height = 14 / 30f;
+        float width = 7 / 20f;
+        float height = 11 / 20f;
         float originX = width / 2f;
         float originY = height / 2f;
 
-        batch.setColor(1f, 1f, 1f, alpha);
-        batch.draw(
-            whiteTexture,
-            position.x - originX - 0.125f, position.y - originY - 0.1f,
-            originX, originY,
-            0.5f, 0.5f,
-            scale, scale,
-            rotation + 45
-        );
+        batch.setColor(1f, 1f, 1f, 1f);
+//        batch.draw(
+//            whiteTexture,
+//            position.x - originX - 0.125f, position.y - originY - 0.1f,
+//            originX, originY,
+//            0.65f, 0.65f,
+//            scale, scale,
+//            rotation + 45
+//        );
 
-        batch.setColor(color.r, color.g, color.b, alpha);
+        batch.setColor(color.r, color.g, color.b, 1f);
         batch.draw(
             plusTexture,
-            position.x - originX - 0.25f, position.y - originY,
+            position.x - originX - 0.5f, position.y - originY,
             originX, originY,
             width, height,
             scale, scale,
