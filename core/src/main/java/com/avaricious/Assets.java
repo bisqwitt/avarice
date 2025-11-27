@@ -65,16 +65,16 @@ public class Assets {
         manager.load("digital-numbers/plus.png", Texture.class);
         manager.load("digital-numbers/mult.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
-        manager.load("digital-numbers/0.png", Texture.class);
-        manager.load("digital-numbers/1.png", Texture.class);
-        manager.load("digital-numbers/2.png", Texture.class);
-        manager.load("digital-numbers/3.png", Texture.class);
-        manager.load("digital-numbers/4.png", Texture.class);
-        manager.load("digital-numbers/5.png", Texture.class);
-        manager.load("digital-numbers/6.png", Texture.class);
-        manager.load("digital-numbers/7.png", Texture.class);
-        manager.load("digital-numbers/8.png", Texture.class);
-        manager.load("digital-numbers/9.png", Texture.class);
+        manager.load("digital-numbers/fabled/0.png", Texture.class);
+        manager.load("digital-numbers/fabled/1.png", Texture.class);
+        manager.load("digital-numbers/fabled/2.png", Texture.class);
+        manager.load("digital-numbers/fabled/3.png", Texture.class);
+        manager.load("digital-numbers/fabled/4.png", Texture.class);
+        manager.load("digital-numbers/fabled/5.png", Texture.class);
+        manager.load("digital-numbers/fabled/6.png", Texture.class);
+        manager.load("digital-numbers/fabled/7.png", Texture.class);
+        manager.load("digital-numbers/fabled/8.png", Texture.class);
+        manager.load("digital-numbers/fabled/9.png", Texture.class);
 
         manager.load("sticks/uncommon-stick.png", Texture.class);
         manager.load("sticks/common-stick.png", Texture.class);
@@ -319,7 +319,7 @@ public class Assets {
     }
 
     public Texture getDigitalNumber(long number) {
-        return manager.get("digital-numbers/" + number + ".png", Texture.class);
+        return manager.get("digital-numbers/fabled/" + number + ".png", Texture.class);
     }
 
 }

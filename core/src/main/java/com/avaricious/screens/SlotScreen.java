@@ -162,7 +162,7 @@ public class SlotScreen extends ScreenAdapter {
         List<SlotMatch> matches = slotMachine.findMatches();
         if(matches.isEmpty()) {
             slotMachine.getAllSlots();
-            progressBar.damage(10f);
+            progressBar.damage(30f);
             if(progressBar.getCurrentHealth() <= 0) {
                 progressBar.setCurrentHealth(progressBar.getMaxHealth());
                 scoreDisplay.removeFromScore(100);

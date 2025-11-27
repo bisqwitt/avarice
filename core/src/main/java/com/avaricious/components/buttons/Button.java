@@ -58,16 +58,16 @@ public class Button {
 
         if(pressed && !wasPressed) {
             if(buttonRectangle.contains(mouse.x, mouse.y))
-                currentTexture = new TextureRegion(pressedButtonTexture);
+                currentTexture = pressedButtonTexture;
         } else if(!pressed && wasPressed) {
-            currentTexture = new TextureRegion(defaultButtonTexture);
-            if(buttonRectangle.contains(mouse.x, mouse.y)) onButtonPressedRunnable.run();
+            currentTexture = hovering ? hoveredButtonTexture : defaultButtonTexture;
+            if(hovering) onButtonPressedRunnable.run();
         }
 
-        boolean spacePressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
-        if(spacePressed && !spaceWasPressed) currentTexture = new TextureRegion(pressedButtonTexture);
+        boolean spacePressed = Gdx.input.isKeyPressed(key);
+        if(spacePressed && !spaceWasPressed) currentTexture = pressedButtonTexture;
         if(!spacePressed && spaceWasPressed) {
-            currentTexture = new TextureRegion(defaultButtonTexture);
+            currentTexture = defaultButtonTexture;
             onButtonPressedRunnable.run();
         }
 
