@@ -226,6 +226,7 @@ public class SlotScreen extends ScreenAdapter {
     private void onApplyButtonPressed() {
         scoreDisplay.addToScore(Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti()));
         patternDisplay.reset();
+        progressBar.setCurrentHealth(progressBar.getMaxHealth());
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);
