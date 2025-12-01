@@ -1,7 +1,6 @@
 package com.avaricious.components.displays;
 
 import com.avaricious.Assets;
-import com.avaricious.RoundsManager;
 import com.avaricious.components.progressbar.ProgressBar;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,7 +19,7 @@ public class ScoreDisplay {
 
     public ScoreDisplay() {
         progressBar = new ProgressBar();
-        progressBar.setMaxValue(1000f);
+        progressBar.setMaxValue(750f);
 
         scoreDisplayTexture = Assets.I().getScoreBorder();
         for (int i = 0; i < digitalNumbers.length; i++) {
@@ -29,7 +28,7 @@ public class ScoreDisplay {
     }
 
     public void draw(SpriteBatch batch, float delta) {
-        progressBar.render(batch);
+        progressBar.draw(batch);
         if(displayedScore < score) {
             long diff = score - displayedScore;
             displayedScore += (long) Math.ceil(diff * 0.025);
@@ -78,6 +77,10 @@ public class ScoreDisplay {
         digitalNumbers[2] = assetManager.getDigitalNumber((score / 10000) % 10);
         digitalNumbers[1] = assetManager.getDigitalNumber((score / 100000) % 10);
         digitalNumbers[0] = assetManager.getDigitalNumber((score / 1000000) % 10);
+    }
+
+    public boolean pointsReached() {
+        return progressBar.getCurrentValue() >= progressBar.getMaxValue();
     }
 
 }

@@ -45,7 +45,7 @@ public class HealthBar extends ProgressBar {
 
     // Option A: just expose render as public, using the ProgressBar's fixed position
     @Override
-    public void render(SpriteBatch batch) {
+    public void draw(SpriteBatch batch) {
         for(int i = 0; i < progress.length; i++) {
             batch.draw(progress[i], 14.85f, 3.76f + (i * 0.04325f), 3 / 22f, 2 / 22f);
         }

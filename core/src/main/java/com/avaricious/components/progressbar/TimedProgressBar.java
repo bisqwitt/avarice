@@ -24,7 +24,7 @@ public class TimedProgressBar extends ProgressBar {
         setCurrentValue(elapsed);
 
         // draw the bar
-        super.render(batch);
+        super.draw(batch);
     }
 
     public void reset() {

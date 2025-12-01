@@ -1,9 +1,11 @@
 package com.avaricious.components;
 
 import com.avaricious.Assets;
+import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.slot.Slot;   // <-- import your Slot
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradesManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -23,27 +25,23 @@ public class UpgradeBar {
 
     private Upgrade hoveringKey = null;
 
-    public UpgradeBar() {
+    private final boolean tooltipOnTopOfCard;
+
+    public UpgradeBar(List<? extends Upgrade> upgrades, Rectangle cardRectangle, float offset, boolean tooltipOnTop) {
+        tooltipOnTopOfCard = tooltipOnTop;
         jokerCard = new TextureRegion(Assets.I().getJokerCard());
         cardShadow = new TextureRegion(Assets.I().getJokerCardShadow());
 
-        // original values
-        // card layout in world units
-        float x = 3.5f;
-        float y = 0.5f;
-        float baseWidth = 142 / 115f;
-        float baseHeight = 190 / 115f;
-
-        List<Upgrade> upgrades = UpgradesManager.I().getUpgrades();
         for(int i = 0; i < upgrades.size(); i++) {
             Upgrade upgrade = upgrades.get(i);
-            cardBounds.put(upgrade, new Rectangle(x + (i * 1.75f), y, baseWidth, baseHeight));
-            cardAnimationManagers.put(upgrade, new Slot(new Vector2(x, y)));
+            cardBounds.put(upgrade, new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height));
+            cardAnimationManagers.put(upgrade, new Slot(new Vector2(cardRectangle.x, cardRectangle.y)));
         }
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
         hoveringKey = null;
+        Upgrade[] clickedUpgrade = new Upgrade[1];
         cardBounds.forEach(((upgrade, rectangle) -> {
             boolean hovered = rectangle.contains(mouse);
             boolean selected = ((pressed && !wasPressed) || (!pressed && wasPressed)) && rectangle.contains(mouse);
@@ -59,7 +57,19 @@ public class UpgradeBar {
             cardSlot.tickScale(delta);
 
             if(hovered) hoveringKey = upgrade;
+            if(selected) clickedUpgrade[0] = hoveringKey;
         }));
+
+        if(hoveringKey != null)
+            PopupManager.I().showTooltip(hoveringKey,
+                getHoveringRectangle().x - 1f, getHoveringRectangle().y + (tooltipOnTopOfCard ? 2 : -2));
+
+        if(clickedUpgrade[0] != null) {
+                cardBounds.remove(clickedUpgrade[0]);
+                cardAnimationManagers.remove(clickedUpgrade[0]);
+                UpgradesManager.I().addUpgrade(clickedUpgrade[0]);
+                hoveringKey = null;
+        }
     }
 
     /**

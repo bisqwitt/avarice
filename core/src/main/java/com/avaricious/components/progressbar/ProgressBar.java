@@ -1,7 +1,6 @@
 package com.avaricious.components.progressbar;
 
 import com.avaricious.Assets;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -25,7 +24,7 @@ public class ProgressBar {
         }
     }
 
-    public void render(SpriteBatch batch) {
+    public void draw(SpriteBatch batch) {
         for(int i = 0; i < progress.length; i++) {
             batch.draw(
                 progress[i],
@@ -71,8 +70,11 @@ public class ProgressBar {
         updateProgressTextures();
     }
 
-    protected float getMaxValue() {
+    public float getMaxValue() {
         return maxValue;
     }
 
+    public float getCurrentValue() {
+        return currentValue;
+    }
 }

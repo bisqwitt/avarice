@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectMap;
+import org.w3c.dom.Text;
 
 import java.util.Arrays;
 
@@ -51,12 +52,18 @@ public class Assets {
         manager.load("Joker.png", Texture.class);
         manager.load("JokerShadow.png", Texture.class);
         manager.load("TooltipBox.png", Texture.class);
-        manager.load("buttons/spin-again.png", Texture.class);
-        manager.load("buttons/spin-again-pressed.png", Texture.class);
-        manager.load("buttons/spin-again-hovered.png", Texture.class);
-        manager.load("buttons/cashout.png", Texture.class);
-        manager.load("buttons/cashout-pressed.png", Texture.class);
-        manager.load("buttons/cashout-hovered.png", Texture.class);
+        manager.load("ShopWindow.png", Texture.class);
+        manager.load("ShopWindowShadow.png", Texture.class);
+
+        manager.load("buttons/spinagain/spin-again.png", Texture.class);
+        manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
+        manager.load("buttons/spinagain/spin-again-hovered.png", Texture.class);
+        manager.load("buttons/cashout/cashout.png", Texture.class);
+        manager.load("buttons/cashout/cashout-pressed.png", Texture.class);
+        manager.load("buttons/cashout/cashout-hovered.png", Texture.class);
+        manager.load("buttons/nextround/next-round.png", Texture.class);
+        manager.load("buttons/nextround/next-round-pressed.png", Texture.class);
+        manager.load("buttons/nextround/next-round-hovered.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -195,6 +202,14 @@ public class Assets {
         return manager.get("progressbar/ProgressBarUnlit.png", Texture.class);
     }
 
+    public Texture getShopWindow() {
+        return manager.get("ShopWindow.png", Texture.class);
+    }
+
+    public Texture getShopWindowShadow() {
+        return manager.get("ShopWindowShadow.png", Texture.class);
+    }
+
     public Texture getCoinSlot() {
         return manager.get("CoinSlot.png", Texture.class);
     }
@@ -204,19 +219,31 @@ public class Assets {
     }
 
     public Texture getSpinAgainButtonHovered() {
-        return manager.get("buttons/spin-again-hovered.png", Texture.class);
+        return manager.get("buttons/spinagain/spin-again-hovered.png", Texture.class);
     }
 
     public Texture getCashoutButton() {
-        return manager.get("buttons/cashout.png", Texture.class);
+        return manager.get("buttons/cashout/cashout.png", Texture.class);
     }
 
     public Texture getCashoutButtonPressed() {
-        return manager.get("buttons/cashout-pressed.png", Texture.class);
+        return manager.get("buttons/cashout/cashout-pressed.png", Texture.class);
     }
 
     public Texture getCashoutButtonHovered() {
-        return manager.get("buttons/cashout-hovered.png", Texture.class);
+        return manager.get("buttons/cashout/cashout-hovered.png", Texture.class);
+    }
+
+    public Texture getNextRoundButton() {
+        return manager.get("buttons/nextround/next-round.png", Texture.class);
+    }
+
+    public Texture getNextRoundButtonHovered() {
+        return manager.get("buttons/nextround/next-round-hovered.png", Texture.class);
+    }
+
+    public Texture getNextRoundButtonPressed() {
+        return manager.get("buttons/nextround/next-round-pressed.png", Texture.class);
     }
 
     public Texture getSlotMachineBorder() {
@@ -263,32 +290,12 @@ public class Assets {
         return manager.get("ScoreBorder.png", Texture.class);
     }
 
-    public Texture getButtonBoard() {
-        return manager.get("buttons/button-board.png", Texture.class);
-    }
-
-    public Texture getApplyButton() {
-        return manager.get("buttons/apply-button.png", Texture.class);
-    }
-
-    public Texture getApplyButtonPressed() {
-        return manager.get("buttons/apply-button-pressed.png", Texture.class);
-    }
-
-    public Texture getSpinButton() {
-        return manager.get("buttons/spin-button.png", Texture.class);
-    }
-
-    public Texture getSpinButtonPressed() {
-        return manager.get("buttons/spin-button-pressed.png", Texture.class);
-    }
-
     public Texture getSpinAgainButton() {
-        return manager.get("buttons/spin-again.png", Texture.class);
+        return manager.get("buttons/spinagain/spin-again.png", Texture.class);
     }
 
     public Texture getSpinAgainPressedButton() {
-        return manager.get("buttons/spin-again-pressed.png", Texture.class);
+        return manager.get("buttons/spinagain/spin-again-pressed.png", Texture.class);
     }
     public Color colorBlue() {
         return new Color(0.1647f, 0.5412f, 0.7843f, 1f);

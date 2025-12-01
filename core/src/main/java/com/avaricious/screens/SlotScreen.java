@@ -11,7 +11,6 @@ import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
-import com.avaricious.components.progressbar.ProgressBar;
 import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
 import com.avaricious.components.slot.pattern.SlotMatch;
@@ -34,6 +33,7 @@ public class SlotScreen extends ScreenAdapter {
     private final Main app;
     private final SlotMachine slotMachine;
     private final HealthBar healthBar;
+    private final Shop shop;
 
     private final ScoreDisplay scoreDisplay;
     private final TurnsLeftDisplay turnsLeftDisplay;
@@ -48,7 +48,6 @@ public class SlotScreen extends ScreenAdapter {
     private final RayHandler rayHandler;
     private final WarpBackground background;
     private final BackgroundLights backgroundLights;
-    private final PopupManager popupManager;
 
     private final InputHandler inputHandler;
     private final RoundsManager roundsManager;
@@ -62,11 +61,13 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.useDiffuseLight(true);
         rayHandler = new RayHandler(world);
 
-        popupManager = new PopupManager();
         background = new WarpBackground();
         backgroundLights = new BackgroundLights(rayHandler);
         healthBar = new HealthBar(90f);
-        upgradeBar = new UpgradeBar();
+        upgradeBar = new UpgradeBar(UpgradesManager.I().getUpgrades(),
+            new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
+            1.75f, true);
+        shop = new Shop();
 
         scoreDisplay = new ScoreDisplay();
         turnsLeftDisplay = new TurnsLeftDisplay();
@@ -104,6 +105,8 @@ public class SlotScreen extends ScreenAdapter {
         background.render(batch, delta);
         app.getViewport().apply();
 
+        if(scoreDisplay.pointsReached() && !shop.isShowing()) shop.show();
+
         backgroundLights.render(delta);
         cameraShaker.render(delta);
 
@@ -119,23 +122,15 @@ public class SlotScreen extends ScreenAdapter {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.setColor(1f, 1f, 1f, 0.5f);
-//        batch.draw(slotMachineShadow, slotMachine.getOriginX() - 0.5f, slotMachine.getOriginY() - 0.3f, 150 / 20f, 90 / 20f);
-        batch.setColor(1f, 1f, 1f, 1f);
-        //        upgradeSticks.draw(batch);
-//        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
-        healthBar.render(batch);
-//        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
-//        turnsLeftDisplay.draw(batch, delta);
+        healthBar.draw(batch);
         patternDisplay.draw(batch, delta);
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);
         slotMachine.draw(app, delta);
-        popupManager.render(batch, delta);
-//        batch.draw(slotMachineBorder, 5.15f, 2.1f, 9.6f, 6f);
-//        batch.draw(coinSlot, 5.75f, 1.77f, 27f / 20f, 13f / 20f);
+        shop.draw(batch, delta);
+        PopupManager.I().draw(batch, delta);
         batch.end();
 
         app.getUiViewport().apply();
@@ -146,12 +141,17 @@ public class SlotScreen extends ScreenAdapter {
     private void handleInput(float delta) {
         mouse.set(Gdx.input.getX(), Gdx.input.getY());
         app.getViewport().unproject(mouse);
-
         boolean leftClickPressed = Gdx.input.isButtonPressed(0);
+
+        if(shop.isShowing()) {
+            shop.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
+            leftClickWasPressed = leftClickPressed;
+            return;
+        }
+
         spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         upgradeBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
-        if(upgradeBar.getHoveringUpgrade() != null) popupManager.showTooltip(upgradeBar.getHoveringUpgrade(), upgradeBar.getHoveringRectangle());
         upgradeSticks.hoveringAt(mouse);
 
         leftClickWasPressed = leftClickPressed;
@@ -177,7 +177,7 @@ public class SlotScreen extends ScreenAdapter {
                     slot.wobble();
                     slot.pulse();
                     patternDisplay.addPoints(slotMatch.symbol().baseValue());
-                    popupManager.spawnNumber(Assets.I().getDigitalNumber(slotMatch.symbol().baseValue()), Assets.I().colorBlue(),
+                    PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(slotMatch.symbol().baseValue()), Assets.I().colorBlue(),
                         slot.getPos().x + 1f, slot.getPos().y + 1f);
                 }), delayCounter[0]);
                 delayCounter[0] += 0.3f;
@@ -188,7 +188,7 @@ public class SlotScreen extends ScreenAdapter {
                     slots.forEach(Slot::pulse);
                     patternDisplay.addMulti(slots.size());
                     Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
-                    popupManager.spawnNumber(Assets.I().getDigitalNumber(slots.size()), Assets.I().colorRed(),
+                PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(slots.size()), Assets.I().colorRed(),
                         middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
             }), delayCounter[0]);
             delayCounter[0] += 0.3f;
@@ -204,7 +204,7 @@ public class SlotScreen extends ScreenAdapter {
                         cardSlot.pulse();
                         cardSlot.wobble();
                         patternDisplay.addMulti(multi);
-                        popupManager.spawnNumber(Assets.I().getDigitalNumber(multi), Assets.I().colorRed(),
+                        PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(multi), Assets.I().colorRed(),
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
                     }), delayCounter[0]);
                     delayCounter[0] += 0.3f;
