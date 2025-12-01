@@ -20,6 +20,9 @@ public class UpgradeBar {
     private final TextureRegion jokerCard;
     private final TextureRegion cardShadow;
 
+    private final Rectangle cardRectangle;
+    private final float offset;
+
     private final Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
     private final Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
 
@@ -32,11 +35,9 @@ public class UpgradeBar {
         jokerCard = new TextureRegion(Assets.I().getJokerCard());
         cardShadow = new TextureRegion(Assets.I().getJokerCardShadow());
 
-        for(int i = 0; i < upgrades.size(); i++) {
-            Upgrade upgrade = upgrades.get(i);
-            cardBounds.put(upgrade, new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height));
-            cardAnimationManagers.put(upgrade, new Slot(new Vector2(cardRectangle.x, cardRectangle.y)));
-        }
+        this.cardRectangle = cardRectangle;
+        this.offset = offset;
+        loadUpgrades(upgrades);
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
@@ -114,6 +115,14 @@ public class UpgradeBar {
                 rotation
             );
         }));
+    }
+
+    public void loadUpgrades(List<? extends Upgrade> upgrades) {
+        for(int i = 0; i < upgrades.size(); i++) {
+            Upgrade upgrade = upgrades.get(i);
+            cardBounds.put(upgrade, new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height));
+            cardAnimationManagers.put(upgrade, new Slot(new Vector2(cardRectangle.x, cardRectangle.y)));
+        }
     }
 
     public Upgrade getHoveringUpgrade() {

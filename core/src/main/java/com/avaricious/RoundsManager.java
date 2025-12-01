@@ -13,7 +13,7 @@ public class RoundsManager {
     }
 
     private RoundsManager() {
-        currentRound = 0;
+        currentRound = 1;
         currentTargetScore = targetScorePerRound.get(currentRound);
     }
 

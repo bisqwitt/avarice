@@ -19,10 +19,13 @@ public class Shop {
 
     private boolean show = false;
 
-    public Shop() {
+    public Shop(Runnable onNextRoundPressed) {
         window = Assets.I().getShopWindow();
         windowShadow = Assets.I().getShopWindowShadow();
-        nextRoundButton = new Button(null,
+        nextRoundButton = new Button(() -> {
+                show = false;
+                onNextRoundPressed.run();
+            },
             Assets.I().getNextRoundButton(), Assets.I().getNextRoundButtonPressed(), Assets.I().getNextRoundButtonHovered(),
             new Rectangle(10.5f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
     }
@@ -46,6 +49,7 @@ public class Shop {
     }
 
     public void handleInput(Vector2 mouse, boolean leftClickPressed, boolean leftClickWasPressed, float delta) {
+        if(!show) return;
         shopCardsBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
         nextRoundButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
     }

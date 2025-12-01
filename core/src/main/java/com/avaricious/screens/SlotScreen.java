@@ -67,7 +67,6 @@ public class SlotScreen extends ScreenAdapter {
         upgradeBar = new UpgradeBar(UpgradesManager.I().getUpgrades(),
             new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
             1.75f, true);
-        shop = new Shop();
 
         scoreDisplay = new ScoreDisplay();
         turnsLeftDisplay = new TurnsLeftDisplay();
@@ -82,6 +81,11 @@ public class SlotScreen extends ScreenAdapter {
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight(), rayHandler);
         cameraShaker = new CameraShaker(app);
+        shop = new Shop(() -> {
+            RoundsManager.I().nextRound();
+            scoreDisplay.nextRound();
+            upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades());
+        });
 
         inputHandler = InputHandler.I();
         roundsManager = RoundsManager.I();
