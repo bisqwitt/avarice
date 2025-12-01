@@ -11,6 +11,7 @@ import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
+import com.avaricious.components.progressbar.ProgressBar;
 import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
 import com.avaricious.components.slot.pattern.SlotMatch;
@@ -32,7 +33,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
-    private final HealthBar progressBar;
+    private final HealthBar healthBar;
 
     private final ScoreDisplay scoreDisplay;
     private final TurnsLeftDisplay turnsLeftDisplay;
@@ -64,7 +65,7 @@ public class SlotScreen extends ScreenAdapter {
         popupManager = new PopupManager();
         background = new WarpBackground();
         backgroundLights = new BackgroundLights(rayHandler);
-        progressBar = new HealthBar(30f);
+        healthBar = new HealthBar(90f);
         upgradeBar = new UpgradeBar();
 
         scoreDisplay = new ScoreDisplay();
@@ -89,8 +90,6 @@ public class SlotScreen extends ScreenAdapter {
     public void show() {
         roundsManager.nextRound();
         scoreDisplay.resetScore();
-        turnsLeftDisplay.setAppliesLeft(roundsManager.getAppliesLeft());
-        turnsLeftDisplay.setSpinsLeft(roundsManager.getSpinsLeft());
         rayHandler.setAmbientLight(1f);
 
         //progressBar.damage(10f);
@@ -126,7 +125,7 @@ public class SlotScreen extends ScreenAdapter {
         //        upgradeSticks.draw(batch);
 //        batch.draw(slotMachineScreen, 5.15f, 2.1f, 9.6f, 6f);
         scoreDisplay.draw(batch, delta);
-        progressBar.render(batch);
+        healthBar.render(batch);
 //        batch.draw(cable, 0.18f, 6.075f, 14f / 25f, 34f / 25f);
 //        turnsLeftDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
@@ -162,9 +161,9 @@ public class SlotScreen extends ScreenAdapter {
         List<SlotMatch> matches = slotMachine.findMatches();
         if(matches.isEmpty()) {
             slotMachine.getAllSlots();
-            progressBar.damage(30f);
-            if(progressBar.getCurrentHealth() <= 0) {
-                progressBar.setCurrentHealth(progressBar.getMaxHealth());
+            healthBar.damage(30f);
+            if(healthBar.getCurrentHealth() <= 0) {
+                healthBar.setCurrentHealth(healthBar.getMaxHealth());
                 scoreDisplay.removeFromScore(100);
                 patternDisplay.reset();
             }
@@ -226,7 +225,7 @@ public class SlotScreen extends ScreenAdapter {
     private void onApplyButtonPressed() {
         scoreDisplay.addToScore(Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti()));
         patternDisplay.reset();
-        progressBar.setCurrentHealth(progressBar.getMaxHealth());
+        healthBar.setCurrentHealth(healthBar.getMaxHealth());
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);

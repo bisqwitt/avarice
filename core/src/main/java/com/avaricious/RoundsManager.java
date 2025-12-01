@@ -7,9 +7,6 @@ import java.util.Map;
 
 public class RoundsManager {
 
-    private final int baseHandsPerRound = 40;
-    private final int baseSpinsPerRound = 40;
-
     private static RoundsManager instance;
     public static RoundsManager I() {
         return instance == null ? (instance = new RoundsManager()) : instance;
@@ -18,17 +15,14 @@ public class RoundsManager {
     private RoundsManager() {
         currentRound = 0;
         currentTargetScore = targetScorePerRound.get(currentRound);
-
-        handsLeft = baseHandsPerRound;
-        spinsLeft = baseSpinsPerRound;
     }
 
     private final Map<Integer, Long> targetScorePerRound = new HashMap<Integer, Long>() {{
         put(0, 1L);
 
-        put(1, 400L);
-        put(2, 600L);
-        put(3, 800L);
+        put(1, 800L);
+        put(2, 1200L);
+        put(3, 1500L);
 
         put(4, 1000L);
         put(5, 1500L);
