@@ -3,8 +3,13 @@ package com.avaricious.components.displays;
 import com.avaricious.Assets;
 import com.avaricious.RoundsManager;
 import com.avaricious.components.progressbar.ProgressBar;
+import com.avaricious.screens.MainScreen;
+import com.avaricious.screens.ScreenManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 public class ScoreDisplay {
 
@@ -68,6 +73,10 @@ public class ScoreDisplay {
     }
 
     private void updateDigitalNumbers(long score) {
+        if(score < 0) {
+            ScreenManager.I().setScreen(MainScreen.class);
+            return;
+        }
         progressBar.setCurrentValue(score);
         displayedScore = score;
         Assets assetManager = Assets.I();

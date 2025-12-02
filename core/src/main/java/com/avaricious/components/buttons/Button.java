@@ -10,14 +10,14 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Button {
 
-    private TextureRegion currentTexture;
-    private Rectangle buttonRectangle;
+    protected TextureRegion currentTexture;
+    private final Rectangle buttonRectangle;
 
     private boolean wasHovered;
     private boolean spaceWasPressed;
 
     private final Runnable onButtonPressedRunnable;
-    private final TextureRegion defaultButtonTexture;
+    protected final TextureRegion defaultButtonTexture;
     private final TextureRegion pressedButtonTexture;
     private final TextureRegion hoveredButtonTexture;
     private final int key;

@@ -19,8 +19,8 @@ public class WarpBackground {
 
         whiteTexture = Assets.I().getWhiteTexture();
         shader = new ShaderProgram(
-            Gdx.files.internal("backgroundShader/warp.vert"),
-            Gdx.files.internal("backgroundShader/warp.frag")
+            Gdx.files.internal("shader/warp.vert"),
+            Gdx.files.internal("shader/warp.frag")
         );
         if (!shader.isCompiled()) {
             throw new GdxRuntimeException("Shader compile error:\n" + shader.getLog());

@@ -1,5 +1,7 @@
 package com.avaricious;
 
+import com.avaricious.components.slot.Slot;
+import com.avaricious.screens.MainScreen;
 import com.avaricious.screens.ScreenManager;
 import com.avaricious.screens.SlotScreen;
 import com.badlogic.gdx.Game;

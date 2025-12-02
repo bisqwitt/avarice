@@ -12,7 +12,6 @@ import com.badlogic.gdx.math.Vector2;
 public class Shop {
 
     private final Texture window;
-    private final Texture windowShadow;
     private final Button nextRoundButton;
     private UpgradeBar shopCardsBar;
 
@@ -21,7 +20,6 @@ public class Shop {
 
     public Shop(Runnable onNextRoundPressed) {
         window = Assets.I().getShopWindow();
-        windowShadow = Assets.I().getShopWindowShadow();
         nextRoundButton = new Button(() -> {
                 show = false;
                 onNextRoundPressed.run();

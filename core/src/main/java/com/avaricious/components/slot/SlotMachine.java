@@ -87,9 +87,6 @@ public class SlotMachine {
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
         }
-//        reels.get(reels.size() -1).setOnSpinFinished(() -> {
-//            spinning = false;
-//        });
     }
 
     // --- drawing ---
@@ -227,6 +224,16 @@ public class SlotMachine {
         }
     }
 
+    public List<Symbol> getSymbols() {
+        List<Symbol> symbols = new ArrayList<>();
+        for (int c = 0; c < reels.size(); c++) {
+            for (int row = 0; row < rows; row++) {
+                symbols.add(reels.get(c).symbolAtRow(row));
+            }
+        }
+        return symbols;
+    }
+
     // Returns each matching line as a List<Slot>
     public List<SlotMatch> findMatches() {
         Symbol[][] symbolMap = new Symbol[cols][rows];
@@ -255,11 +262,6 @@ public class SlotMachine {
         }
 
         return result;
-    }
-
-    // --- symbol queries on current visible grid ---
-    public Symbol getSymbolAt(int col, int row) {
-        return reels.get(col).symbolAtRow(row);
     }
 
     public List<Slot> getAllSlots() {

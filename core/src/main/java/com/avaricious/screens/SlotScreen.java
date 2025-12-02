@@ -6,6 +6,7 @@ import com.avaricious.components.*;
 import com.avaricious.components.background.BackgroundLights;
 import com.avaricious.components.background.WarpBackground;
 import com.avaricious.components.buttons.Button;
+import com.avaricious.components.buttons.DisablableButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.displays.TurnsLeftDisplay;
@@ -13,6 +14,7 @@ import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
 import com.avaricious.components.slot.Slot;
 import com.avaricious.components.slot.SlotMachine;
+import com.avaricious.components.slot.Symbol;
 import com.avaricious.components.slot.pattern.SlotMatch;
 import com.avaricious.upgrades.UpgradesManager;
 import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
@@ -20,17 +22,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Timer;
+import com.crashinvaders.vfx.VfxManager;
+import com.crashinvaders.vfx.effects.*;
+import com.crashinvaders.vfx.effects.util.MixEffect;
 
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
+    private final VfxManager vfxManager;
     private final SlotMachine slotMachine;
     private final HealthBar healthBar;
     private final Shop shop;
@@ -40,7 +48,8 @@ public class SlotScreen extends ScreenAdapter {
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
     private final Button spinAgainButton;
-    private final Button cashoutButton;
+    private final DisablableButton cashoutButton;
+    private final Button returnButton;
     private final UpgradeBar upgradeBar;
 
     private final CameraShaker cameraShaker;
@@ -63,7 +72,7 @@ public class SlotScreen extends ScreenAdapter {
 
         background = new WarpBackground();
         backgroundLights = new BackgroundLights(rayHandler);
-        healthBar = new HealthBar(90f);
+        healthBar = new HealthBar(100f);
         upgradeBar = new UpgradeBar(UpgradesManager.I().getUpgrades(),
             new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
             1.75f, true);
@@ -72,20 +81,27 @@ public class SlotScreen extends ScreenAdapter {
         turnsLeftDisplay = new TurnsLeftDisplay();
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
+        shop = new Shop(() -> upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades()));
         spinAgainButton = new Button(this::onSpinButtonPressed,
             Assets.I().getSpinAgainButton(), Assets.I().getSpinAgainPressedButton(), Assets.I().getSpinAgainButtonHovered(),
             new Rectangle(12.5f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
-        cashoutButton = new Button(this::onApplyButtonPressed,
-            Assets.I().getCashoutButton(), Assets.I().getCashoutButtonPressed(), Assets.I().getCashoutButtonHovered(),
+        cashoutButton = new DisablableButton(this::onApplyButtonPressed,
+            Assets.I().getCashoutButton(),
+            Assets.I().getCashoutButtonPressed(),
+            Assets.I().getCashoutButtonHovered(),
+            Assets.I().getCashoutButtonDisabled(),
             new Rectangle(8f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
+        returnButton = new Button(shop::show,
+            Assets.I().getShopButton(), Assets.I().getShopButtonHovered(), Assets.I().getShopButtonPressed(),
+            new Rectangle(12.5f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ESCAPE);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight(), rayHandler);
         cameraShaker = new CameraShaker(app);
-        shop = new Shop(() -> {
-            RoundsManager.I().nextRound();
-            scoreDisplay.nextRound();
-            upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades());
-        });
+
+        vfxManager = new VfxManager(Pixmap.Format.RGBA8888);
+        vfxManager.addEffect(new OldTvEffect());
+        vfxManager.addEffect(new MotionBlurEffect(Pixmap.Format.RGBA8888, MixEffect.Method.MAX, 0.5f));
+//        vfxManager.addEffect(new CrtEffect());
 
         inputHandler = InputHandler.I();
         roundsManager = RoundsManager.I();
@@ -106,36 +122,34 @@ public class SlotScreen extends ScreenAdapter {
     public void render(float delta) {
         SpriteBatch batch = app.getBatch();
         handleInput(delta);
-        background.render(batch, delta);
         app.getViewport().apply();
 
-        if(scoreDisplay.pointsReached() && !shop.isShowing()) shop.show();
-
-        backgroundLights.render(delta);
+        rayHandler.updateAndRender();
+        vfxManager.cleanUpBuffers();
+        vfxManager.beginInputCapture();
         cameraShaker.render(delta);
 
+        background.render(batch, delta);
         Camera camera = app.getViewport().getCamera();
-        rayHandler.setCombinedMatrix(
-            camera.combined,
-            camera.position.x,
-            camera.position.y,
-            app.getViewport().getWorldWidth(),
-            app.getViewport().getWorldHeight()
-        );
-        rayHandler.updateAndRender();
-
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        scoreDisplay.draw(batch, delta);
         healthBar.draw(batch);
-        patternDisplay.draw(batch, delta);
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);
         slotMachine.draw(app, delta);
+        scoreDisplay.draw(batch, delta);
+        patternDisplay.draw(batch, delta);
         shop.draw(batch, delta);
         PopupManager.I().draw(batch, delta);
         batch.end();
+
+        vfxManager.endInputCapture();
+        vfxManager.applyEffects();
+//        Gdx.gl.glEnable(GL20.GL_BLEND);
+//        Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE);
+        vfxManager.renderToScreen();
+//        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         app.getUiViewport().apply();
         batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
@@ -154,7 +168,7 @@ public class SlotScreen extends ScreenAdapter {
         }
 
         spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
-        cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
+        cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed, patternDisplay.isEmpty());
         upgradeBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
         upgradeSticks.hoveringAt(mouse);
 
@@ -162,13 +176,15 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void runResult() {
+
         List<SlotMatch> matches = slotMachine.findMatches();
         if(matches.isEmpty()) {
-            slotMachine.getAllSlots();
-            healthBar.damage(30f);
+            int count = slotMachine.getSymbols().stream()
+                .mapToInt(Symbol::baseValue)
+                .sum();
+            healthBar.damage(count);
             if(healthBar.getCurrentHealth() <= 0) {
                 healthBar.setCurrentHealth(healthBar.getMaxHealth());
-                scoreDisplay.removeFromScore(100);
                 patternDisplay.reset();
             }
             return;
@@ -221,6 +237,7 @@ public class SlotScreen extends ScreenAdapter {
 
     private void onSpinButtonPressed() {
         slotMachine.spin();
+        scoreDisplay.removeFromScore(50);
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);

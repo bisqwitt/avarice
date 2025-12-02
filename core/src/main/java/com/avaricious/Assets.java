@@ -61,9 +61,16 @@ public class Assets {
         manager.load("buttons/cashout/cashout.png", Texture.class);
         manager.load("buttons/cashout/cashout-pressed.png", Texture.class);
         manager.load("buttons/cashout/cashout-hovered.png", Texture.class);
+        manager.load("buttons/cashout/cashout-disabled.png", Texture.class);
         manager.load("buttons/nextround/next-round.png", Texture.class);
         manager.load("buttons/nextround/next-round-pressed.png", Texture.class);
         manager.load("buttons/nextround/next-round-hovered.png", Texture.class);
+        manager.load("buttons/shop/shop.png", Texture.class);
+        manager.load("buttons/shop/shop-hovered.png", Texture.class);
+        manager.load("buttons/shop/shop-pressed.png", Texture.class);
+        manager.load("buttons/return/return.png", Texture.class);
+        manager.load("buttons/return/return-hovered.png", Texture.class);
+        manager.load("buttons/return/return-pressed.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -244,6 +251,34 @@ public class Assets {
 
     public Texture getNextRoundButtonPressed() {
         return manager.get("buttons/nextround/next-round-pressed.png", Texture.class);
+    }
+
+    public Texture getCashoutButtonDisabled() {
+        return manager.get("buttons/cashout/cashout-disabled.png", Texture.class);
+    }
+
+    public Texture getShopButton() {
+        return manager.get("buttons/shop/shop.png", Texture.class);
+    }
+
+    public Texture getShopButtonHovered() {
+        return manager.get("buttons/shop/shop-hovered.png", Texture.class);
+    }
+
+    public Texture getShopButtonPressed() {
+        return manager.get("buttons/shop/shop-pressed.png", Texture.class);
+    }
+
+    public Texture getReturnButton() {
+        return manager.get("buttons/return/return.png", Texture.class);
+    }
+
+    public Texture getReturnButtonHovered() {
+        return manager.get("buttons/return/return-hovered.png", Texture.class);
+    }
+
+    public Texture getReturnButtonPressed() {
+        return manager.get("buttons/return/return-pressed.png", Texture.class);
     }
 
     public Texture getSlotMachineBorder() {

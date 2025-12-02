@@ -243,7 +243,8 @@ public class PatternDisplay {
         return xMultiValue;
     }
 
-    public void triggerXMultAnimation() {
-        xMultiPulseTime = 0f;
+    public boolean isEmpty() {
+        return pointsValue == 0f && multiValue == 0f && xMultiValue == 0f;
     }
+
 }
