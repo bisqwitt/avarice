@@ -71,6 +71,9 @@ public class Assets {
         manager.load("buttons/return/return.png", Texture.class);
         manager.load("buttons/return/return-hovered.png", Texture.class);
         manager.load("buttons/return/return-pressed.png", Texture.class);
+        manager.load("buttons/reroll/reroll.png", Texture.class);
+        manager.load("buttons/reroll/reroll-hovered.png", Texture.class);
+        manager.load("buttons/reroll/reroll-pressed.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -255,6 +258,18 @@ public class Assets {
 
     public Texture getCashoutButtonDisabled() {
         return manager.get("buttons/cashout/cashout-disabled.png", Texture.class);
+    }
+
+    public Texture getRerollButton() {
+        return manager.get("buttons/reroll/reroll.png", Texture.class);
+    }
+
+    public Texture getRerollButtonHovered() {
+        return manager.get("buttons/reroll/reroll-hovered.png", Texture.class);
+    }
+
+    public Texture getRerollButtonPressed() {
+        return manager.get("buttons/reroll/reroll-pressed.png", Texture.class);
     }
 
     public Texture getShopButton() {

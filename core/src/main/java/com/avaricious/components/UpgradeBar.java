@@ -118,6 +118,9 @@ public class UpgradeBar {
     }
 
     public void loadUpgrades(List<? extends Upgrade> upgrades) {
+        cardBounds.clear();
+        cardAnimationManagers.clear();
+
         for(int i = 0; i < upgrades.size(); i++) {
             Upgrade upgrade = upgrades.get(i);
             cardBounds.put(upgrade, new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height));

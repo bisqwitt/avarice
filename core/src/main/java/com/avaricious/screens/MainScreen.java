@@ -4,6 +4,7 @@ import com.avaricious.Main;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -65,8 +66,10 @@ public class MainScreen extends ScreenAdapter {
             vfxManager.beginInputCapture();
 
             batch.begin();
+            Gdx.gl.glClearColor(1f, 1f, 1f, 1f);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             if(videoPlayer.isPlaying()) {
-                batch.draw(frame, 0f, 0f, 16f, 9f);
+                batch.draw(frame, 0f, 1f, 16f, 9f);
             } else {
                 batch.draw(frame, 0f, 0f, 50f, 50f);
             }

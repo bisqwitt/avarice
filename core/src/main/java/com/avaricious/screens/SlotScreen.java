@@ -22,7 +22,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -49,7 +48,7 @@ public class SlotScreen extends ScreenAdapter {
     private final UpgradeSticks upgradeSticks;
     private final Button spinAgainButton;
     private final DisablableButton cashoutButton;
-    private final Button returnButton;
+    private final Button shopButton;
     private final UpgradeBar upgradeBar;
 
     private final CameraShaker cameraShaker;
@@ -91,9 +90,9 @@ public class SlotScreen extends ScreenAdapter {
             Assets.I().getCashoutButtonHovered(),
             Assets.I().getCashoutButtonDisabled(),
             new Rectangle(8f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
-        returnButton = new Button(shop::show,
-            Assets.I().getShopButton(), Assets.I().getShopButtonHovered(), Assets.I().getShopButtonPressed(),
-            new Rectangle(12.5f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ESCAPE);
+        shopButton = new Button(shop::show,
+            Assets.I().getShopButton(), Assets.I().getShopButtonPressed(), Assets.I().getShopButtonHovered(),
+            new Rectangle(12.5f, 0.5f, 79 / 35f, 25 / 35f), Input.Keys.ESCAPE);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight(), rayHandler);
         cameraShaker = new CameraShaker(app);
@@ -137,6 +136,7 @@ public class SlotScreen extends ScreenAdapter {
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);
+        shopButton.draw(batch, delta);
         slotMachine.draw(app, delta);
         scoreDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
@@ -169,6 +169,7 @@ public class SlotScreen extends ScreenAdapter {
 
         spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed, patternDisplay.isEmpty());
+        shopButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         upgradeBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
         upgradeSticks.hoveringAt(mouse);
 

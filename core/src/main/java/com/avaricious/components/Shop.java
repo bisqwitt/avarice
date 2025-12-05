@@ -12,19 +12,29 @@ import com.badlogic.gdx.math.Vector2;
 public class Shop {
 
     private final Texture window;
-    private final Button nextRoundButton;
-    private UpgradeBar shopCardsBar;
-
+    private final Button returnButton;
+    private final Button rerollButton;
+    private final UpgradeBar shopCardsBar;
 
     private boolean show = false;
 
     public Shop(Runnable onNextRoundPressed) {
         window = Assets.I().getShopWindow();
-        nextRoundButton = new Button(() -> {
+
+        shopCardsBar = new UpgradeBar(UpgradesManager.I().randomUpgrades(), new Rectangle(
+            3f, 6f, 142 / 130f, 190 / 130f),
+            1.5f, false);
+
+        rerollButton = new Button(() -> {
+                shopCardsBar.loadUpgrades(UpgradesManager.I().randomUpgrades());
+            },
+            Assets.I().getRerollButton(), Assets.I().getRerollButtonPressed(), Assets.I().getRerollButtonHovered(),
+            new Rectangle(10f, 4f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
+        returnButton = new Button(() -> {
                 show = false;
                 onNextRoundPressed.run();
             },
-            Assets.I().getNextRoundButton(), Assets.I().getNextRoundButtonPressed(), Assets.I().getNextRoundButtonHovered(),
+            Assets.I().getReturnButton(), Assets.I().getReturnButtonPressed(), Assets.I().getReturnButtonHovered(),
             new Rectangle(10.5f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
     }
 
@@ -32,13 +42,12 @@ public class Shop {
         if(!show) return;
         batch.draw(window, 2f, 0.5f, 225 / 20f, 163 / 20f);
         shopCardsBar.draw(batch);
-        nextRoundButton.draw(batch, delta);
+        returnButton.draw(batch, delta);
+        rerollButton.draw(batch, delta);
     }
 
     public void show() {
-        shopCardsBar = new UpgradeBar(UpgradesManager.I().randomUpgrades(), new Rectangle(
-            3f, 6f, 142 / 130f, 190 / 130f),
-            1.5f, false);
+        shopCardsBar.loadUpgrades(UpgradesManager.I().randomUpgrades());
         show = true;
     }
 
@@ -49,7 +58,8 @@ public class Shop {
     public void handleInput(Vector2 mouse, boolean leftClickPressed, boolean leftClickWasPressed, float delta) {
         if(!show) return;
         shopCardsBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
-        nextRoundButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
+        returnButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
+        rerollButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
     }
 
 }
