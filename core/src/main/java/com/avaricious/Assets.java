@@ -58,6 +58,7 @@ public class Assets {
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-hovered.png", Texture.class);
+        manager.load("buttons/spinagain/spin-again-disabled.png", Texture.class);
         manager.load("buttons/cashout/cashout.png", Texture.class);
         manager.load("buttons/cashout/cashout-pressed.png", Texture.class);
         manager.load("buttons/cashout/cashout-hovered.png", Texture.class);
@@ -74,6 +75,9 @@ public class Assets {
         manager.load("buttons/reroll/reroll.png", Texture.class);
         manager.load("buttons/reroll/reroll-hovered.png", Texture.class);
         manager.load("buttons/reroll/reroll-pressed.png", Texture.class);
+        manager.load("buttons/enter/enter.png", Texture.class);
+        manager.load("buttons/enter/enter-hovered.png", Texture.class);
+        manager.load("buttons/enter/enter-pressed.png", Texture.class);
 
         manager.load("progressbar/ProgressBarBorder.png", Texture.class);
         manager.load("progressbar/ProgressBarLit.png", Texture.class);
@@ -232,6 +236,10 @@ public class Assets {
         return manager.get("buttons/spinagain/spin-again-hovered.png", Texture.class);
     }
 
+    public Texture getSpinAgainButtonDisabled() {
+        return manager.get("buttons/spinagain/spin-again-disabled.png", Texture.class);
+    }
+
     public Texture getCashoutButton() {
         return manager.get("buttons/cashout/cashout.png", Texture.class);
     }
@@ -258,6 +266,18 @@ public class Assets {
 
     public Texture getCashoutButtonDisabled() {
         return manager.get("buttons/cashout/cashout-disabled.png", Texture.class);
+    }
+
+    public Texture getEnterButton() {
+        return manager.get("buttons/enter/enter.png", Texture.class);
+    }
+
+    public Texture getEnterButtonHovered() {
+        return manager.get("buttons/enter/enter-hovered.png", Texture.class);
+    }
+
+    public Texture getEnterButtonPressed() {
+        return manager.get("buttons/enter/enter-pressed.png", Texture.class);
     }
 
     public Texture getRerollButton() {

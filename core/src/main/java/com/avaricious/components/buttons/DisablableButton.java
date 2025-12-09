@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 public class DisablableButton extends Button {
 
     private final TextureRegion disabledTexture;
+    private boolean disabled;
 
     public DisablableButton(Runnable onButtonPressedRunnable, Texture defaultButtonTexture, Texture pressedButtonTexture, Texture hoveredButtonTexture, Texture disabledTexture, Rectangle buttonRectangle, int key) {
         super(onButtonPressedRunnable, defaultButtonTexture, pressedButtonTexture, hoveredButtonTexture, buttonRectangle, key);
@@ -17,6 +18,11 @@ public class DisablableButton extends Button {
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, boolean disable) {
         if(disable) currentTexture = disabledTexture;
         else super.handleInput(mouse, pressed, wasPressed);
+        disabled = disable;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
     }
 
 }

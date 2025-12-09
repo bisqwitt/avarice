@@ -11,7 +11,6 @@ public class HealthBar extends ProgressBar {
     public HealthBar(float maxHealth) {
         super();
         setMaxHealth(maxHealth);
-        setCurrentHealth(maxHealth);
     }
 
     public void setMaxHealth(float maxHealth) {

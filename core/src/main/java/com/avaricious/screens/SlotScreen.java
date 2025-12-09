@@ -46,8 +46,9 @@ public class SlotScreen extends ScreenAdapter {
     private final TurnsLeftDisplay turnsLeftDisplay;
     private final PatternDisplay patternDisplay;
     private final UpgradeSticks upgradeSticks;
-    private final Button spinAgainButton;
+    private final DisablableButton spinAgainButton;
     private final DisablableButton cashoutButton;
+    private final Button enterButton;
     private final Button shopButton;
     private final UpgradeBar upgradeBar;
 
@@ -81,8 +82,11 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
         shop = new Shop(() -> upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades()));
-        spinAgainButton = new Button(this::onSpinButtonPressed,
-            Assets.I().getSpinAgainButton(), Assets.I().getSpinAgainPressedButton(), Assets.I().getSpinAgainButtonHovered(),
+        spinAgainButton = new DisablableButton(this::onSpinButtonPressed,
+            Assets.I().getSpinAgainButton(),
+            Assets.I().getSpinAgainPressedButton(),
+            Assets.I().getSpinAgainButtonHovered(),
+            Assets.I().getSpinAgainButtonDisabled(),
             new Rectangle(12.5f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
         cashoutButton = new DisablableButton(this::onApplyButtonPressed,
             Assets.I().getCashoutButton(),
@@ -90,6 +94,9 @@ public class SlotScreen extends ScreenAdapter {
             Assets.I().getCashoutButtonHovered(),
             Assets.I().getCashoutButtonDisabled(),
             new Rectangle(8f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
+        enterButton = new Button(this::onEnterButtonPressed,
+            Assets.I().getEnterButton(), Assets.I().getEnterButtonPressed(), Assets.I().getEnterButtonHovered(),
+            new Rectangle(12.5f, 1.5f, 79 / 35f, 25 / 35f), Input.Keys.E);
         shopButton = new Button(shop::show,
             Assets.I().getShopButton(), Assets.I().getShopButtonPressed(), Assets.I().getShopButtonHovered(),
             new Rectangle(12.5f, 0.5f, 79 / 35f, 25 / 35f), Input.Keys.ESCAPE);
@@ -114,7 +121,7 @@ public class SlotScreen extends ScreenAdapter {
 
         //progressBar.damage(10f);
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(this::runResult);
-        slotMachine.spin();
+//        slotMachine.spin();
     }
 
     @Override
@@ -136,6 +143,7 @@ public class SlotScreen extends ScreenAdapter {
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);
+        if(spinAgainButton.isDisabled()) enterButton.draw(batch, delta);
         shopButton.draw(batch, delta);
         slotMachine.draw(app, delta);
         scoreDisplay.draw(batch, delta);
@@ -167,8 +175,9 @@ public class SlotScreen extends ScreenAdapter {
             return;
         }
 
-        spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
+        spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed, healthBar.getCurrentHealth() <= 0);
         cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed, patternDisplay.isEmpty());
+        enterButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         shopButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         upgradeBar.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
         upgradeSticks.hoveringAt(mouse);
@@ -177,7 +186,6 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void runResult() {
-
         List<SlotMatch> matches = slotMachine.findMatches();
         if(matches.isEmpty()) {
             int count = slotMachine.getSymbols().stream()
@@ -185,7 +193,7 @@ public class SlotScreen extends ScreenAdapter {
                 .sum();
             healthBar.damage(count);
             if(healthBar.getCurrentHealth() <= 0) {
-                healthBar.setCurrentHealth(healthBar.getMaxHealth());
+//                healthBar.setCurrentHealth(healthBar.getMaxHealth());
                 patternDisplay.reset();
             }
             return;
@@ -251,5 +259,11 @@ public class SlotScreen extends ScreenAdapter {
 
         backgroundLights.triggerLightShake(1f);
         cameraShaker.trigger(1f);
+    }
+
+    private void onEnterButtonPressed() {
+        healthBar.setCurrentHealth(healthBar.getMaxHealth());
+        scoreDisplay.removeFromScore(100);
+        slotMachine.spin();
     }
 }
