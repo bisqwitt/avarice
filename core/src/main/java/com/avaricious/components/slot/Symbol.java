@@ -10,7 +10,7 @@ public enum Symbol {
     DIAMOND(5, 11.9f),
     SEVEN(7, 7.5f);
 
-    private final Integer baseValue;
+    private Integer baseValue;
     private final Float baseSpawnChance;
 
     Symbol(Integer baseValue, Float baseSpawnChance) {
@@ -20,6 +20,10 @@ public enum Symbol {
 
     public Integer baseValue() {
         return baseValue;
+    }
+
+    public void setBaseValue(int value) {
+        baseValue = value;
     }
     public Float baseSpawnChance() {
         return baseSpawnChance;

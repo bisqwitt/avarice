@@ -31,8 +31,8 @@ public class PopupManager {
         tooltipPopup = new TooltipPopup(upgrade.description(), new Vector2(x, y));
     }
 
-    public void spawnNumber(Texture numberTexture, Color color, float x, float y) {
-        numberPopups.add(new NumberPopup(numberTexture, color, x, y));
+    public void spawnNumber(int number, Color color, float x, float y) {
+        numberPopups.add(new NumberPopup(number, color, x, y));
     }
 
     public void draw(SpriteBatch batch, float delta) {

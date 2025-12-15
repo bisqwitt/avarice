@@ -160,11 +160,6 @@ public class SlotMachine {
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
-//                float shadowW = drawW * 1.05f;
-//                float shadowH = drawH * 1.05f;
-//                float shadowX = drawX - (shadowW - cellW) / 2f;
-//                float shadowY = drawY - (shadowH - cellH) / 2f;
-
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
                     ? grid[c][k].getFrame(sym, selected, delta)
@@ -172,15 +167,6 @@ public class SlotMachine {
 
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
-
-//                batch.setColor(0f, 0f, 0f, 0.5f);
-//                batch.draw(
-//                    Assets.I().getSymbolShadow(sym),
-//                    shadowX, shadowY - 0.05f,
-//                    shadowW / 2f, shadowH / 2f,
-//                    shadowW, shadowH,
-//                    1f, 1f, rotation);
-//                batch.setColor(1f, 1f, 1f, 1f);
 
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
@@ -215,7 +201,6 @@ public class SlotMachine {
             Timer.schedule(new Timer.Task() {
                 @Override public void run() { reels.get(col).start(startSpeed); }
             }, startDelay);
-
             Timer.schedule(new Timer.Task() {
                 @Override public void run() {
                     reels.get(col).stopSoonAlignCenter();
@@ -226,11 +211,11 @@ public class SlotMachine {
 
     public List<Symbol> getSymbols() {
         List<Symbol> symbols = new ArrayList<>();
-        for (int c = 0; c < reels.size(); c++) {
+        reels.forEach(reel -> {
             for (int row = 0; row < rows; row++) {
-                symbols.add(reels.get(c).symbolAtRow(row));
+                symbols.add(reel.symbolAtRow(row));
             }
-        }
+        });
         return symbols;
     }
 
@@ -279,26 +264,8 @@ public class SlotMachine {
         );
     }
 
-    public int getCols() { return cols; }
-    public int getRows() { return rows; }
-    public float getCellH() { return cellH; }
-    public float getCellW() { return cellW; }
-    public float getSpacingX() { return spacingX; }
-    public float getSpacingY() { return spacingY; }
-
-    public float getOriginX() {
-        return originX;
-    }
-
-    public float getOriginY() {
-        return originY;
-    }
-
     public List<Reel> getReels() {
         return reels;
     }
 
-    public void lockHoverAndSelect() {
-        spinning = true;
-    }
 }

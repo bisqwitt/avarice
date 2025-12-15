@@ -69,7 +69,7 @@ public class ScoreDisplay {
     }
 
     public void resetScore() {
-        score = 500;
+        score = 5000;
     }
 
     private void updateDigitalNumbers(long score) {

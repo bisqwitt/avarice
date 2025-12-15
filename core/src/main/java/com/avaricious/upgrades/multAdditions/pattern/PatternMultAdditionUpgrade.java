@@ -1,5 +1,6 @@
 package com.avaricious.upgrades.multAdditions.pattern;
 
+import com.avaricious.Assets;
 import com.avaricious.components.slot.Symbol;
 import com.avaricious.upgrades.UpgradeRarity;
 import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
@@ -35,7 +36,11 @@ public abstract class PatternMultAdditionUpgrade extends MultAdditionUpgrade {
     }
 
     @Override
+    public void apply() {
+    }
+
+    @Override
     public String description() {
-        return "Add " + getMulti() + " to multiplier on " + (int) patternType + "-of-a-kind's";
+        return "Add " + Assets.I().redText(getMulti() + "") + " to " + Assets.I().redText("multiplier") + " on " + (int) patternType + "-of-a-kind's";
     }
 }

@@ -7,9 +7,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NumberPopup {
 
-    private final TextureRegion texture;
+    private final int number;
+    private final List<TextureRegion> digitalNumberTextures = new ArrayList<>();
     private final TextureRegion plusTexture;
     private final TextureRegion whiteTexture;
     private final Vector2 position;
@@ -18,8 +22,13 @@ public class NumberPopup {
     private final float lifetime = 1f;      // total duration in seconds
     private float timeAlive = 0f;
 
-    public NumberPopup(Texture texture, Color color, float x, float y) {
-        this.texture = new TextureRegion(texture);
+    public NumberPopup(int number, Color color, float x, float y) {
+        this.number = number;
+        String.valueOf(number)
+            .chars()
+            .map(Character::getNumericValue)
+            .forEach(digit -> digitalNumberTextures.add(new TextureRegion(Assets.I().getDigitalNumber(digit))));
+
         this.plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
         this.whiteTexture = new TextureRegion(Assets.I().getWhiteTexture());
 
@@ -88,14 +97,17 @@ public class NumberPopup {
             scale, scale,
             rotation
         );
-        batch.draw(
-            texture,
-            position.x - originX, position.y - originY,
-            originX, originY,
-            width, height,
-            scale, scale,
-            rotation
-        );
+        for(int i = 0; i < digitalNumberTextures.size(); i++) {
+            batch.draw(
+                digitalNumberTextures.get(i),
+                position.x - originX + (0.5f * i), position.y - originY,
+                originX, originY,
+                width, height,
+                scale, scale,
+                rotation
+            );
+        }
+
         batch.setColor(1f, 1f, 1f, 1f);
     }
 }

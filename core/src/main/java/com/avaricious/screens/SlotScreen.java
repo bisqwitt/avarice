@@ -18,6 +18,7 @@ import com.avaricious.components.slot.Symbol;
 import com.avaricious.components.slot.pattern.SlotMatch;
 import com.avaricious.upgrades.UpgradesManager;
 import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
+import com.avaricious.upgrades.pointAdditions.symbolValueStacker.SymbolValueStackUpgrade;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
@@ -206,8 +207,26 @@ public class SlotScreen extends ScreenAdapter {
                     slot.wobble();
                     slot.pulse();
                     patternDisplay.addPoints(slotMatch.symbol().baseValue());
-                    PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(slotMatch.symbol().baseValue()), Assets.I().colorBlue(),
+                    PopupManager.I().spawnNumber(slotMatch.symbol().baseValue(), Assets.I().colorBlue(),
                         slot.getPos().x + 1f, slot.getPos().y + 1f);
+                    UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
+                        .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
+                        .forEach(upgrade -> {
+                            Slot cardSlot = upgradeBar.getSlotByUpgrade(upgrade);
+                            cardSlot.wobble();
+                            cardSlot.pulse();
+                            PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
+                                cardSlot.getPos().x, cardSlot.getPos().y + 1.5f);
+                            if(upgrade.addStacks(1)) {
+                                delayCounter[0] += 0.3f;
+                                Timer.schedule(TaskFactory.create(() -> {
+                                    cardSlot.wobble();
+                                    cardSlot.pulse();
+                                    PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
+                                        cardSlot.getPos().x, cardSlot.getPos().y + 1.5f);
+                                }), delayCounter[0]);
+                            };
+                        });
                 }), delayCounter[0]);
                 delayCounter[0] += 0.3f;
             });
@@ -217,14 +236,12 @@ public class SlotScreen extends ScreenAdapter {
                     slots.forEach(Slot::pulse);
                     patternDisplay.addMulti(slots.size());
                     Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
-                PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(slots.size()), Assets.I().colorRed(),
+                PopupManager.I().spawnNumber(slots.size(), Assets.I().colorRed(),
                         middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
             }), delayCounter[0]);
             delayCounter[0] += 0.3f;
 
-            UpgradesManager.I().getUpgrades()
-                .stream().filter(PatternMultAdditionUpgrade.class::isInstance)
-                .map(PatternMultAdditionUpgrade.class::cast)
+            UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
                 .forEach(upgrade -> {
                     Timer.schedule(TaskFactory.create(() -> {
@@ -233,7 +250,7 @@ public class SlotScreen extends ScreenAdapter {
                         cardSlot.pulse();
                         cardSlot.wobble();
                         patternDisplay.addMulti(multi);
-                        PopupManager.I().spawnNumber(Assets.I().getDigitalNumber(multi), Assets.I().colorRed(),
+                        PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
                     }), delayCounter[0]);
                     delayCounter[0] += 0.3f;

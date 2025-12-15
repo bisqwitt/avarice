@@ -16,6 +16,8 @@ public abstract class Upgrade {
         return rarity;
     }
 
+    public abstract void apply();
+
     public void increaseRarity() {
         rarity = rarity.getNext();
     }

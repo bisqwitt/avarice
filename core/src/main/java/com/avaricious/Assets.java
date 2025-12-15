@@ -48,6 +48,7 @@ public class Assets {
         manager.load("cable.png", Texture.class);
         manager.load("CoinSlot.png", Texture.class);
         manager.load("white.png", Texture.class);
+        manager.load("retrigger.png", Texture.class);
         manager.load("SlotMachineShadow.png", Texture.class);
         manager.load("Joker.png", Texture.class);
         manager.load("JokerShadow.png", Texture.class);
@@ -232,6 +233,10 @@ public class Assets {
         return manager.get("digital-numbers/plus.png", Texture.class);
     }
 
+    public Texture getRetriggerSymbol() {
+        return manager.get("retrigger.png", Texture.class);
+    }
+
     public Texture getSpinAgainButtonHovered() {
         return manager.get("buttons/spinagain/spin-again-hovered.png", Texture.class);
     }
@@ -371,8 +376,24 @@ public class Assets {
         return new Color(0.1647f, 0.5412f, 0.7843f, 1f);
     }
 
+    public String blueText(String txt) {
+        return "[#2A8AC8]" + txt + "[]";
+    }
+
     public Color colorRed() {
         return new Color(0.7922f, 0.3765f, 0.3333f, 1f);
+    }
+
+    public String redText(String txt) {
+        return "[#CA6055]" + txt + "[]";
+    }
+
+    public Color colorGreen() {
+        return new Color(0.2980f, 0.7098f, 0.4470f, 1f);
+    }
+
+    public String greenText(String txt) {
+        return "[#4CB572]" + txt + "[]";
     }
 
     public Color lightColor() {

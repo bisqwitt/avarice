@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UpgradesManager {
 
@@ -65,6 +66,12 @@ public class UpgradesManager {
                 throw new RuntimeException(e);
             }
         }).toList();
+    }
+
+    public <T> Stream<T> getUpgradesOfClass(Class<T> clazz) {
+        return getUpgrades().stream()
+            .filter(clazz::isInstance)
+            .map(clazz::cast);
     }
 
     public void addUpgrade(Upgrade upgrade) {
