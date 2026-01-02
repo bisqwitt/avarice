@@ -55,6 +55,7 @@ public class Assets {
         manager.load("TooltipBox.png", Texture.class);
         manager.load("ShopWindow.png", Texture.class);
         manager.load("ShopWindowShadow.png", Texture.class);
+        manager.load("quest-scroll.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -215,6 +216,10 @@ public class Assets {
 
     public Texture getProgressUnlit() {
         return manager.get("progressbar/ProgressBarUnlit.png", Texture.class);
+    }
+
+    public Texture getQuestScroll() {
+        return manager.get("quest-scroll.png", Texture.class);
     }
 
     public Texture getShopWindow() {

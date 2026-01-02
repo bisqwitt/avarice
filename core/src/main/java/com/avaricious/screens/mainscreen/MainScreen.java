@@ -1,4 +1,4 @@
-package com.avaricious.screens;
+package com.avaricious.screens.mainscreen;
 
 import com.avaricious.Main;
 import com.badlogic.gdx.Gdx;
@@ -10,13 +10,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.video.VideoPlayer;
 import com.badlogic.gdx.video.VideoPlayerCreator;
-import com.badlogic.gdx.video.assets.VideoLoader;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.BloomEffect;
-import com.crashinvaders.vfx.effects.FisheyeEffect;
-import com.crashinvaders.vfx.effects.MotionBlurEffect;
-import com.crashinvaders.vfx.effects.OldTvEffect;
-import com.crashinvaders.vfx.effects.util.MixEffect;
 
 import java.io.FileNotFoundException;
 

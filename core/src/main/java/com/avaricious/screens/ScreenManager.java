@@ -1,6 +1,7 @@
 package com.avaricious.screens;
 
 import com.avaricious.Main;
+import com.avaricious.screens.mainscreen.MainScreen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;

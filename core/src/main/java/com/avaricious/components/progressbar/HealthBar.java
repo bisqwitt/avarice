@@ -26,6 +26,10 @@ public class HealthBar extends ProgressBar {
         setCurrentValue(this.currentHealth);
     }
 
+    public void fullHeal() {
+        setCurrentHealth(maxHealth);
+    }
+
     public float getMaxHealth() {
         return maxHealth;
     }

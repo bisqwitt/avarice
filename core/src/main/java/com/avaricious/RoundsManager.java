@@ -20,21 +20,21 @@ public class RoundsManager {
     private final Map<Integer, Long> targetScorePerRound = new HashMap<Integer, Long>() {{
         put(0, 1L);
 
-        put(1, 800L);
-        put(2, 1200L);
-        put(3, 1500L);
+        put(1, 300L);
+        put(2, 450L);
+        put(3, 600L);
 
-        put(4, 1000L);
-        put(5, 1500L);
-        put(6, 2000L);
+        put(4, 800L);
+        put(5, 1200L);
+        put(6, 1600L);
 
-        put(7, 2400L);
-        put(8, 3600L);
-        put(9, 4800L);
+        put(7, 2000L);
+        put(8, 3000L);
+        put(9, 4000L);
 
-        put(10, 5500L);
-        put(11, 8250L);
-        put(12, 11000L);
+        put(10, 5000L);
+        put(11, 7500L);
+        put(12, 10000L);
     }};
 
     private Integer currentRound;

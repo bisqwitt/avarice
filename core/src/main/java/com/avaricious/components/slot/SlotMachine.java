@@ -40,7 +40,7 @@ public class SlotMachine {
     boolean spinning = false;
     private List<Symbol> selection = new ArrayList<>();
 
-    public SlotMachine(float worldWidth, float worldHeight, RayHandler rayHandler) {
+    public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 3f;
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 1.5f;
