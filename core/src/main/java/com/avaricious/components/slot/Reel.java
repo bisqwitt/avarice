@@ -1,6 +1,7 @@
 package com.avaricious.components.slot;
 
-import java.util.ArrayList;
+import com.avaricious.stats.StatUpgrade;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -9,7 +10,10 @@ public class Reel {
     // Simple state machine: spin -> stop cleanly (no post-settle bounce)
     enum State { IDLE, ACCEL, CRUISE, DECEL }
 
+    public record SymbolInstance(Symbol symbol, StatUpgrade statUpgrade) {};
+
     private final List<Symbol> strip;
+    private List<SymbolInstance> slots;
     private final int rowsVisible;
 
     // Position in "symbol units" (continuous). Integer step == next symbol.
@@ -52,7 +56,13 @@ public class Reel {
         if (strip == null || strip.isEmpty()) {
             throw new IllegalArgumentException("Reel strip must not be empty");
         }
-        this.strip = new ArrayList<>(strip);
+
+        this.strip = strip;
+
+        this.slots = strip.stream()
+            .map(symbol -> new SymbolInstance(symbol, StatUpgrade.newRandom()))
+            .toList();
+
         this.rowsVisible = Math.max(1, rowsVisible);
         this.pos = rng.nextInt(this.strip.size()); // random starting offset
     }
@@ -64,7 +74,9 @@ public class Reel {
         forceFracActive = false;   // <-- important
         forcedFrac = 0f;
 
-        Collections.shuffle(strip);
+        this.slots = strip.stream()
+            .map(symbol -> new SymbolInstance(symbol, StatUpgrade.newRandom()))
+            .toList();
 
         // Slight randomness so reels don't look identical
         baseSpeed = speedSymbolsPerSec * (0.95f + rng.nextFloat() * 0.10f);
@@ -187,7 +199,7 @@ public class Reel {
     public boolean isSpinning() { return state != State.IDLE; }
 
     /** Symbol visible at a given row index (0 = top row). */
-    public Symbol symbolAtRow(int rowFromTop) {
+    public SymbolInstance slotAtRow(int rowFromTop) {
         int size = strip.size();
         int baseIndex = hasLockedIndex
             ? lockedBaseIndex
@@ -196,7 +208,7 @@ public class Reel {
 
         int idx = (baseIndex + rowFromTop) % size;
         if (idx < 0) idx += size;
-        return strip.get(idx);
+        return slots.get(idx);
     }
 
     /** Integer base index of the current top symbol. */

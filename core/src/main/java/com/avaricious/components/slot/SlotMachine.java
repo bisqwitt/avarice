@@ -1,12 +1,10 @@
 package com.avaricious.components.slot;
 
-import box2dLight.RayHandler;
 import com.avaricious.Assets;
 import com.avaricious.Main;
 import com.avaricious.components.slot.pattern.PatternFinder;
 import com.avaricious.components.slot.pattern.PatternMatch;
 import com.avaricious.components.slot.pattern.SlotMatch;
-import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -16,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.utils.Timer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SlotMachine {
 
@@ -127,7 +124,8 @@ public class SlotMachine {
 
             for (int k = drawFrom; k <= drawTo; k++) {
                 boolean isInGrid = (k >= 0 && k < rows);
-                Symbol sym = reel.symbolAtRow(k);
+
+                Reel.SymbolInstance symbolSlot = reel.slotAtRow(k);
 
                 float drawX = colX;
                 float drawY = topY - (k + frac) * stepY;
@@ -140,7 +138,7 @@ public class SlotMachine {
                 TextureRegion region;
 
                 if (isInGrid) {
-                    selected = selection.contains(sym) && !reel.isSpinning();
+                    selected = selection.contains(symbolSlot.symbol()) && !reel.isSpinning();
                     highlighted = (hovered || selected);   // same visual intent
 
                     Slot slot = grid[c][k];
@@ -162,8 +160,8 @@ public class SlotMachine {
 
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
-                    ? grid[c][k].getFrame(sym, selected, delta)
-                    : Assets.I().getBase(sym);
+                    ? grid[c][k].getFrame(symbolSlot.symbol(), selected, delta)
+                    : Assets.I().getBase(symbolSlot.symbol());
 
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
@@ -177,6 +175,17 @@ public class SlotMachine {
                     1f, 1f,                   // scale already baked into drawW/H
                     rotation
                 );
+
+                if(symbolSlot.statUpgrade() != null) {
+                    batch.draw(
+                        new TextureRegion(symbolSlot.statUpgrade().stat().getTexture()),
+                        adjX + 1.45f, adjY + 0.6f,
+                        (drawW - 2f) / 2f, (drawW - 2f) / 2f,
+                        (drawW - 1.8f), (drawW - 1.8f),
+                        1f, 1f,
+                        rotation + 180
+                    );
+                }
             }
         }
 
@@ -209,23 +218,13 @@ public class SlotMachine {
         }
     }
 
-    public List<Symbol> getSymbols() {
-        List<Symbol> symbols = new ArrayList<>();
-        reels.forEach(reel -> {
-            for (int row = 0; row < rows; row++) {
-                symbols.add(reel.symbolAtRow(row));
-            }
-        });
-        return symbols;
-    }
-
     // Returns each matching line as a List<Slot>
     public List<SlotMatch> findMatches() {
         Symbol[][] symbolMap = new Symbol[cols][rows];
 
         for (int c = 0; c < reels.size(); c++) {
             for (int row = 0; row < rows; row++) {
-                symbolMap[c][row] = reels.get(c).symbolAtRow(row);
+                symbolMap[c][row] = reels.get(c).slotAtRow(row).symbol();
             }
         }
 

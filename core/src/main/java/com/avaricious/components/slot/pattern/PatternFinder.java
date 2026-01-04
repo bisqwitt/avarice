@@ -4,6 +4,7 @@ import com.avaricious.components.slot.Symbol;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PatternFinder {
@@ -30,8 +31,8 @@ public class PatternFinder {
 
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
-                Symbol base = symbolMap[x][y];
-                if (base == null) continue; // skip empty
+                Symbol symbol = symbolMap[x][y];
+                if (symbol == null) continue; // skip empty
 
                 for (int d = 0; d < dirs.length; d++) {
                     int dx = dirs[d][0];
@@ -42,7 +43,7 @@ public class PatternFinder {
                     int prevX = x - dx;
                     int prevY = y - dy;
                     if (inBounds(prevX, prevY, cols, rows) &&
-                        equalsSymbol(symbolMap[prevX][prevY], base)) {
+                        equalsSymbol(symbolMap[prevX][prevY], symbol)) {
                         continue; // this run was/will be counted from an earlier cell
                     }
 
@@ -52,7 +53,7 @@ public class PatternFinder {
                     int cy = y;
 
                     while (inBounds(cx, cy, cols, rows) &&
-                        equalsSymbol(symbolMap[cx][cy], base)) {
+                        equalsSymbol(symbolMap[cx][cy], symbol)) {
                         positions.add(new Point(cx, cy));
                         cx += dx;
                         cy += dy;
@@ -60,7 +61,9 @@ public class PatternFinder {
 
                     int length = positions.size();
                     if (length >= 3) {
-                        matches.add(new PatternMatch(base, length, positions, dirEnums[d]));
+                        if(positions.get(0).y > positions.get(1).y) Collections.reverse(positions);
+
+                        matches.add(new PatternMatch(symbol, length, positions, dirEnums[d]));
                     }
                 }
             }

@@ -113,6 +113,13 @@ public class Assets {
         manager.load("symbols/diamond.png", Texture.class);
         manager.load("symbols/seven.png", Texture.class);
 
+        manager.load("stats/coin.png", Texture.class);
+        manager.load("stats/critical hit.png", Texture.class);
+        manager.load("stats/evade.png", Texture.class);
+        manager.load("stats/luck.png", Texture.class);
+        manager.load("stats/multi.png", Texture.class);
+        manager.load("stats/Retrigger.png", Texture.class);
+
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
 
@@ -372,6 +379,30 @@ public class Assets {
 
     public Texture getSpinAgainButton() {
         return manager.get("buttons/spinagain/spin-again.png", Texture.class);
+    }
+
+    public Texture getCoinStat() {
+        return manager.get("stats/coin.png", Texture.class);
+    }
+
+    public Texture getCriticalHitStat() {
+        return manager.get("stats/critical hit.png", Texture.class);
+    }
+
+    public Texture getEvadeStat() {
+        return manager.get("stats/evade.png", Texture.class);
+    }
+
+    public Texture getLuckStat() {
+        return manager.get("stats/luck.png", Texture.class);
+    }
+
+    public Texture getMultiStat() {
+        return manager.get("stats/multi.png", Texture.class);
+    }
+
+    public Texture getRetriggerStat() {
+        return manager.get("stats/Retrigger.png", Texture.class);
     }
 
     public Texture getSpinAgainPressedButton() {

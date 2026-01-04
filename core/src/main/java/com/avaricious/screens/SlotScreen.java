@@ -23,6 +23,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -127,6 +128,8 @@ public class SlotScreen extends ScreenAdapter {
         backgroundLayer.render(batch, delta);
         Camera camera = app.getViewport().getCamera();
         batch.setProjectionMatrix(camera.combined);
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+
         batch.begin();
         healthBar.draw(batch);
         upgradeBar.draw(batch);
@@ -175,6 +178,7 @@ public class SlotScreen extends ScreenAdapter {
     private void runResult() {
         List<SlotMatch> matches = slotMachine.findMatches();
         if(matches.isEmpty()) {
+            healthBar.damage(20);
             patternDisplay.reset();
             if(healthBar.getCurrentHealth() <= 0) {
                 ScreenManager.I().setScreen(MainScreen.class);
@@ -247,11 +251,6 @@ public class SlotScreen extends ScreenAdapter {
 
     private void onSpinButtonPressed() {
         slotMachine.spin();
-        healthBar.damage(20);
-//        scoreDisplay.removeFromScore(50);
-
-//        backgroundLights.triggerLightShake(1f);
-//        cameraShaker.trigger(1f);
     }
 
     private void onApplyButtonPressed() {
