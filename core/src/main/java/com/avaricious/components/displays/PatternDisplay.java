@@ -201,7 +201,7 @@ public class PatternDisplay {
         updateDisplayedMulti();
     }
 
-    public void addXMulti(float xMulti) {
+    public void addStreak(float xMulti) {
         xMultiValue += xMulti;
         xMultiPulseTime = 0f;
 

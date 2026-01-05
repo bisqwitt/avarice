@@ -1,10 +1,7 @@
 package com.avaricious.screens;
 
-import box2dLight.RayHandler;
 import com.avaricious.*;
 import com.avaricious.components.*;
-import com.avaricious.components.background.BackgroundLights;
-import com.avaricious.components.background.WarpBackground;
 import com.avaricious.components.buttons.DisablableButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
@@ -28,7 +25,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Timer;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
@@ -188,51 +184,49 @@ public class SlotScreen extends ScreenAdapter {
 
         healthBar.heal(20);
 
-        float[] delayCounter = {0f};
+        TaskScheduler scheduler = new TaskScheduler(0.3f);
         matches.forEach((slotMatch -> {
             slotMatch.slots().forEach(slot -> {
-                Timer.schedule(TaskFactory.create(() -> {
+                scheduler.schedule(() -> {
                     slot.wobble();
                     slot.pulse();
                     patternDisplay.addPoints(slotMatch.symbol().baseValue());
                     PopupManager.I().spawnNumber(slotMatch.symbol().baseValue(), Assets.I().colorBlue(),
                         slot.getPos().x + 1f, slot.getPos().y + 1f);
-                    UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
-                        .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
-                        .forEach(upgrade -> {
-                            Slot cardSlot = upgradeBar.getSlotByUpgrade(upgrade);
-                            cardSlot.wobble();
-                            cardSlot.pulse();
+                });
+                UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
+                    .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
+                    .forEach(upgrade -> {
+                        Slot upgradeSlot = upgradeBar.getSlotByUpgrade(upgrade);
+                        scheduler.schedule(() -> {
+                            upgradeSlot.wobble();
+                            upgradeSlot.pulse();
                             PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
-                                cardSlot.getPos().x, cardSlot.getPos().y + 1.5f);
-                            if(upgrade.addStacks(1)) {
-                                delayCounter[0] += 0.3f;
-                                Timer.schedule(TaskFactory.create(() -> {
-                                    cardSlot.wobble();
-                                    cardSlot.pulse();
-                                    PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
-                                        cardSlot.getPos().x, cardSlot.getPos().y + 1.5f);
-                                }), delayCounter[0]);
-                            };
+                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
                         });
-                }), delayCounter[0]);
-                delayCounter[0] += 0.3f;
+                        if(upgrade.addStacks(1)) {
+                            scheduler.schedule(() -> {
+                                upgradeSlot.wobble();
+                                upgradeSlot.pulse();
+                                PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
+                                    upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                            });
+                        }
+                    });
             });
-            Timer.schedule(TaskFactory.create(() -> {
-                    List<Slot> slots = slotMatch.slots();
-                    slots.forEach(Slot::wobble);
-                    slots.forEach(Slot::pulse);
-                    patternDisplay.addMulti(slots.size());
-                    Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
+            List<Slot> slots = slotMatch.slots();
+            scheduler.schedule(() -> {
+                slots.forEach(Slot::wobble);
+                slots.forEach(Slot::pulse);
+                patternDisplay.addMulti(slots.size());
+                Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
                 PopupManager.I().spawnNumber(slots.size(), Assets.I().colorRed(),
-                        middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
-            }), delayCounter[0]);
-            delayCounter[0] += 0.3f;
-
+                    middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
+            });
             UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
                 .forEach(upgrade -> {
-                    Timer.schedule(TaskFactory.create(() -> {
+                    scheduler.schedule(() -> {
                         int multi = upgrade.getMulti();
                         Slot cardSlot = upgradeBar.getSlotByUpgrade(upgrade);
                         cardSlot.pulse();
@@ -240,13 +234,11 @@ public class SlotScreen extends ScreenAdapter {
                         patternDisplay.addMulti(multi);
                         PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
-                    }), delayCounter[0]);
-                    delayCounter[0] += 0.3f;
+                    });
                 });
         }));
-
-        Timer.schedule(TaskFactory.create(() -> patternDisplay.addXMulti(1)), delayCounter[0]);
-        delayCounter[0] += 0.5f;
+        scheduler.schedule(() -> patternDisplay.addStreak(1));
+        scheduler.runTasks();
     }
 
     private void onSpinButtonPressed() {
