@@ -13,7 +13,7 @@ public class Button {
     protected TextureRegion currentTexture;
     private final Rectangle buttonRectangle;
 
-    private boolean wasHovered;
+    protected boolean wasHovered;
     private boolean spaceWasPressed;
 
     private final Runnable onButtonPressedRunnable;
@@ -53,7 +53,7 @@ public class Button {
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed) {
         boolean hovering = buttonRectangle.contains(mouse.x, mouse.y);
-        if(hovering && !wasHovered) currentTexture = hoveredButtonTexture; // update state
+        if(hovering && !wasHovered) currentTexture = hoveredButtonTexture;
         else if(!hovering && wasHovered) currentTexture = defaultButtonTexture;
 
         if(pressed && !wasPressed) {

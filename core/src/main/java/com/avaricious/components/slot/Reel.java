@@ -1,8 +1,7 @@
 package com.avaricious.components.slot;
 
-import com.avaricious.stats.StatUpgrade;
+import com.avaricious.stats.statupgrades.StatUpgrade;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -60,7 +59,7 @@ public class Reel {
         this.strip = strip;
 
         this.slots = strip.stream()
-            .map(symbol -> new SymbolInstance(symbol, StatUpgrade.newRandom()))
+            .map(symbol -> new SymbolInstance(symbol, null))
             .toList();
 
         this.rowsVisible = Math.max(1, rowsVisible);
@@ -75,7 +74,7 @@ public class Reel {
         forcedFrac = 0f;
 
         this.slots = strip.stream()
-            .map(symbol -> new SymbolInstance(symbol, StatUpgrade.newRandom()))
+            .map(symbol -> new SymbolInstance(symbol, null))
             .toList();
 
         // Slight randomness so reels don't look identical

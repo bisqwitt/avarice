@@ -44,6 +44,7 @@ public class Assets {
         manager.load("ScoreBorder.png", Texture.class);
         manager.load("ButtonsLeftDisplay.png", Texture.class);
         manager.load("base-poker-chip.png", Texture.class);
+        manager.load("base-poker-chip-shadow.png", Texture.class);
         manager.load("PatternDisplay.png", Texture.class);
         manager.load("cable.png", Texture.class);
         manager.load("CoinSlot.png", Texture.class);
@@ -55,6 +56,7 @@ public class Assets {
         manager.load("TooltipBox.png", Texture.class);
         manager.load("ShopWindow.png", Texture.class);
         manager.load("ShopWindowShadow.png", Texture.class);
+        manager.load("UpgradeWindow.png", Texture.class);
         manager.load("quest-scroll.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
@@ -88,6 +90,8 @@ public class Assets {
         manager.load("digital-numbers/plus.png", Texture.class);
         manager.load("digital-numbers/mult.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
+        manager.load("digital-numbers/fabled/percentage.png", Texture.class);
+        manager.load("digital-numbers/fabled/dollar.png", Texture.class);
         manager.load("digital-numbers/fabled/0.png", Texture.class);
         manager.load("digital-numbers/fabled/1.png", Texture.class);
         manager.load("digital-numbers/fabled/2.png", Texture.class);
@@ -119,6 +123,12 @@ public class Assets {
         manager.load("stats/luck.png", Texture.class);
         manager.load("stats/multi.png", Texture.class);
         manager.load("stats/Retrigger.png", Texture.class);
+        manager.load("stats/coin-shadow.png", Texture.class);
+        manager.load("stats/critical hit-shadow.png", Texture.class);
+        manager.load("stats/evade-shadow.png", Texture.class);
+        manager.load("stats/luck-shadow.png", Texture.class);
+        manager.load("stats/multi-shadow.png", Texture.class);
+        manager.load("stats/Retrigger-shadow.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -166,35 +176,12 @@ public class Assets {
         return manager.get("white.png", Texture.class);
     }
 
-//    public TextureRegion getSymbolShadow(Symbol symbol) {
-//        switch (symbol) {
-//            case LEMON -> {
-//                return new TextureRegion(manager.get("symbolShadows/lemon-shadow.png", Texture.class));
-//            }
-//            case CHERRY -> {
-//                return new TextureRegion(manager.get("symbolShadows/cherry-shadow.png", Texture.class));
-//            }
-//            case CLOVER -> {
-//                return new TextureRegion(manager.get("symbolShadows/clover-shadow.png", Texture.class));
-//            }
-//            case BELL -> {
-//                return new TextureRegion(manager.get("symbolShadows/bell-shadow.png", Texture.class));
-//            }
-//            case IRON -> {
-//                return new TextureRegion(manager.get("symbolShadows/iron-shadow.png", Texture.class));
-//            }
-//            case DIAMOND -> {
-//                return new TextureRegion(manager.get("symbolShadows/diamond-shadow.png", Texture.class));
-//            }
-//            case SEVEN -> {
-//                return new TextureRegion(manager.get("symbolShadows/seven-shadow.png", Texture.class));
-//            }
-//        }
-//        return null;
-//    }
-
     public Texture getPokerChip() {
         return manager.get("base-poker-chip.png", Texture.class);
+    }
+
+    public Texture getPokerChipShadow() {
+        return manager.get("base-poker-chip-shadow.png", Texture.class);
     }
 
     public Texture getSlotMachineShadow() {
@@ -237,12 +224,24 @@ public class Assets {
         return manager.get("ShopWindowShadow.png", Texture.class);
     }
 
+    public Texture getStatUpgradeWindow() {
+        return manager.get("UpgradeWindow.png", Texture.class);
+    }
+
     public Texture getCoinSlot() {
         return manager.get("CoinSlot.png", Texture.class);
     }
 
     public Texture getPlusSymbol() {
         return manager.get("digital-numbers/plus.png", Texture.class);
+    }
+
+    public Texture getPercentageSymbol() {
+        return manager.get("digital-numbers/fabled/percentage.png", Texture.class);
+    }
+
+    public Texture getDollarSymbol() {
+        return manager.get("digital-numbers/fabled/dollar.png", Texture.class);
     }
 
     public Texture getRetriggerSymbol() {
@@ -405,6 +404,30 @@ public class Assets {
         return manager.get("stats/Retrigger.png", Texture.class);
     }
 
+    public Texture getCoinStatShadow() {
+        return manager.get("stats/coin-shadow.png", Texture.class);
+    }
+
+    public Texture getCriticalHitStatShadow() {
+        return manager.get("stats/critical hit-shadow.png", Texture.class);
+    }
+
+    public Texture getEvadeStatShadow() {
+        return manager.get("stats/evade-shadow.png", Texture.class);
+    }
+
+    public Texture getLuckStatShadow() {
+        return manager.get("stats/luck-shadow.png", Texture.class);
+    }
+
+    public Texture getMultiStatShadow() {
+        return manager.get("stats/multi-shadow.png", Texture.class);
+    }
+
+    public Texture getRetriggerShadow() {
+        return manager.get("stats/Retrigger-shadow.png", Texture.class);
+    }
+
     public Texture getSpinAgainPressedButton() {
         return manager.get("buttons/spinagain/spin-again-pressed.png", Texture.class);
     }
@@ -430,6 +453,10 @@ public class Assets {
 
     public String greenText(String txt) {
         return "[#4CB572]" + txt + "[]";
+    }
+
+    public Color colorYellow() {
+        return new Color(218f / 255f, 172f / 255f, 83f / 255f, 1f);
     }
 
     public Color lightColor() {

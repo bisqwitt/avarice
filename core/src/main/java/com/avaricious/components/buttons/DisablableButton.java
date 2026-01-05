@@ -15,10 +15,17 @@ public class DisablableButton extends Button {
         this.disabledTexture = new TextureRegion(disabledTexture);
     }
 
-    public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, boolean disable) {
-        if(disable) currentTexture = disabledTexture;
-        else super.handleInput(mouse, pressed, wasPressed);
-        disabled = disable;
+    public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed) {
+        super.handleInput(mouse, pressed, wasPressed);
+        if(disabled) {
+            currentTexture = disabledTexture;
+            wasHovered = false;
+        }
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+        if(!disabled) currentTexture = defaultButtonTexture;
     }
 
     public boolean isDisabled() {

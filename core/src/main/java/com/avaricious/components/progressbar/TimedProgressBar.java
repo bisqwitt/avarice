@@ -8,7 +8,7 @@ public class TimedProgressBar extends ProgressBar {
 
     public TimedProgressBar(float reachInSeconds) {
         setMaxValue(reachInSeconds);
-        setCurrentValue(0f);
+        setDisplayedValue(0f);
     }
 
     public void render(SpriteBatch batch, float delta) {
@@ -21,7 +21,7 @@ public class TimedProgressBar extends ProgressBar {
         }
 
         // set current value
-        setCurrentValue(elapsed);
+        setDisplayedValue(elapsed);
 
         // draw the bar
         super.draw(batch);
@@ -29,7 +29,7 @@ public class TimedProgressBar extends ProgressBar {
 
     public void reset() {
         elapsed = 0f;
-        setCurrentValue(0f);
+        setDisplayedValue(0f);
     }
 
     public void restart(float reachInSeconds) {

@@ -1,23 +1,28 @@
 package com.avaricious.components;
 
 import com.avaricious.Assets;
+import com.avaricious.components.popups.NumberPopup;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.slot.Slot;   // <-- import your Slot
+import com.avaricious.stats.PlayerStats;
+import com.avaricious.stats.statupgrades.StatUpgrade;
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class UpgradeBar {
 
-    private final TextureRegion jokerCard;
+    private TextureRegion jokerCard;
     private final TextureRegion cardShadow;
 
     private final Rectangle cardRectangle;
@@ -29,6 +34,8 @@ public class UpgradeBar {
     private Upgrade hoveringKey = null;
 
     private final boolean tooltipOnTopOfCard;
+
+    private Runnable onUpgradeClicked;
 
     public UpgradeBar(List<? extends Upgrade> upgrades, Rectangle cardRectangle, float offset, boolean tooltipOnTop) {
         tooltipOnTopOfCard = tooltipOnTop;
@@ -66,10 +73,22 @@ public class UpgradeBar {
                 getHoveringRectangle().x - 1f, getHoveringRectangle().y + (tooltipOnTopOfCard ? 2 : -2));
 
         if(clickedUpgrade[0] != null) {
+            if(clickedUpgrade[0] instanceof StatUpgrade) {
+                clickedUpgrade[0].apply();
+                cardBounds.keySet().retainAll(Collections.singleton(clickedUpgrade[0]));
+                cardAnimationManagers.keySet().retainAll(Collections.singleton(clickedUpgrade[0]));
+
+                PopupManager.I().spawnPercentage(
+                    ((StatUpgrade) clickedUpgrade[0]).getStat().getPercentageAsNumber(),
+                    Assets.I().colorGreen(),
+                    cardBounds.get(clickedUpgrade[0]).getX() + 1f,
+                    cardBounds.get(clickedUpgrade[0]).getY()).setOnFinished(() -> onUpgradeClicked.run());
+            } else {
+                UpgradesManager.I().addUpgrade(clickedUpgrade[0]);
                 cardBounds.remove(clickedUpgrade[0]);
                 cardAnimationManagers.remove(clickedUpgrade[0]);
-                UpgradesManager.I().addUpgrade(clickedUpgrade[0]);
                 hoveringKey = null;
+            }
         }
     }
 
@@ -96,7 +115,7 @@ public class UpgradeBar {
             // draw shadow (also scaled and rotated)
             batch.setColor(1f, 1f, 1f, 0.25f);
             batch.draw(
-                cardShadow,
+                upgrade instanceof StatUpgrade ? new TextureRegion(((StatUpgrade) upgrade).getStat().getShadowTexture()) : cardShadow,
                 adjX + 0.1f, adjY - 0.1f,
                 drawW / 2f, drawH / 2f,   // origin for rotation (center)
                 drawW, drawH,
@@ -107,7 +126,7 @@ public class UpgradeBar {
             // draw card
             batch.setColor(1f, 1f, 1f, 1f);
             batch.draw(
-                jokerCard,
+                upgrade instanceof StatUpgrade ? new TextureRegion(((StatUpgrade) upgrade).getStat().getTexture()) : jokerCard,
                 adjX, adjY,
                 drawW / 2f, drawH / 2f,   // origin for rotation (center)
                 drawW, drawH,
@@ -144,4 +163,7 @@ public class UpgradeBar {
         return cardBounds.get(upgrade);
     }
 
+    public void setOnUpgradeClicked(Runnable onUpgradeClicked) {
+        this.onUpgradeClicked = onUpgradeClicked;
+    }
 }

@@ -74,7 +74,7 @@ public class ScoreDisplay {
         if(score >= RoundsManager.I().getCurrentTargetScore()) {
             onTargetScoreReached.run();
         }
-        progressBar.setCurrentValue(score);
+        progressBar.setDisplayedValue(score);
         displayedScore = score;
         Assets assetManager = Assets.I();
         digitalNumbers[6] = assetManager.getDigitalNumber(score % 10);
@@ -87,7 +87,7 @@ public class ScoreDisplay {
     }
 
     public boolean pointsReached() {
-        return progressBar.getCurrentValue() >= progressBar.getMaxValue();
+        return progressBar.getDisplayedValue() >= progressBar.getMaxValue();
     }
 
     public void nextRound() {

@@ -12,7 +12,7 @@ public class ProgressBar {
     protected TextureRegion[] progress = new TextureRegion[100];
 
     private float maxValue = 0f;
-    private float currentValue = 0f;
+    private float displayedValue = 0f;
 
     public ProgressBar() {
         border = new TextureRegion(Assets.I().getProgressBarBorder());
@@ -46,8 +46,8 @@ public class ProgressBar {
         );
     }
 
-    private void updateProgressTextures() {
-        float percent = (maxValue == 0) ? 0 : currentValue / maxValue;
+    protected void updateProgressTextures() {
+        float percent = (maxValue == 0) ? 0 : displayedValue / maxValue;
         int litCount = Math.round(percent * 100);
 
         for (int i = 0; i < 100; i++) {
@@ -65,8 +65,8 @@ public class ProgressBar {
         updateProgressTextures();
     }
 
-    public void setCurrentValue(float currentValue) {
-        this.currentValue = currentValue;
+    public void setDisplayedValue(float displayedValue) {
+        this.displayedValue = displayedValue;
         updateProgressTextures();
     }
 
@@ -74,7 +74,7 @@ public class ProgressBar {
         return maxValue;
     }
 
-    public float getCurrentValue() {
-        return currentValue;
+    public float getDisplayedValue() {
+        return displayedValue;
     }
 }

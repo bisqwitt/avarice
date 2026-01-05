@@ -18,7 +18,7 @@ public class Shop {
 
     private boolean show = false;
 
-    public Shop(Runnable onNextRoundPressed) {
+    public Shop(Runnable onExit) {
         window = Assets.I().getShopWindow();
 
         shopCardsBar = new UpgradeBar(UpgradesManager.I().randomUpgrades(), new Rectangle(
@@ -32,7 +32,7 @@ public class Shop {
             new Rectangle(10f, 4f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
         returnButton = new Button(() -> {
                 show = false;
-                onNextRoundPressed.run();
+//                onExit.run();
             },
             Assets.I().getReturnButton(), Assets.I().getReturnButtonPressed(), Assets.I().getReturnButtonHovered(),
             new Rectangle(10.5f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);

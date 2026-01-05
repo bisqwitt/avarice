@@ -178,7 +178,7 @@ public class SlotMachine {
 
                 if(symbolSlot.statUpgrade() != null) {
                     batch.draw(
-                        new TextureRegion(symbolSlot.statUpgrade().stat().getTexture()),
+                        new TextureRegion(symbolSlot.statUpgrade().getStat().getTexture()),
                         adjX + 1.45f, adjY + 0.6f,
                         (drawW - 2f) / 2f, (drawW - 2f) / 2f,
                         (drawW - 1.8f), (drawW - 1.8f),
