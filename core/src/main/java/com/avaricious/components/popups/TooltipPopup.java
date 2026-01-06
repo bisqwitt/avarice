@@ -16,12 +16,14 @@ public class TooltipPopup {
     private final GlyphLayout description = new GlyphLayout();
     private final Vector2 pos;
     private final Texture box;
+    private final Texture boxShadow;
     private final BitmapFont bigFont;
     private final BitmapFont smallFont;
 
     public TooltipPopup(String txt, Vector2 pos) {
         this.pos = pos;
         box = Assets.I().getTooltipBox();
+        boxShadow = Assets.I().getTooltipBoxShadow();
         bigFont = Assets.I().getBigFont();
         smallFont = Assets.I().getSmallFont();
         jokerTxt.setText(bigFont, "Joker", Color.WHITE, 250, Align.center, true);
@@ -36,6 +38,9 @@ public class TooltipPopup {
 
         // WORLD SPACE
         batch.setProjectionMatrix(ScreenManager.getViewport().getCamera().combined);
+        batch.setColor(1f, 1f, 1f, 0.25f);
+        batch.draw(boxShadow, boxX + 0.1f, boxY - 0.1f, boxWidth, boxHeight);
+        batch.setColor(1f, 1f, 1f, 1f);
         batch.draw(box, boxX, boxY, boxWidth, boxHeight);
 
         // Center of the box in world coordinates
@@ -52,7 +57,7 @@ public class TooltipPopup {
         float jokerH = jokerTxt.height;
 
         float jokerX = center.x - jokerW / 2f - 85f;
-        float jokerY = center.y + 40 + jokerH;
+        float jokerY = center.y + 55 + jokerH;
         // adjust + (boxHeight * 10) to taste
 
         bigFont.draw(batch, jokerTxt, jokerX, jokerY);

@@ -11,10 +11,10 @@ public class CreditManager {
     }
 
     private CreditManager() {
-        credits = 5L;
+        credits = 5;
     }
 
-    private long credits;
+    private int credits;
 
     public void onRoundBeaten(int handsLeft) {
         credits += (credits/5) + handsLeft + 3;
@@ -28,7 +28,7 @@ public class CreditManager {
         credits -= amount;
     }
 
-    public long getCredits() {
+    public int getCredits() {
         return credits;
     }
 

@@ -73,11 +73,13 @@ public class SlotScreen extends ScreenAdapter {
             new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
             1.75f, true);
 
-        scoreDisplay = new ScoreDisplay(this::onTargetScoreReached);
+        scoreDisplay = new ScoreDisplay();
         patternDisplay = new PatternDisplay();
         upgradeSticks = new UpgradeSticks();
         shop = new Shop(() -> upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades()));
-        statUpgradeWindow = new StatUpgradeWindow();
+        statUpgradeWindow = new StatUpgradeWindow(() -> {
+            if(scoreDisplay.targetScoreReached()) onTargetScoreReached();
+        } );
         spinAgainButton = new DisablableButton(this::onSpinButtonPressed,
             Assets.I().getSpinAgainButton(),
             Assets.I().getSpinAgainPressedButton(),
@@ -112,6 +114,8 @@ public class SlotScreen extends ScreenAdapter {
 
         healthBar.setCurrentHealth(healthBar.getMaxHealth());
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(this::runResult);
+
+        shop.show();
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.avaricious.stats;
 
 import com.avaricious.stats.statupgrades.*;
+import com.badlogic.gdx.math.MathUtils;
 
-import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class PlayerStats {
@@ -32,6 +34,11 @@ public class PlayerStats {
 
     public Stat getStat(Class<? extends Stat> statClass) {
         return stats.get(statClass);
+    }
+
+    public Stat getRandomStat() {
+        List<Stat> values = stats.values().stream().toList();
+        return values.get(MathUtils.random(0, values.size() -1));
     }
 
 }

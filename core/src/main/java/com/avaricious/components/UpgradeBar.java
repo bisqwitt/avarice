@@ -1,15 +1,11 @@
 package com.avaricious.components;
 
 import com.avaricious.Assets;
-import com.avaricious.components.popups.NumberPopup;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.slot.Slot;   // <-- import your Slot
-import com.avaricious.stats.PlayerStats;
 import com.avaricious.stats.statupgrades.StatUpgrade;
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradesManager;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -52,15 +48,13 @@ public class UpgradeBar {
         Upgrade[] clickedUpgrade = new Upgrade[1];
         cardBounds.forEach(((upgrade, rectangle) -> {
             boolean hovered = rectangle.contains(mouse);
-            boolean selected = ((pressed && !wasPressed) || (!pressed && wasPressed)) && rectangle.contains(mouse);
-
-            boolean highlighted = hovered || selected;
+            boolean selected = wasPressed && !pressed && rectangle.contains(mouse);
 
             Slot cardSlot = cardAnimationManagers.get(upgrade);
-            // same pattern as SlotMachine
-            cardSlot.targetScale = highlighted ? 1.125f : 1f;
+            cardSlot.targetScale = pressed && rectangle.contains(mouse) ? 1.2f
+                : hovered ? 1.075f : 1f;
 
-            cardSlot.updatePulse(selected, delta);
+            cardSlot.updatePulse(false, delta);
             cardSlot.updateHoverWobble(hovered, delta);
             cardSlot.tickScale(delta);
 
@@ -79,15 +73,15 @@ public class UpgradeBar {
                 cardAnimationManagers.keySet().retainAll(Collections.singleton(clickedUpgrade[0]));
 
                 PopupManager.I().spawnPercentage(
-                    ((StatUpgrade) clickedUpgrade[0]).getStat().getPercentageAsNumber(),
+                    ((StatUpgrade) clickedUpgrade[0]).getAdditionalPercentage(),
                     Assets.I().colorGreen(),
                     cardBounds.get(clickedUpgrade[0]).getX() + 1f,
                     cardBounds.get(clickedUpgrade[0]).getY()).setOnFinished(() -> onUpgradeClicked.run());
+                clickedUpgrade[0].apply();
             } else {
                 UpgradesManager.I().addUpgrade(clickedUpgrade[0]);
                 cardBounds.remove(clickedUpgrade[0]);
                 cardAnimationManagers.remove(clickedUpgrade[0]);
-                hoveringKey = null;
             }
         }
     }
@@ -163,7 +157,7 @@ public class UpgradeBar {
         return cardBounds.get(upgrade);
     }
 
-    public void setOnUpgradeClicked(Runnable onUpgradeClicked) {
+    public void setOnUpgradeClickedAndAnimationEnded(Runnable onUpgradeClicked) {
         this.onUpgradeClicked = onUpgradeClicked;
     }
 }

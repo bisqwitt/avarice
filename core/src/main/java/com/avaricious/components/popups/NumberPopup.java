@@ -96,7 +96,7 @@ public class NumberPopup {
         if(asPercentage) {
             batch.draw(
                 percentageTexture,
-                position.x - originX + (0.5f * digitalNumberTextures.size() -1), position.y - originY,
+                position.x - originX + 0.4f, position.y - originY,
                 originX, originY,
                 8 / 20f, 13 / 20f,
                 scale, scale,

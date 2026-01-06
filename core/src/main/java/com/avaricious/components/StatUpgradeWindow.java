@@ -12,17 +12,22 @@ import java.util.List;
 public class StatUpgradeWindow {
 
     private final Texture window;
+    private final Texture shadow;
     private boolean show = false;
 
     private final UpgradeBar upgradeBar;
 
-    public StatUpgradeWindow() {
+    public StatUpgradeWindow(Runnable onExit) {
         window = Assets.I().getStatUpgradeWindow();
+        shadow = Assets.I().getStatUpgradeWindowShadow();
 
         upgradeBar = new UpgradeBar(randomStatUpgrades(), new Rectangle(
             8.75f, 5.4f, 1.25f, 1.25f),
             1.5f, false);
-        upgradeBar.setOnUpgradeClicked(() -> show = false);
+        upgradeBar.setOnUpgradeClickedAndAnimationEnded(() -> {
+            show = false;
+            onExit.run();
+        });
     }
 
     private List<StatUpgrade> randomStatUpgrades() {
@@ -31,6 +36,9 @@ public class StatUpgradeWindow {
 
     public void draw(SpriteBatch batch, float delta) {
         if(!show) return;
+        batch.setColor(1f, 1f, 1f, 0.25f);
+        batch.draw(shadow, 7.35f, 1.8f, 225f / 30f, 163f / 30f);
+        batch.setColor(1f, 1f, 1f, 1f);
         batch.draw(window, 7.25f, 2f, 225f / 30f, 163f / 30f);
         upgradeBar.draw(batch);
     }

@@ -19,7 +19,7 @@ public class Slot {
     private boolean wasHovered = false;
     private float wobbleTime = 0f;
     private final float wobbleDuration = 0.25f;  // seconds
-    private final float wobbleAmpDeg = 7f;       // peak rotation in degrees
+    private final float wobbleAmpDeg = 5f;       // peak rotation in degrees
     private final float wobbleScaleAmp = 0.03f;  // tiny elastic bump
     private final Vector2 pos;
 

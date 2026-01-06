@@ -32,4 +32,10 @@ public class DisablableButton extends Button {
         return disabled;
     }
 
+    @Override
+    protected void onButtonPressed() {
+        if(!isDisabled()) {
+            super.onButtonPressed();
+        }
+    }
 }

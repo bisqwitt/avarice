@@ -54,9 +54,11 @@ public class Assets {
         manager.load("Joker.png", Texture.class);
         manager.load("JokerShadow.png", Texture.class);
         manager.load("TooltipBox.png", Texture.class);
+        manager.load("TooltipBox-shadow.png", Texture.class);
         manager.load("ShopWindow.png", Texture.class);
         manager.load("ShopWindowShadow.png", Texture.class);
         manager.load("UpgradeWindow.png", Texture.class);
+        manager.load("UpgradeWindow-shadow.png", Texture.class);
         manager.load("quest-scroll.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
@@ -204,6 +206,10 @@ public class Assets {
         return manager.get("TooltipBox.png", Texture.class);
     }
 
+    public Texture getTooltipBoxShadow() {
+        return manager.get("TooltipBox-shadow.png", Texture.class);
+    }
+
     public Texture getProgressLit() {
         return manager.get("progressbar/ProgressBarLit.png", Texture.class);
     }
@@ -226,6 +232,10 @@ public class Assets {
 
     public Texture getStatUpgradeWindow() {
         return manager.get("UpgradeWindow.png", Texture.class);
+    }
+
+    public Texture getStatUpgradeWindowShadow() {
+        return manager.get("UpgradeWindow-shadow.png", Texture.class);
     }
 
     public Texture getCoinSlot() {
