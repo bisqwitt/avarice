@@ -5,14 +5,14 @@ import com.avaricious.CreditManager;
 import com.avaricious.CreditNumber;
 import com.avaricious.components.buttons.Button;
 import com.avaricious.upgrades.UpgradesManager;
+import com.avaricious.upgrades.bars.JokerUpgradeBar;
+import com.avaricious.upgrades.bars.JokerUpgradeBarWithPrices;
+import com.avaricious.upgrades.bars.UpgradeBar;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Shop {
 
@@ -30,7 +30,7 @@ public class Shop {
 
         creditScore = new CreditNumber(0,
             new Rectangle(3.1f, 5.1f, 0.32f, 0.56f), 0.35f);
-        shopCardsBar = new UpgradeBar(UpgradesManager.I().randomUpgrades(), new Rectangle(
+        shopCardsBar = new JokerUpgradeBarWithPrices(UpgradesManager.I().randomUpgrades(), new Rectangle(
             3f, 6f, 142 / 130f, 190 / 130f),
             1.5f, false);
 

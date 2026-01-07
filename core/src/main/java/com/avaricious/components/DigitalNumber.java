@@ -14,6 +14,7 @@ import java.util.List;
 public class DigitalNumber {
 
     protected final List<Texture> numberTextures = new ArrayList<>();
+    protected final List<Texture> numberShadowTextures = new ArrayList<>();
     protected final Color color;
     protected final Rectangle rectangle;
     protected final float offset;
@@ -41,6 +42,7 @@ public class DigitalNumber {
 
         for(int i = 0; i < setLength; i++) {
             numberTextures.add(Assets.I().getDigitalNumber(0));
+            numberShadowTextures.add(Assets.I().getDigitalNumberShadow(0));
         }
     }
 
@@ -58,6 +60,10 @@ public class DigitalNumber {
         hoverTime += delta;
         float numberBaseY = calcHoverY();
 
+        batch.setColor(1f, 1f, 1f, 0.25f);
+        for(int i = 0; i < numberTextures.size(); i++) {
+            batch.draw(numberShadowTextures.get(i), rectangle.x + (i * offset) + 0.05f, numberBaseY - 0.05f, rectangle.width, rectangle.height);
+        }
         batch.setColor(color);
         for(int i = 0; i < numberTextures.size(); i++) {
             batch.draw(numberTextures.get(i), rectangle.x + (i * offset), numberBaseY, rectangle.width, rectangle.height);
@@ -71,6 +77,7 @@ public class DigitalNumber {
 
         for(int i = numberTextures.size() -1; i >= 0; i--) {
             numberTextures.set(i, assetManager.getDigitalNumber(tempScore % 10));
+            numberShadowTextures.set(i, assetManager.getDigitalNumberShadow(tempScore % 10));
             tempScore /= 10;
         }
     }
@@ -80,6 +87,7 @@ public class DigitalNumber {
         int digits = score == 0 ? 1 : (int) Math.log10(score) + 1;
         while (digits > numberTextures.size()) {
             numberTextures.add(Assets.I().getDigitalNumber(0));
+            numberShadowTextures.add(Assets.I().getDigitalNumberShadow(0));
         }
     }
 

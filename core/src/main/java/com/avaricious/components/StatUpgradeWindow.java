@@ -2,6 +2,8 @@ package com.avaricious.components;
 
 import com.avaricious.Assets;
 import com.avaricious.stats.statupgrades.StatUpgrade;
+import com.avaricious.upgrades.bars.StatUpgradeBar;
+import com.avaricious.upgrades.bars.UpgradeBar;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -21,9 +23,7 @@ public class StatUpgradeWindow {
         window = Assets.I().getStatUpgradeWindow();
         shadow = Assets.I().getStatUpgradeWindowShadow();
 
-        upgradeBar = new UpgradeBar(randomStatUpgrades(), new Rectangle(
-            8.75f, 5.4f, 1.25f, 1.25f),
-            1.5f, false);
+        upgradeBar = new StatUpgradeBar(randomStatUpgrades());
         upgradeBar.setOnUpgradeClickedAndAnimationEnded(() -> {
             show = false;
             onExit.run();

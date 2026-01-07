@@ -2,27 +2,36 @@ package com.avaricious;
 
 import com.badlogic.gdx.utils.Timer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TaskScheduler {
 
-    private final List<Runnable> tasks = new ArrayList<>();
-    private final float delayBetweenTasks;
+//    private final Map<Runnable, Float> tasks = new LinkedHashMap<>();
+    private final LinkedList<ScheduledTask> tasks = new LinkedList<>();
+    private final float defaultDelay;
 
-    public TaskScheduler(float delayBetweenTasks) {
-        this.delayBetweenTasks = delayBetweenTasks;
+    public TaskScheduler(float defaultDelay) {
+        this.defaultDelay = defaultDelay;
     }
 
     public void schedule(Runnable r) {
-        tasks.add(r);
+        schedule(r, defaultDelay);
+    }
+
+    public void schedule(Runnable r, float delay) {
+        tasks.add(new ScheduledTask(r, delay));
+    }
+
+    public void scheduleImmediate(Runnable r) {
+        float delay = tasks.getLast().delay();
+//        tasks.getLast()
     }
 
     public void runTasks() {
-        float delay = delayBetweenTasks;
-        for(Timer.Task timerTask : tasks.stream().map(this::create).toList()) {
-            Timer.schedule(timerTask, delay);
-            delay += delayBetweenTasks;
+        float delay = defaultDelay;
+        for(ScheduledTask task : tasks) {
+            Timer.schedule(create(task.runnable), delay);
+            delay += task.delay;
         }
     }
 
@@ -34,4 +43,6 @@ public class TaskScheduler {
             }
         };
     }
+
+    private record ScheduledTask(Runnable runnable, float delay) {}
 }

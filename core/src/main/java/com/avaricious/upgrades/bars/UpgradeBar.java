@@ -1,4 +1,4 @@
-package com.avaricious.components;
+package com.avaricious.upgrades.bars;
 
 import com.avaricious.Assets;
 import com.avaricious.components.popups.PopupManager;
@@ -16,27 +16,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UpgradeBar {
-
-    private TextureRegion jokerCard;
-    private final TextureRegion cardShadow;
+public abstract class UpgradeBar {
 
     private final Rectangle cardRectangle;
     private final float offset;
 
-    private final Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
-    private final Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
+    protected final Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
+    protected final Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
 
     private Upgrade hoveringKey = null;
 
     private final boolean tooltipOnTopOfCard;
 
-    private Runnable onUpgradeClicked;
+    protected Runnable onUpgradeClicked;
 
     public UpgradeBar(List<? extends Upgrade> upgrades, Rectangle cardRectangle, float offset, boolean tooltipOnTop) {
         tooltipOnTopOfCard = tooltipOnTop;
-        jokerCard = new TextureRegion(Assets.I().getJokerCard());
-        cardShadow = new TextureRegion(Assets.I().getJokerCardShadow());
 
         this.cardRectangle = cardRectangle;
         this.offset = offset;
@@ -67,22 +62,7 @@ public class UpgradeBar {
                 getHoveringRectangle().x - 1f, getHoveringRectangle().y + (tooltipOnTopOfCard ? 2 : -2));
 
         if(clickedUpgrade[0] != null) {
-            if(clickedUpgrade[0] instanceof StatUpgrade) {
-                clickedUpgrade[0].apply();
-                cardBounds.keySet().retainAll(Collections.singleton(clickedUpgrade[0]));
-                cardAnimationManagers.keySet().retainAll(Collections.singleton(clickedUpgrade[0]));
-
-                PopupManager.I().spawnPercentage(
-                    ((StatUpgrade) clickedUpgrade[0]).getAdditionalPercentage(),
-                    Assets.I().colorGreen(),
-                    cardBounds.get(clickedUpgrade[0]).getX() + 1f,
-                    cardBounds.get(clickedUpgrade[0]).getY()).setOnFinished(() -> onUpgradeClicked.run());
-                clickedUpgrade[0].apply();
-            } else {
-                UpgradesManager.I().addUpgrade(clickedUpgrade[0]);
-                cardBounds.remove(clickedUpgrade[0]);
-                cardAnimationManagers.remove(clickedUpgrade[0]);
-            }
+            onCardClicked(clickedUpgrade[0]);
         }
     }
 
@@ -106,28 +86,32 @@ public class UpgradeBar {
 
             float rotation = cardSlot.wobbleAngleDeg();
 
-            // draw shadow (also scaled and rotated)
-            batch.setColor(1f, 1f, 1f, 0.25f);
-            batch.draw(
-                upgrade instanceof StatUpgrade ? new TextureRegion(((StatUpgrade) upgrade).getStat().getShadowTexture()) : cardShadow,
-                adjX + 0.1f, adjY - 0.1f,
-                drawW / 2f, drawH / 2f,   // origin for rotation (center)
-                drawW, drawH,
-                1f, 1f,
-                rotation
-            );
-
-            // draw card
-            batch.setColor(1f, 1f, 1f, 1f);
-            batch.draw(
-                upgrade instanceof StatUpgrade ? new TextureRegion(((StatUpgrade) upgrade).getStat().getTexture()) : jokerCard,
-                adjX, adjY,
-                drawW / 2f, drawH / 2f,   // origin for rotation (center)
-                drawW, drawH,
-                1f, 1f,
-                rotation
-            );
+            drawCard(batch, upgrade, new Rectangle(adjX, adjY, drawW, drawH), s, rotation);
         }));
+    }
+
+    protected void drawCard(SpriteBatch batch, Upgrade upgrade, Rectangle bounds, float scale, float rotation) {
+        // draw shadow (also scaled and rotated)
+        batch.setColor(1f, 1f, 1f, 0.25f);
+        batch.draw(
+            getShadow(upgrade),
+            bounds.x + 0.1f, bounds.y - 0.1f,
+            bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
+            bounds.width, bounds.height,
+            1f, 1f,
+            rotation
+        );
+
+        // draw card
+        batch.setColor(1f, 1f, 1f, 1f);
+        batch.draw(
+            getTexture(upgrade),
+            bounds.x, bounds.y,
+            bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
+            bounds.width, bounds.height,
+            1f, 1f,
+            rotation
+        );
     }
 
     public void loadUpgrades(List<? extends Upgrade> upgrades) {
@@ -140,6 +124,12 @@ public class UpgradeBar {
             cardAnimationManagers.put(upgrade, new Slot(new Vector2(cardRectangle.x, cardRectangle.y)));
         }
     }
+
+    protected abstract void onCardClicked(Upgrade clickedUpgrade);
+
+    protected abstract TextureRegion getTexture(Upgrade upgrade);
+
+    protected abstract TextureRegion getShadow(Upgrade upgrade);
 
     public Upgrade getHoveringUpgrade() {
         return hoveringKey;

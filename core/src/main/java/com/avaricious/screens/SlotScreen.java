@@ -5,8 +5,6 @@ import com.avaricious.components.*;
 import com.avaricious.components.buttons.DisablableButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
-import com.avaricious.components.displays.TurnsLeftDisplay;
-import com.avaricious.components.popups.NumberPopup;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
 import com.avaricious.components.slot.Slot;
@@ -18,8 +16,9 @@ import com.avaricious.stats.PlayerStats;
 import com.avaricious.stats.statupgrades.CreditSpawnChance;
 import com.avaricious.stats.statupgrades.CritChance;
 import com.avaricious.stats.statupgrades.DoubleHitChance;
-import com.avaricious.upgrades.RetriggerUpgrade;
 import com.avaricious.upgrades.UpgradesManager;
+import com.avaricious.upgrades.bars.JokerUpgradeBar;
+import com.avaricious.upgrades.bars.UpgradeBar;
 import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
 import com.avaricious.upgrades.pointAdditions.symbolValueStacker.SymbolValueStackUpgrade;
 import com.badlogic.gdx.Gdx;
@@ -28,15 +27,14 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Timer;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
 import com.crashinvaders.vfx.effects.util.MixEffect;
 
-import javax.swing.*;
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
@@ -44,6 +42,7 @@ public class SlotScreen extends ScreenAdapter {
     private final Main app;
     private final VfxManager vfxManager;
     private final SlotMachine slotMachine;
+    private final Texture slotMachineBox;
     private final HealthBar healthBar;
     private final Shop shop;
     private final StatUpgradeWindow statUpgradeWindow;
@@ -69,7 +68,7 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.useDiffuseLight(true);
 
         healthBar = new HealthBar(100f);
-        upgradeBar = new UpgradeBar(UpgradesManager.I().getUpgrades(),
+        upgradeBar = new JokerUpgradeBar(UpgradesManager.I().getUpgrades(),
             new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
             1.75f, true);
 
@@ -85,13 +84,13 @@ public class SlotScreen extends ScreenAdapter {
             Assets.I().getSpinAgainPressedButton(),
             Assets.I().getSpinAgainButtonHovered(),
             Assets.I().getSpinAgainButtonDisabled(),
-            new Rectangle(12f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
+            new Rectangle(12f, 1.6f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
         cashoutButton = new DisablableButton(this::onApplyButtonPressed,
             Assets.I().getCashoutButton(),
             Assets.I().getCashoutButtonPressed(),
             Assets.I().getCashoutButtonHovered(),
             Assets.I().getCashoutButtonDisabled(),
-            new Rectangle(8f, 2.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
+            new Rectangle(8f, 1.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
         cameraShaker = new CameraShaker(app);
@@ -102,6 +101,8 @@ public class SlotScreen extends ScreenAdapter {
 //        vfxManager.addEffect(new CrtEffect());
 
         roundsManager = RoundsManager.I();
+
+        slotMachineBox = Assets.I().getSlotMachineBox();
     }
 
     @Override
@@ -138,6 +139,7 @@ public class SlotScreen extends ScreenAdapter {
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);
+//        batch.draw(slotMachineBox, 6.75f, 3.0f, 175f / 20.75f, 118 / 20.75f);
         slotMachine.draw(app, delta);
         scoreDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
@@ -199,6 +201,8 @@ public class SlotScreen extends ScreenAdapter {
             List<Slot> slots = slotMatch.slots();
             Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
 
+            scheduler.schedule(() -> slots.forEach(slot -> slot.targetScale = 1.05f), 0f);
+
             triggerSeparateSlots(slotMatch, scheduler);
             if(PlayerStats.I().rollChance(DoubleHitChance.class)) {
                 scheduler.schedule(() -> PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(DoubleHitChance.class).getTexture(),
@@ -226,6 +230,8 @@ public class SlotScreen extends ScreenAdapter {
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
                     });
                 });
+
+            scheduler.schedule(() -> slots.forEach(slot -> slot.targetScale = 1f));
         }));
         scheduler.schedule(() -> patternDisplay.addStreak(1));
         scheduler.schedule(() -> {
@@ -240,6 +246,7 @@ public class SlotScreen extends ScreenAdapter {
             scheduler.schedule(() -> {
                 slot.wobble();
                 slot.pulse();
+
                 if(PlayerStats.I().rollChance(CritChance.class)) {
                     PopupManager.I().spawnNumber(slotMatch.symbol().baseValue() * 3, Assets.I().colorBlue(),
                         slot.getPos().x + 1f, slot.getPos().y + 1f);

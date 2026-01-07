@@ -20,10 +20,10 @@ public class SlotMachine {
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.3f;
-    private final float cellH = 1.3f;
-    private final float spacingX = 0.05f;
-    private final float spacingY = 0.1f;
+    private final float cellW = 1.1f;
+    private final float cellH = 1.1f;
+    private final float spacingX = 0.3f;
+    private final float spacingY = 0.3f;
 
     private final float originX;
     private final float originY;
@@ -31,13 +31,17 @@ public class SlotMachine {
     // Visual cells (for selection pulse/scale)
     private final Slot[][] grid = new Slot[cols][rows];
 
+    private final TextureRegion slotBox;
+    private final TextureRegion slotBoxShadow;
+
     // Reels (one per column)
     private final List<Reel> reels = new ArrayList<>();
 
     boolean spinning = false;
-    private List<Symbol> selection = new ArrayList<>();
 
     public SlotMachine(float worldWidth, float worldHeight) {
+        slotBox = new TextureRegion(Assets.I().getSlotBox());
+        slotBoxShadow = new TextureRegion(Assets.I().getSlotBoxShadow());
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 3f;
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 1.5f;
@@ -99,6 +103,8 @@ public class SlotMachine {
         cam.update();
 
         Rectangle area = getBounds(); // world-space
+        area.setX(area.x - 0.3f);
+        area.setWidth(area.width + 0.3f);
         area.setY(area.y - 0.15f);
         area.setHeight(area.height);
         Rectangle scissors = new Rectangle();
@@ -138,18 +144,13 @@ public class SlotMachine {
                 TextureRegion region;
 
                 if (isInGrid) {
-                    selected = selection.contains(symbolSlot.symbol()) && !reel.isSpinning();
-                    highlighted = (hovered || selected);   // same visual intent
-
                     Slot slot = grid[c][k];
-                    slot.targetScale = highlighted ? 1.125f : 1f;
 
                     slot.updatePulse(selected, delta);
                     slot.tickScale(delta);
 
                     // wobble on HOVER entry even if selected
                     slot.updateHoverWobble(hovered, delta);
-
                     s = slot.scale * slot.pulseScale() * slot.wobbleScale();
                 }
 
@@ -166,6 +167,27 @@ public class SlotMachine {
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
 
+                float boxW = drawW + 0.2f;
+                float boxH = drawH + 0.2f;
+
+                batch.setColor(1f, 1f, 1f, 0.25f);
+                batch.draw(
+                    slotBoxShadow,
+                    adjX - 0.1f + 0.05f, adjY - 0.1f - 0.05f,
+                    boxW / 2f, boxH / 2f,
+                    boxW, boxH,
+                    1f, 1f,
+                    rotation
+                );
+                batch.setColor(1f, 1f, 1f, 1f);
+                batch.draw(
+                    slotBox,
+                    adjX - 0.1f, adjY - 0.1f,
+                    boxW / 2f, boxH / 2f,
+                    boxW, boxH,
+                    1f, 1f,
+                    rotation
+                );
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
                     region,

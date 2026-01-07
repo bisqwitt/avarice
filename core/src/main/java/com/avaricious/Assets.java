@@ -53,6 +53,7 @@ public class Assets {
         manager.load("SlotMachineShadow.png", Texture.class);
         manager.load("Joker.png", Texture.class);
         manager.load("JokerShadow.png", Texture.class);
+        manager.load("JokerCardPrice.png", Texture.class);
         manager.load("TooltipBox.png", Texture.class);
         manager.load("TooltipBox-shadow.png", Texture.class);
         manager.load("ShopWindow.png", Texture.class);
@@ -60,6 +61,9 @@ public class Assets {
         manager.load("UpgradeWindow.png", Texture.class);
         manager.load("UpgradeWindow-shadow.png", Texture.class);
         manager.load("quest-scroll.png", Texture.class);
+        manager.load("slotBox.png", Texture.class);
+        manager.load("slotBox-shadow.png", Texture.class);
+        manager.load("slotMachineBox.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -90,7 +94,9 @@ public class Assets {
         manager.load("progressbar/ProgressBarUnlit.png", Texture.class);
 
         manager.load("digital-numbers/plus.png", Texture.class);
+        manager.load("digital-numbers/plus-shadow.png", Texture.class);
         manager.load("digital-numbers/mult.png", Texture.class);
+        manager.load("digital-numbers/mult-shadow.png", Texture.class);
         manager.load("digital-numbers/unlit.png", Texture.class);
         manager.load("digital-numbers/fabled/percentage.png", Texture.class);
         manager.load("digital-numbers/fabled/dollar.png", Texture.class);
@@ -104,6 +110,18 @@ public class Assets {
         manager.load("digital-numbers/fabled/7.png", Texture.class);
         manager.load("digital-numbers/fabled/8.png", Texture.class);
         manager.load("digital-numbers/fabled/9.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/percentage.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/dollar.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/0.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/1.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/2.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/3.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/4.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/5.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/6.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/7.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/8.png", Texture.class);
+        manager.load("digital-numbers/fabled/shadows/9.png", Texture.class);
 
         manager.load("sticks/uncommon-stick.png", Texture.class);
         manager.load("sticks/common-stick.png", Texture.class);
@@ -198,6 +216,10 @@ public class Assets {
         return manager.get("JokerShadow.png", Texture.class);
     }
 
+    public Texture getJokerCardPriceBox() {
+        return manager.get("JokerCardPrice.png", Texture.class);
+    }
+
     public Texture getProgressBarBorder() {
         return manager.get("progressbar/ProgressBarBorder.png", Texture.class);
     }
@@ -246,12 +268,24 @@ public class Assets {
         return manager.get("digital-numbers/plus.png", Texture.class);
     }
 
+    public Texture getPlusSymbolShadow() {
+        return manager.get("digital-numbers/plus-shadow.png", Texture.class);
+    }
+
     public Texture getPercentageSymbol() {
         return manager.get("digital-numbers/fabled/percentage.png", Texture.class);
     }
 
+    public Texture getPercentageSymbolShadow() {
+        return manager.get("digital-numbers/fabled/shadows/percentage.png", Texture.class);
+    }
+
     public Texture getDollarSymbol() {
         return manager.get("digital-numbers/fabled/dollar.png", Texture.class);
+    }
+
+    public Texture getDollarSymbolShadow() {
+        return manager.get("digital-numbers/fabled/shadows/dollar.png", Texture.class);
     }
 
     public Texture getRetriggerSymbol() {
@@ -360,6 +394,14 @@ public class Assets {
 
     public Texture getCable() {
         return manager.get("cable.png", Texture.class);
+    }
+
+    public Texture getSlotBox() {
+        return manager.get("slotBox.png", Texture.class);
+    }
+
+    public Texture getSlotBoxShadow() {
+        return manager.get("slotBox-shadow.png", Texture.class);
     }
 
     public Texture getUncommonStick() {
@@ -489,8 +531,20 @@ public class Assets {
         return manager.get("digital-numbers/mult.png", Texture.class);
     }
 
+    public Texture multShadow() {
+        return manager.get("digital-numbers/mult-shadow.png", Texture.class);
+    }
+
     public Texture getDigitalNumber(long number) {
         return manager.get("digital-numbers/fabled/" + number + ".png", Texture.class);
+    }
+
+    public Texture getDigitalNumberShadow(long number) {
+        return manager.get("digital-numbers/fabled/shadows/" + number + ".png", Texture.class);
+    }
+
+    public Texture getSlotMachineBox() {
+        return manager.get("slotMachineBox.png", Texture.class);
     }
 
 }
