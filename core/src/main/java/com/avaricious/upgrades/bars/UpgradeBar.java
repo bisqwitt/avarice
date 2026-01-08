@@ -1,17 +1,13 @@
 package com.avaricious.upgrades.bars;
 
-import com.avaricious.Assets;
 import com.avaricious.components.popups.PopupManager;
-import com.avaricious.components.slot.Slot;   // <-- import your Slot
-import com.avaricious.stats.statupgrades.StatUpgrade;
+import com.avaricious.components.slot.ObjectWithPopEffect;   // <-- import your Slot
 import com.avaricious.upgrades.Upgrade;
-import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,15 +16,12 @@ public abstract class UpgradeBar {
 
     private final Rectangle cardRectangle;
     private final float offset;
-
-    protected final Map<Upgrade, Rectangle> cardBounds = new HashMap<>();
-    protected final Map<Upgrade, Slot> cardAnimationManagers = new HashMap<>();
-
-    private Upgrade hoveringKey = null;
-
     private final boolean tooltipOnTopOfCard;
 
+    protected final Map<Upgrade, ObjectWithPopEffect> jokerCards = new HashMap<>();
+
     protected Runnable onUpgradeClicked;
+    protected Upgrade hoveredUpgrade;
 
     public UpgradeBar(List<? extends Upgrade> upgrades, Rectangle cardRectangle, float offset, boolean tooltipOnTop) {
         tooltipOnTopOfCard = tooltipOnTop;
@@ -38,31 +31,36 @@ public abstract class UpgradeBar {
         loadUpgrades(upgrades);
     }
 
-    public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
-        hoveringKey = null;
-        Upgrade[] clickedUpgrade = new Upgrade[1];
-        cardBounds.forEach(((upgrade, rectangle) -> {
-            boolean hovered = rectangle.contains(mouse);
-            boolean selected = wasPressed && !pressed && rectangle.contains(mouse);
+    public void handleInput(Vector2 mouse, boolean mouseDown, boolean mouseWasDown, float delta) {
+        Upgrade clickedUpgrade = null;
 
-            Slot cardSlot = cardAnimationManagers.get(upgrade);
-            cardSlot.targetScale = pressed && rectangle.contains(mouse) ? 1.2f
+        for(Map.Entry<Upgrade, ObjectWithPopEffect> jokerCards : jokerCards.entrySet()) {
+            Upgrade upgrade = jokerCards.getKey();
+            ObjectWithPopEffect jokerCard =  jokerCards.getValue();
+
+            boolean hovered = jokerCard.getBounds().contains(mouse);
+            boolean hoveredEntry = hoveredUpgrade == null && hovered;
+            boolean pressed = mouseDown && hovered;
+            boolean pressedEntry = pressed && !mouseWasDown;
+            boolean clicked = hovered && mouseWasDown && !mouseDown;
+
+            jokerCard.targetScale = pressed ? 1.2f
                 : hovered ? 1.075f : 1f;
 
-            cardSlot.updatePulse(false, delta);
-            cardSlot.updateHoverWobble(hovered, delta);
-            cardSlot.tickScale(delta);
+            if(hoveredEntry) {
+                jokerCard.wobble();
+                jokerCard.pulse();
+            }
 
-            if(hovered) hoveringKey = upgrade;
-            if(selected) clickedUpgrade[0] = hoveringKey;
-        }));
+            jokerCard.handleInput(delta);
 
-        if(hoveringKey != null)
-            PopupManager.I().showTooltip(hoveringKey,
-                getHoveringRectangle().x - 1f, getHoveringRectangle().y + (tooltipOnTopOfCard ? 2 : -2));
+            if(hovered) {
+                hoveredUpgrade = upgrade;
+                PopupManager.I().renderTooltip(upgrade,
+                    jokerCard.getBounds().x - 1f, jokerCard.getBounds().y + (tooltipOnTopOfCard ? 2 : -2));
+            }
 
-        if(clickedUpgrade[0] != null) {
-            onCardClicked(clickedUpgrade[0]);
+            if(clicked) onCardClicked(upgrade);
         }
     }
 
@@ -71,57 +69,54 @@ public abstract class UpgradeBar {
      */
     public void draw(SpriteBatch batch) {
         // combined scale (identical idea to SlotMachine)
-        cardBounds.forEach(((upgrade, rectangle) -> {
-            Slot cardSlot = cardAnimationManagers.get(upgrade);
-            float s = cardSlot.scale
-                * cardSlot.pulseScale()
-                * cardSlot.wobbleScale();
+        jokerCards.forEach(((upgrade, jokerCard) -> {
+            float s = jokerCard.scale
+                * jokerCard.pulseScale()
+                * jokerCard.wobbleScale();
 
-            float drawW = rectangle.width  * s;
-            float drawH = rectangle.height * s;
+            float drawW = jokerCard.getBounds().width  * s;
+            float drawH = jokerCard.getBounds().height * s;
 
             // center scaling around the original x/y
-            float adjX = rectangle.x - (drawW - rectangle.width) / 2f;
-            float adjY = rectangle.y - (drawH - rectangle.height) / 2f;
+            float adjX = jokerCard.getBounds().x - (drawW - jokerCard.getBounds().width) / 2f;
+            float adjY = jokerCard.getBounds().y - (drawH - jokerCard.getBounds().height) / 2f;
 
-            float rotation = cardSlot.wobbleAngleDeg();
+            float rotation = jokerCard.wobbleAngleDeg();
 
-            drawCard(batch, upgrade, new Rectangle(adjX, adjY, drawW, drawH), s, rotation);
+            // draw shadow (also scaled and rotated)
+            batch.setColor(1f, 1f, 1f, 0.25f);
+            batch.draw(
+                getShadow(upgrade),
+                bounds.x + 0.1f, bounds.y - 0.1f,
+                bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
+                bounds.width, bounds.height,
+                1f, 1f,
+                rotation
+            );
+
+            // draw card
+            batch.setColor(1f, 1f, 1f, 1f);
+            batch.draw(
+                getTexture(upgrade),
+                bounds.x, bounds.y,
+                bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
+                bounds.width, bounds.height,
+                1f, 1f,
+                rotation
+            );
         }));
     }
 
     protected void drawCard(SpriteBatch batch, Upgrade upgrade, Rectangle bounds, float scale, float rotation) {
-        // draw shadow (also scaled and rotated)
-        batch.setColor(1f, 1f, 1f, 0.25f);
-        batch.draw(
-            getShadow(upgrade),
-            bounds.x + 0.1f, bounds.y - 0.1f,
-            bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
-            bounds.width, bounds.height,
-            1f, 1f,
-            rotation
-        );
-
-        // draw card
-        batch.setColor(1f, 1f, 1f, 1f);
-        batch.draw(
-            getTexture(upgrade),
-            bounds.x, bounds.y,
-            bounds.width / 2f, bounds.height / 2f,   // origin for rotation (center)
-            bounds.width, bounds.height,
-            1f, 1f,
-            rotation
-        );
     }
 
     public void loadUpgrades(List<? extends Upgrade> upgrades) {
         cardBounds.clear();
-        cardAnimationManagers.clear();
+        jokerCards.clear();
 
         for(int i = 0; i < upgrades.size(); i++) {
             Upgrade upgrade = upgrades.get(i);
-            cardBounds.put(upgrade, new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height));
-            cardAnimationManagers.put(upgrade, new Slot(new Vector2(cardRectangle.x, cardRectangle.y)));
+            jokerCards.put(upgrade, new ObjectWithPopEffect(new Rectangle(cardRectangle.x + (i * offset), cardRectangle.y, cardRectangle.width, cardRectangle.height)));
         }
     }
 
@@ -131,16 +126,12 @@ public abstract class UpgradeBar {
 
     protected abstract TextureRegion getShadow(Upgrade upgrade);
 
-    public Upgrade getHoveringUpgrade() {
-        return hoveringKey;
-    }
-
     public Rectangle getHoveringRectangle() {
-        return cardBounds.get(hoveringKey);
+
     }
 
-    public Slot getSlotByUpgrade(Upgrade upgrade) {
-        return cardAnimationManagers.get(upgrade);
+    public ObjectWithPopEffect getSlotByUpgrade(Upgrade upgrade) {
+        return jokerCards.get(upgrade);
     }
 
     public Rectangle getRectangleByUpgrade(Upgrade upgrade) {

@@ -1,17 +1,11 @@
 package com.avaricious.components.popups;
 
 import com.avaricious.upgrades.Upgrade;
-import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-
-import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PopupManager {
 
@@ -28,7 +22,7 @@ public class PopupManager {
     private TooltipPopup tooltipPopup;
     private boolean renderTooltip;
 
-    public void showTooltip(Upgrade upgrade, float x, float y) {
+    public void renderTooltip(Upgrade upgrade, float x, float y) {
         if(upgrade == null) return;
         renderTooltip = true;
         tooltipPopup = new TooltipPopup(upgrade.description(), new Vector2(x, y));

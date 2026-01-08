@@ -7,7 +7,7 @@ import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.progressbar.HealthBar;
-import com.avaricious.components.slot.Slot;
+import com.avaricious.components.slot.ObjectWithPopEffect;
 import com.avaricious.components.slot.SlotMachine;
 import com.avaricious.components.slot.pattern.SlotMatch;
 import com.avaricious.screens.mainscreen.BackgroundLayer;
@@ -34,7 +34,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
 
-import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
@@ -56,6 +56,7 @@ public class SlotScreen extends ScreenAdapter {
     private final UpgradeBar upgradeBar;
     private final CreditScore creditScore;
 
+    private final List<SymbolEcho> symbolEchos = new ArrayList<>();
     private final CameraShaker cameraShaker;
 
     private final RoundsManager roundsManager;
@@ -207,45 +208,45 @@ public class SlotScreen extends ScreenAdapter {
 
         TaskScheduler scheduler = new TaskScheduler(0.3f);
         matches.forEach((slotMatch -> {
-            List<Slot> slots = slotMatch.slots();
-            Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
+            List<ObjectWithPopEffect> objectWithPopEffects = slotMatch.objectWithPopEffects();
+            Rectangle middleSlotBounds = objectWithPopEffects.get(objectWithPopEffects.size() / 2 - (objectWithPopEffects.size() % 2 == 0 ? 1 : 0)).getBounds();
 
-            scheduler.schedule(() -> slots.forEach(slot -> slot.targetScale = 1.1f), 0f);
+            scheduler.schedule(() -> objectWithPopEffects.forEach(objectWithPopEffect -> objectWithPopEffect.targetScale = 1.15f), 0f);
 
             triggerSeparateSlots(slotMatch, scheduler);
             if(PlayerStats.I().rollChance(DoubleHitChance.class)) {
                 scheduler.schedule(() -> PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(DoubleHitChance.class).getTexture(),
-                        middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f));
+                        middleSlotBounds.x + 1f, middleSlotBounds.y + 1f));
                 triggerSeparateSlots(slotMatch, scheduler);
             }
 
             scheduler.schedule(() -> {
-                slots.forEach(Slot::wobble);
-                slots.forEach(Slot::pulse);
+                objectWithPopEffects.forEach(ObjectWithPopEffect::wobble);
+                objectWithPopEffects.forEach(ObjectWithPopEffect::pulse);
 
                 boolean criticalHit = PlayerStats.I().rollChance(CriticalHitChance.class);
-                int mult = criticalHit ? slots.size() * 2 : slots.size();
+                int multi = criticalHit ? objectWithPopEffects.size() * 2 : objectWithPopEffects.size();
 
-                PopupManager.I().spawnNumber(mult, Assets.I().colorRed(),
-                    middleSlot.getPos().x + 1f, middleSlot.getPos().y + 1f);
+                PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
+                    middleSlotBounds.x + 1f, middleSlotBounds.y + 1f);
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
-                    middleSlot.getPos().x + 2f, middleSlot.getPos().y + 1f);
-                patternDisplay.addMulti(mult);
+                    middleSlotBounds.x + 2f, middleSlotBounds.y + 1f);
+                patternDisplay.addMulti(multi);
             });
 
             UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
-                .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
+                .filter(upgrade -> upgrade.condition(null, slotMatch.objectWithPopEffects().size()))
                 .forEach(upgrade -> scheduler.schedule(() -> {
                         int multi = upgrade.getMulti();
-                        Slot cardSlot = upgradeBar.getSlotByUpgrade(upgrade);
-                        cardSlot.pulse();
-                        cardSlot.wobble();
+                        ObjectWithPopEffect cardObjectWithPopEffect = upgradeBar.getSlotByUpgrade(upgrade);
+                        cardObjectWithPopEffect.pulse();
+                        cardObjectWithPopEffect.wobble();
                         patternDisplay.addMulti(multi);
                         PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
                     }));
 
-            scheduler.scheduleImmediate(() -> slots.forEach(slot -> slot.targetScale = 1f));
+            scheduler.scheduleImmediate(() -> objectWithPopEffects.forEach(objectWithPopEffect -> objectWithPopEffect.targetScale = 1f));
         }));
         scheduler.schedule(() -> patternDisplay.addStreak(1));
         scheduler.schedule(() -> {
@@ -256,25 +257,27 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void triggerSeparateSlots(SlotMatch slotMatch, TaskScheduler scheduler) {
-        slotMatch.slots().forEach(slot -> {
+        slotMatch.objectWithPopEffects().forEach(objectWithPopEffect -> {
             scheduler.schedule(() -> {
-                slot.wobble();
-                slot.pulse();
+                objectWithPopEffect.wobble();
+                objectWithPopEffect.pulse();
 
                 boolean criticalHit = PlayerStats.I().rollChance(CriticalHitChance.class);
                 int points = criticalHit ? slotMatch.symbol().baseValue() * 2 : slotMatch.symbol().baseValue();
 
                 PopupManager.I().spawnNumber(points, Assets.I().colorBlue(),
-                    slot.getPos().x + 1f, slot.getPos().y + 1f);
+                    objectWithPopEffect.getBounds().x + 1f, objectWithPopEffect.getBounds().y + 1f);
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
-                    slot.getPos().x + 2f, slot.getPos().y + 1f);
+                    objectWithPopEffect.getBounds().x + 2f, objectWithPopEffect.getBounds().y + 1f);
                 patternDisplay.addPoints(points);
+
+                symbolEchos.add(new SymbolEcho(Assets.I().getBase(slotMatch.symbol()), objectWithPopEffect.getBounds()));
             });
 
             if(PlayerStats.I().rollChance(CreditSpawnChance.class)) {
                 scheduler.schedule(() -> {
-                    float x = slot.getPos().x + 1f;
-                    float y = slot.getPos().y + 1f;
+                    float x = objectWithPopEffect.getBounds().x + 1f;
+                    float y = objectWithPopEffect.getBounds().y + 1f;
                     PopupManager.I().spawnNumber(1, Assets.I().colorYellow(), x, y);
                     PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CreditSpawnChance.class).getTexture(), x + 1f, y);
                     CreditManager.I().gain(1);
@@ -284,19 +287,19 @@ public class SlotScreen extends ScreenAdapter {
             UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
                 .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
                 .forEach(upgrade -> {
-                    Slot upgradeSlot = upgradeBar.getSlotByUpgrade(upgrade);
+                    ObjectWithPopEffect upgradeObjectWithPopEffect = upgradeBar.getSlotByUpgrade(upgrade);
                     scheduler.schedule(() -> {
-                        upgradeSlot.wobble();
-                        upgradeSlot.pulse();
+                        upgradeObjectWithPopEffect.wobble();
+                        upgradeObjectWithPopEffect.pulse();
                         PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
-                            upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                            upgradeObjectWithPopEffect.getBounds().x, upgradeObjectWithPopEffect.getBounds().y + 1.5f);
                     });
                     if(upgrade.addStacks(1)) {
                         scheduler.schedule(() -> {
-                            upgradeSlot.wobble();
-                            upgradeSlot.pulse();
+                            upgradeObjectWithPopEffect.wobble();
+                            upgradeObjectWithPopEffect.pulse();
                             PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
-                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                                upgradeObjectWithPopEffect.getBounds().x, upgradeObjectWithPopEffect.getBounds().y + 1.5f);
                         });
                     }
                 });

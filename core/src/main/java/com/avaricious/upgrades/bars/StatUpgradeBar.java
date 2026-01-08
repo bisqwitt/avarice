@@ -22,7 +22,7 @@ public class StatUpgradeBar extends UpgradeBar{
     protected void onCardClicked(Upgrade clickedUpgrade) {
         clickedUpgrade.apply();
         cardBounds.keySet().retainAll(Collections.singleton(clickedUpgrade));
-        cardAnimationManagers.keySet().retainAll(Collections.singleton(clickedUpgrade));
+        jokerCards.keySet().retainAll(Collections.singleton(clickedUpgrade));
 
         PopupManager.I().spawnPercentage(
             ((StatUpgrade) clickedUpgrade).getAdditionalPercentage(),
