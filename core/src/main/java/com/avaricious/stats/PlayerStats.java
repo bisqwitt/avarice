@@ -3,7 +3,6 @@ package com.avaricious.stats;
 import com.avaricious.stats.statupgrades.*;
 import com.badlogic.gdx.math.MathUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,7 @@ public class PlayerStats {
     private final Map<Class<? extends Stat>, Stat> stats = Map.of(
         ChipUpgradeSpawnChance.class, new ChipUpgradeSpawnChance(),
         CreditSpawnChance.class, new CreditSpawnChance(),
-        CritChance.class, new CritChance(),
+        CriticalHitChance.class, new CriticalHitChance(),
         DoubleHitChance.class, new DoubleHitChance(),
         EvadeChance.class, new EvadeChance(),
         LuckChance.class, new LuckChance(),

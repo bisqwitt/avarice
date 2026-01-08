@@ -13,7 +13,7 @@ public class Slot {
     private boolean wasSelected = false;
     private float pulseTime = 0f;
     private final float pulseDuration = 0.15f;
-    private final float pulseAmp = 0.125f;
+    private final float pulseAmp = 0.175f;
 
     // --- NEW: hover wobble state ---
     private boolean wasHovered = false;

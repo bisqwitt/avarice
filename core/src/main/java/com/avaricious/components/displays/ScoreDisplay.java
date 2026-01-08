@@ -26,6 +26,7 @@ public class ScoreDisplay {
 
     public void addToScore(int amount) {
         digitalNumber.setScore(digitalNumber.getScore() + amount);
+        progressBar.setDisplayedValue(digitalNumber.getScore());
     }
 
     public void resetScore() {

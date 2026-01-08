@@ -188,6 +188,17 @@ public class SlotMachine {
                     1f, 1f,
                     rotation
                 );
+
+                batch.setColor(1f, 1f, 1f, 0.25f);
+                batch.draw(
+                    Assets.I().getSymbolShadow(symbolSlot.symbol()),
+                    adjX + 0.05f, adjY - 0.05f,
+                    drawW / 2f, drawH / 2f,
+                    drawW, drawH,
+                    1f, 1f,
+                    rotation
+                );
+                batch.setColor(1f, 1f, 1f, 1f);
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
                     region,

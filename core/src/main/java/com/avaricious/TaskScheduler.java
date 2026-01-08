@@ -23,8 +23,9 @@ public class TaskScheduler {
     }
 
     public void scheduleImmediate(Runnable r) {
-        float delay = tasks.getLast().delay();
-//        tasks.getLast()
+        float delay = tasks.getLast().getDelay();
+        tasks.getLast().setDelay(0f);
+        schedule(r, delay);
     }
 
     public void runTasks() {
@@ -44,5 +45,30 @@ public class TaskScheduler {
         };
     }
 
-    private record ScheduledTask(Runnable runnable, float delay) {}
+    private static class ScheduledTask {
+
+        private Runnable runnable;
+        private float delay;
+
+        public ScheduledTask(Runnable runnable, float delay) {
+            this.runnable = runnable;
+            this.delay = delay;
+        }
+
+        public void setRunnable(Runnable runnable) {
+            this.runnable = runnable;
+        }
+
+        public Runnable getRunnable() {
+            return runnable;
+        }
+
+        public void setDelay(float delay) {
+            this.delay = delay;
+        }
+
+        public float getDelay() {
+            return delay;
+        }
+    }
 }

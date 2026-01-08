@@ -157,6 +157,8 @@ public class Assets {
             String name = symbol.name().toLowerCase() + "/" + symbol.name().toLowerCase();
             baseMap.put(symbol, atlas.findRegion(name));
 
+            manager.load("symbolShadows/" + symbol.name().toLowerCase() + "-shadow.png", Texture.class);
+
             Array<TextureAtlas.AtlasRegion> frames = atlas.findRegions(name + "_border");
             Animation<TextureAtlas.AtlasRegion> anim = new Animation<>(0.1f, frames, Animation.PlayMode.LOOP);
             borderMap.put(symbol, anim);
@@ -186,6 +188,10 @@ public class Assets {
 //        if(s == Symbol.DIAMOND) return new TextureRegion(manager.get("diamond.png", Texture.class));
 //        if(s == Symbol.SEVEN) return new TextureRegion(manager.get("seven.png", Texture.class));
         return baseMap.get(s);
+    }
+
+    public TextureRegion getSymbolShadow(Symbol s) {
+        return new TextureRegion(manager.get("symbolShadows/" + s.name().toLowerCase() + "-shadow.png", Texture.class));
     }
 
     public Animation<TextureAtlas.AtlasRegion> getBorderAnimation(Symbol s) {

@@ -8,8 +8,8 @@ varying vec2 v_texCoords;
 
 uniform float u_time;       // from LibGDX
 
-const vec3 mixColor1 = vec3(0.862745, 0.862745, 0.862745);
-const vec3 mixColor2 = vec3(0.862745, 0.862745, 0.862745);
+const vec3 mixColor1 = vec3(0.20784, 0.39607, 0.30196);
+const vec3 mixColor2 = vec3(0.20784, 0.39607, 0.30196);
 
 #define NUM_OCTAVES 5
 
@@ -58,9 +58,9 @@ void main()
 
     // ------------- PIXELATION -------------
     // u_pixelSize is in UV units; e.g. 1.0/64.0 → 64 blocks across
-    float blocks = 192.0;              // tweak this
-    vec2 stPix = floor(st * blocks) / blocks;
-    st = stPix;
+//    float blocks = 192.0;              // tweak this
+//    vec2 stPix = floor(st * blocks) / blocks;
+//    st = stPix;
     // --------------------------------------
 
     vec3 color = mixColor1;

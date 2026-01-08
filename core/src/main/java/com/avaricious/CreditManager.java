@@ -2,6 +2,11 @@ package com.avaricious;
 
 import com.badlogic.gdx.Gdx;
 
+import java.util.List;
+import java.util.Observable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.IntConsumer;
+
 public class CreditManager {
 
     private static CreditManager instance;
@@ -16,27 +21,37 @@ public class CreditManager {
 
     private int credits;
 
-    public void onRoundBeaten(int handsLeft) {
-        credits += (credits/5) + handsLeft + 3;
-    }
+    private final List<IntConsumer> listeners = new CopyOnWriteArrayList<>();
 
     public void gain(int amount) {
-        credits += amount;
+        setCredits(credits + amount);
     }
 
     public void pay(int amount) {
-        credits -= amount;
+        setCredits(credits - amount);
+    }
+
+    public void roundEnd() {
+        gain((int) (3 + Math.min((double) (credits / 5), 5)));
     }
 
     public int getCredits() {
         return credits;
     }
 
-    public boolean payIfEnough(int amount) {
-        if(credits >= amount) {
-            pay(amount);
-            return true;
-        }
-        return false;
+    private void setCredits(int newValue) {
+        credits = newValue;
+        notifyCreditChanged(newValue);
+    }
+
+    public AutoCloseable onCreditChange(IntConsumer listener) {
+        listeners.add(listener);
+
+        listener.accept(credits);
+        return () -> listeners.remove(listener);
+    }
+
+    private void notifyCreditChanged(int newValue) {
+        listeners.forEach(listener -> listener.accept(newValue));
     }
 }

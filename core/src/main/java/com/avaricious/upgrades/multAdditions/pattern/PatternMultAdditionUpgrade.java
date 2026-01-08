@@ -41,6 +41,6 @@ public abstract class PatternMultAdditionUpgrade extends MultAdditionUpgrade {
 
     @Override
     public String description() {
-        return "Add " + Assets.I().redText(getMulti() + "") + " to " + Assets.I().redText("multiplier") + " on " + (int) patternType + "-of-a-kind's";
+        return "Additional " + Assets.I().redText(getMulti() + "") + " to " + Assets.I().redText("multiplier") + " on " + (int) patternType + "-of-a-kind's";
     }
 }
