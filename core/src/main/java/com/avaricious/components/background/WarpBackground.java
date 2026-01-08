@@ -1,6 +1,7 @@
 package com.avaricious.components.background;
 
 import com.avaricious.Assets;
+import com.avaricious.screens.ScreenManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,6 +32,9 @@ public class WarpBackground {
         time += delta / 2;
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        ScreenManager.I().getUiViewport().apply();
+        batch.setProjectionMatrix(ScreenManager.I().getUiViewport().getCamera().combined);
 
         batch.setShader(shader);
         batch.begin();

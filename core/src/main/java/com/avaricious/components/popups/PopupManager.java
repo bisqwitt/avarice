@@ -61,7 +61,7 @@ public class PopupManager {
             }
         }
         for (NumberPopup p : numberPopups) {
-            p.render(batch);
+            p.render(batch, delta);
         }
 
         for (int i = statisticPopups.size - 1; i >= 0; i--) {

@@ -29,18 +29,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
 
-import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
-    private final VfxManager vfxManager;
     private final SlotMachine slotMachine;
     private final Texture slotMachineBox;
     private final HealthBar healthBar;
@@ -56,6 +56,15 @@ public class SlotScreen extends ScreenAdapter {
     private final UpgradeBar upgradeBar;
     private final CreditScore creditScore;
 
+    private final VfxManager vfxManager = new VfxManager(Pixmap.Format.RGBA8888);
+    private final VfxManager bloomFxManager = new VfxManager(Pixmap.Format.RGBA8888);
+    private final FrameBuffer bloomLayer = new FrameBuffer(
+        Pixmap.Format.RGBA8888,
+        16,
+        9,
+        false
+    );
+    private final List<SymbolEcho> symbolEchos = new ArrayList<>();
     private final CameraShaker cameraShaker;
 
     private final RoundsManager roundsManager;
@@ -94,17 +103,15 @@ public class SlotScreen extends ScreenAdapter {
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
         cameraShaker = new CameraShaker(app);
 
-        vfxManager = new VfxManager(Pixmap.Format.RGBA8888);
+
         vfxManager.addEffect(new OldTvEffect());
-//        vfxManager.addEffect(new MotionBlurEffect(Pixmap.Format.RGBA8888, MixEffect.Method.MAX, 0.5f));
-//        vfxManager.addEffect(new CrtEffect());
-//        BloomEffect bloomEffect = new BloomEffect();
-//        bloomEffect.setBaseIntensity(1);
-//        bloomEffect.setBloomIntensity(1f);
-//        bloomEffect.setThreshold(0.4f);
-//        bloomEffect.setBlurAmount(1.25f);
-//        bloomEffect.setBlurPasses(3);
-//        vfxManager.addEffect(bloomEffect);
+        BloomEffect bloom = new BloomEffect();
+        bloom.setBaseIntensity(1f);
+        bloom.setBloomIntensity(10f);
+        bloom.setThreshold(0.6f);
+        bloom.setBlurAmount(2f);
+        bloom.setBlurPasses(3);
+        bloomFxManager.addEffect(bloom);
 
         roundsManager = RoundsManager.I();
 
@@ -143,6 +150,8 @@ public class SlotScreen extends ScreenAdapter {
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 
         batch.begin();
+        symbolEchos.forEach(echo -> echo.draw(batch, delta));
+
         healthBar.draw(batch);
         upgradeBar.draw(batch);
         spinAgainButton.draw(batch, delta);
@@ -165,9 +174,39 @@ public class SlotScreen extends ScreenAdapter {
         vfxManager.renderToScreen();
 //        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        app.getUiViewport().apply();
-        batch.setProjectionMatrix(app.getUiViewport().getCamera().combined);
+//        renderBloomedLayer(batch, delta);
     }
+
+//    private void renderBloomedLayer(SpriteBatch batch, float delta) {
+//
+//        // 1) Capture ONLY symbol echos into bloom manager (world coordinates)
+//        bloomFxManager.cleanUpBuffers();
+//        bloomFxManager.beginInputCapture();
+//
+//        batch.begin();
+//        symbolEchos.forEach(echo -> echo.draw(batch, delta));
+//        batch.end();
+//
+//        bloomFxManager.endInputCapture();
+////        bloomFxManager.applyEffects();
+//
+//        Gdx.gl.glEnable(GL20.GL_BLEND);
+//        Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE); // additive glow
+//
+//        Texture bloomTex = bloomFxManager.getResultBuffer().getTexture();
+//
+//        batch.begin();
+//        batch.draw(
+//            bloomTex,
+//            0, 0,
+//            16, 9,
+//            0, 0, 1, 1 // typical FBO flip; if it appears upside down, use 0,0,1,1
+//        );
+//        batch.end();
+//
+//        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//    }
+
 
 
     private void handleInput(float delta) {
@@ -269,6 +308,8 @@ public class SlotScreen extends ScreenAdapter {
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
                     slot.getPos().x + 2f, slot.getPos().y + 1f);
                 patternDisplay.addPoints(points);
+
+                symbolEchos.add(new SymbolEcho(Assets.I().getBase(slotMatch.symbol()), new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f)));
             });
 
             if(PlayerStats.I().rollChance(CreditSpawnChance.class)) {

@@ -1,20 +1,26 @@
 package com.avaricious.components.popups;
 
 import com.avaricious.Assets;
+import com.avaricious.SymbolEcho;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NumberPopup {
+
     private final List<TextureRegion> digitalNumberTextures = new ArrayList<>();
-    private final TextureRegion plusTexture;
-    private final TextureRegion percentageTexture;
-    private final Vector2 position;
+    private final List<SymbolEcho> symbolEchos = new ArrayList<>();
+
+    private final TextureRegion plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
+    private final TextureRegion percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());;
+
+    private final Rectangle bounds;
     private final Color color;
 
     // --- Timing (seconds) ---
@@ -30,14 +36,14 @@ public class NumberPopup {
     private Runnable onFinished;
 
     public NumberPopup(int number, Color color, float x, float y, boolean asPercentage) {
-        setDigitalNumberTextures(number);
-
-        this.plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
-        this.percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());
-
         this.color = color;
-        this.position = new Vector2(x, y);
         this.asPercentage = asPercentage;
+
+        this.bounds = new Rectangle(x, y, 7 / 20f, 11 / 20f);
+        setDigitalNumberTextures(number);
+//        digitalNumberTextures.forEach(texture -> {
+//            symbolEchos.add(new SymbolEcho(texture, bounds));
+//        });
     }
 
     public void transform(int newValue) {
@@ -57,7 +63,7 @@ public class NumberPopup {
         }
     }
 
-    public void render(SpriteBatch batch) {
+    public void render(SpriteBatch batch, float delta) {
         float scale = getScale();
         float rotation = getRotation();
         float alpha = getAlpha();
@@ -65,19 +71,17 @@ public class NumberPopup {
         // If you want a hard cutoff instead of drawing tiny values:
         if (alpha <= 0f || scale <= 0f) return;
 
-        float width = 7 / 20f;
-        float height = 11 / 20f;
-        float originX = width / 2f;
-        float originY = height / 2f;
+        float originX = bounds.width / 2f;
+        float originY = bounds.height / 2f;
 
         // Use alpha here (previously you always used 1f)
         batch.setColor(color.r, color.g, color.b, alpha);
 
         batch.draw(
             plusTexture,
-            position.x - originX - 0.5f, position.y - originY,
+            bounds.x - originX - 0.5f, bounds.y - originY,
             originX, originY,
-            width, height,
+            bounds.width, bounds.height,
             scale, scale,
             rotation
         );
@@ -85,9 +89,9 @@ public class NumberPopup {
         for (int i = 0; i < digitalNumberTextures.size(); i++) {
             batch.draw(
                 digitalNumberTextures.get(i),
-                position.x - originX + (0.5f * i), position.y - originY,
+                bounds.x - originX + (0.5f * i), bounds.y - originY,
                 originX, originY,
-                width, height,
+                bounds.width, bounds.height,
                 scale, scale,
                 rotation
             );
@@ -96,7 +100,7 @@ public class NumberPopup {
         if(asPercentage) {
             batch.draw(
                 percentageTexture,
-                position.x - originX + 0.4f, position.y - originY,
+                bounds.x - originX + 0.4f, bounds.y - originY,
                 originX, originY,
                 8 / 20f, 13 / 20f,
                 scale, scale,
@@ -105,6 +109,7 @@ public class NumberPopup {
         }
 
         batch.setColor(1f, 1f, 1f, 1f);
+        symbolEchos.forEach(echo-> echo.draw(batch, delta));
     }
 
     private float getPulseCurve() {
