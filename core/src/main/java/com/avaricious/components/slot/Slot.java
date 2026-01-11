@@ -13,7 +13,7 @@ public class Slot {
     private boolean wasSelected = false;
     private float pulseTime = 0f;
     private final float pulseDuration = 0.15f;
-    private final float pulseAmp = 0.175f;
+    private final float pulseAmp = 0.2f;
 
     // --- NEW: hover wobble state ---
     private boolean wasHovered = false;
@@ -22,6 +22,8 @@ public class Slot {
     private final float wobbleAmpDeg = 5f;       // peak rotation in degrees
     private final float wobbleScaleAmp = 0.03f;  // tiny elastic bump
     private final Vector2 pos;
+
+    private boolean inPatternHit = false;
 
     public Slot(Vector2 pos) {
         this.pos = pos;
@@ -102,5 +104,13 @@ public class Slot {
 
     public Vector2 getPos() {
         return pos;
+    }
+
+    public boolean isInPatternHit() {
+        return inPatternHit;
+    }
+
+    public void setInPatternHit(boolean inPatternHit) {
+        this.inPatternHit = inPatternHit;
     }
 }

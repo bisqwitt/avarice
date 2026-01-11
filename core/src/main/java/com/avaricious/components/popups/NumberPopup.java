@@ -1,13 +1,11 @@
 package com.avaricious.components.popups;
 
 import com.avaricious.Assets;
-import com.avaricious.SymbolEcho;
+import com.avaricious.TextureEcho;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +13,6 @@ import java.util.List;
 public class NumberPopup {
 
     private final List<TextureRegion> digitalNumberTextures = new ArrayList<>();
-    private final List<SymbolEcho> symbolEchos = new ArrayList<>();
 
     private final TextureRegion plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
     private final TextureRegion percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());;
@@ -41,9 +38,8 @@ public class NumberPopup {
 
         this.bounds = new Rectangle(x, y, 7 / 20f, 11 / 20f);
         setDigitalNumberTextures(number);
-//        digitalNumberTextures.forEach(texture -> {
-//            symbolEchos.add(new SymbolEcho(texture, bounds));
-//        });
+        TextureEcho.create(plusTexture, bounds.setX(bounds.x - 0.5f), color);
+        digitalNumberTextures.forEach(texture -> TextureEcho.create(texture, bounds, color));
     }
 
     public void transform(int newValue) {
@@ -79,7 +75,7 @@ public class NumberPopup {
 
         batch.draw(
             plusTexture,
-            bounds.x - originX - 0.5f, bounds.y - originY,
+            bounds.x - 0.5f, bounds.y,
             originX, originY,
             bounds.width, bounds.height,
             scale, scale,
@@ -89,7 +85,7 @@ public class NumberPopup {
         for (int i = 0; i < digitalNumberTextures.size(); i++) {
             batch.draw(
                 digitalNumberTextures.get(i),
-                bounds.x - originX + (0.5f * i), bounds.y - originY,
+                bounds.x + (0.5f * i), bounds.y,
                 originX, originY,
                 bounds.width, bounds.height,
                 scale, scale,
@@ -100,7 +96,7 @@ public class NumberPopup {
         if(asPercentage) {
             batch.draw(
                 percentageTexture,
-                bounds.x - originX + 0.4f, bounds.y - originY,
+                bounds.x + 0.4f, bounds.y,
                 originX, originY,
                 8 / 20f, 13 / 20f,
                 scale, scale,
@@ -109,7 +105,6 @@ public class NumberPopup {
         }
 
         batch.setColor(1f, 1f, 1f, 1f);
-        symbolEchos.forEach(echo-> echo.draw(batch, delta));
     }
 
     private float getPulseCurve() {

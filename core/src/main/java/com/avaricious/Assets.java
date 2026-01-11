@@ -64,6 +64,8 @@ public class Assets {
         manager.load("slotBox.png", Texture.class);
         manager.load("slotBox-shadow.png", Texture.class);
         manager.load("slotMachineBox.png", Texture.class);
+        manager.load("metal-texture.png", Texture.class);
+        manager.load("ScoreDisplayBackground.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -164,6 +166,8 @@ public class Assets {
             borderMap.put(symbol, anim);
         });
 
+
+
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/m6x11plus.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
         param.size = 36;
@@ -194,8 +198,16 @@ public class Assets {
         return new TextureRegion(manager.get("symbolShadows/" + s.name().toLowerCase() + "-shadow.png", Texture.class));
     }
 
+    public Texture getScoreDisplayBackground() {
+        return manager.get("ScoreDisplayBackground.png", Texture.class);
+    }
+
     public Animation<TextureAtlas.AtlasRegion> getBorderAnimation(Symbol s) {
         return borderMap.get(s);
+    }
+
+    public Texture getMetalTexture() {
+        return manager.get("metal-texture.png", Texture.class);
     }
 
     public Texture getWhiteTexture() {
@@ -518,7 +530,7 @@ public class Assets {
     }
 
     public Color lightColor() {
-        return new Color(1f, 0.996f, 0.8117f, 1f);
+        return new Color(0.992156f, 0.992156f, 0.992156f, 1f);
     }
 
     public BitmapFont getBigFont() {

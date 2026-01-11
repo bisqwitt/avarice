@@ -2,6 +2,7 @@ package com.avaricious.screens;
 
 import com.avaricious.*;
 import com.avaricious.components.*;
+import com.avaricious.components.buttons.Button;
 import com.avaricious.components.buttons.DisablableButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
@@ -24,10 +25,7 @@ import com.avaricious.upgrades.pointAdditions.symbolValueStacker.SymbolValueStac
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Rectangle;
@@ -42,19 +40,42 @@ public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
-    private final Texture slotMachineBox;
-    private final HealthBar healthBar;
-    private final Shop shop;
-    private final StatUpgradeWindow statUpgradeWindow;
+    private final Texture slotMachineBox = Assets.I().getSlotMachineBox();
+    private final HealthBar healthBar = new HealthBar(100f);
+
+    private final ScoreDisplay scoreDisplay = new ScoreDisplay();
+    private final PatternDisplay patternDisplay = new PatternDisplay();
+
+    private final StatUpgradeWindow statUpgradeWindow = new StatUpgradeWindow(() -> {
+        if(scoreDisplay.targetScoreReached()) onTargetScoreReached();
+    } );
 
     private final BackgroundLayer backgroundLayer = new BackgroundLayer();
 
-    private final ScoreDisplay scoreDisplay;
-    private final PatternDisplay patternDisplay;
-    private final DisablableButton spinAgainButton;
-    private final DisablableButton cashoutButton;
-    private final UpgradeBar upgradeBar;
-    private final CreditScore creditScore;
+    private final DisablableButton spinAgainButton = new DisablableButton(this::onSpinButtonPressed,
+        Assets.I().getSpinAgainButton(),
+        Assets.I().getSpinAgainPressedButton(),
+        Assets.I().getSpinAgainButtonHovered(),
+        Assets.I().getSpinAgainButtonDisabled(),
+        new Rectangle(8.7f, 2.4f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
+
+    private final DisablableButton cashoutButton = new DisablableButton(this::onApplyButtonPressed,
+        Assets.I().getCashoutButton(),
+        Assets.I().getCashoutButtonPressed(),
+        Assets.I().getCashoutButtonHovered(),
+        Assets.I().getCashoutButtonDisabled(),
+        new Rectangle(4.7f, 2.4f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
+
+//    private final Button shopButton = new Button(this::)
+
+    private final UpgradeBar upgradeBar = new JokerUpgradeBar(UpgradesManager.I().getUpgrades(),
+        new Rectangle(3.5f, 0f, 142 / 115f, 190 / 115f),
+        1.75f, true);
+
+    private final CreditScore creditScore = new CreditScore(0,
+        new Rectangle(1f, 2f, 0.32f, 0.56f), 0.35f);
+
+    private final Shop shop = new Shop(() -> upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades()));
 
     private final VfxManager vfxManager = new VfxManager(Pixmap.Format.RGBA8888);
     private final VfxManager bloomFxManager = new VfxManager(Pixmap.Format.RGBA8888);
@@ -64,10 +85,11 @@ public class SlotScreen extends ScreenAdapter {
         9,
         false
     );
-    private final List<SymbolEcho> symbolEchos = new ArrayList<>();
+
+
     private final CameraShaker cameraShaker;
 
-    private final RoundsManager roundsManager;
+    private final RoundsManager roundsManager = RoundsManager.I();
     private final Vector2 mouse = new Vector2();
     private boolean leftClickWasPressed = false;
 
@@ -76,31 +98,9 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.setGammaCorrection(true);
 //        RayHandler.useDiffuseLight(true);
 
-        healthBar = new HealthBar(100f);
-        upgradeBar = new JokerUpgradeBar(UpgradesManager.I().getUpgrades(),
-            new Rectangle(3.5f, 0.5f, 142 / 115f, 190 / 115f),
-            1.75f, true);
-
-        scoreDisplay = new ScoreDisplay();
-        patternDisplay = new PatternDisplay();
-        shop = new Shop(() -> upgradeBar.loadUpgrades(UpgradesManager.I().getUpgrades()));
-        statUpgradeWindow = new StatUpgradeWindow(() -> {
-            if(scoreDisplay.targetScoreReached()) onTargetScoreReached();
-        } );
-        spinAgainButton = new DisablableButton(this::onSpinButtonPressed,
-            Assets.I().getSpinAgainButton(),
-            Assets.I().getSpinAgainPressedButton(),
-            Assets.I().getSpinAgainButtonHovered(),
-            Assets.I().getSpinAgainButtonDisabled(),
-            new Rectangle(12f, 1.6f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
-        cashoutButton = new DisablableButton(this::onApplyButtonPressed,
-            Assets.I().getCashoutButton(),
-            Assets.I().getCashoutButtonPressed(),
-            Assets.I().getCashoutButtonHovered(),
-            Assets.I().getCashoutButtonDisabled(),
-            new Rectangle(8f, 1.6f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
-
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
+
+
         cameraShaker = new CameraShaker(app);
 
 
@@ -112,12 +112,6 @@ public class SlotScreen extends ScreenAdapter {
         bloom.setBlurAmount(2f);
         bloom.setBlurPasses(3);
         bloomFxManager.addEffect(bloom);
-
-        roundsManager = RoundsManager.I();
-
-        creditScore = new CreditScore(0,
-            new Rectangle(1f, 2f, 0.32f, 0.56f), 0.35f);
-        slotMachineBox = Assets.I().getSlotMachineBox();
     }
 
     @Override
@@ -150,12 +144,12 @@ public class SlotScreen extends ScreenAdapter {
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 
         batch.begin();
-        symbolEchos.forEach(echo -> echo.draw(batch, delta));
+        TextureEcho.draw(batch, delta);
 
         healthBar.draw(batch);
         upgradeBar.draw(batch);
-        spinAgainButton.draw(batch, delta);
-        cashoutButton.draw(batch, delta);
+//        spinAgainButton.draw(batch, delta);
+//        cashoutButton.draw(batch, delta);
 //        batch.draw(slotMachineBox, 6.75f, 3.0f, 175f / 20.75f, 118 / 20.75f);
         slotMachine.draw(app, delta);
         scoreDisplay.draw(batch, delta);
@@ -239,17 +233,23 @@ public class SlotScreen extends ScreenAdapter {
                 ScreenManager.I().setScreen(MainScreen.class);
             }
             spinAgainButton.setDisabled(false);
+
+            if(DevTools.autoSpin) onSpinButtonPressed();
             return;
         }
 
         healthBar.heal(20);
+        TaskScheduler scheduler = new TaskScheduler(0.325f);
+        scheduler.schedule(() -> slotMachine.setRunningResults(true), 0f);
 
-        TaskScheduler scheduler = new TaskScheduler(0.3f);
         matches.forEach((slotMatch -> {
             List<Slot> slots = slotMatch.slots();
             Slot middleSlot = slots.get(slots.size() / 2 - (slots.size() % 2 == 0 ? 1 : 0));
 
-            scheduler.schedule(() -> slots.forEach(slot -> slot.targetScale = 1.1f), 0f);
+            scheduler.scheduleImmediate(() -> slots.forEach(slot -> {
+                slot.targetScale = 1.25f;
+                slot.setInPatternHit(true);
+            }));
 
             triggerSeparateSlots(slotMatch, scheduler);
             if(PlayerStats.I().rollChance(DoubleHitChance.class)) {
@@ -259,8 +259,13 @@ public class SlotScreen extends ScreenAdapter {
             }
 
             scheduler.schedule(() -> {
-                slots.forEach(Slot::wobble);
-                slots.forEach(Slot::pulse);
+                slots.forEach(slot -> {
+                    slot.wobble();
+                    slot.pulse();
+                    TextureEcho.create(Assets.I().getBase(slotMatch.symbol()),
+                        new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f),
+                        new Color(1f, 1f, 1f, 1f));
+                });
 
                 boolean criticalHit = PlayerStats.I().rollChance(CriticalHitChance.class);
                 int mult = criticalHit ? slots.size() * 2 : slots.size();
@@ -270,7 +275,7 @@ public class SlotScreen extends ScreenAdapter {
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
                     middleSlot.getPos().x + 2f, middleSlot.getPos().y + 1f);
                 patternDisplay.addMulti(mult);
-            });
+            }, 0.5f);
 
             UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
@@ -284,13 +289,25 @@ public class SlotScreen extends ScreenAdapter {
                             upgradeBar.getRectangleByUpgrade(upgrade).x + 0.7f, 2.6f);
                     }));
 
-            scheduler.scheduleImmediate(() -> slots.forEach(slot -> slot.targetScale = 1f));
+            scheduler.schedule(() -> slots.forEach(slot -> {
+                slot.targetScale = 1f;
+                slot.setInPatternHit(false);
+            }), 0f);
         }));
-        scheduler.schedule(() -> patternDisplay.addStreak(1));
+
         scheduler.schedule(() -> {
+            patternDisplay.addStreak(1);
             spinAgainButton.setDisabled(false);
             cashoutButton.setDisabled(false);
+            slotMachine.setRunningResults(false);
+
+//            matches.forEach(slotMatch -> slotMatch.slots().forEach(slot -> slot.setInPatternHit(false)));
         });
+
+        if(DevTools.autoSpin) {
+            scheduler.schedule(this::onApplyButtonPressed);
+            scheduler.schedule(this::onSpinButtonPressed);
+        }
         scheduler.runTasks();
     }
 
@@ -309,7 +326,9 @@ public class SlotScreen extends ScreenAdapter {
                     slot.getPos().x + 2f, slot.getPos().y + 1f);
                 patternDisplay.addPoints(points);
 
-                symbolEchos.add(new SymbolEcho(Assets.I().getBase(slotMatch.symbol()), new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f)));
+                TextureEcho.create(Assets.I().getBase(slotMatch.symbol()),
+                    new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f),
+                    new Color(1f, 1f, 1f, 1f));
             });
 
             if(PlayerStats.I().rollChance(CreditSpawnChance.class)) {

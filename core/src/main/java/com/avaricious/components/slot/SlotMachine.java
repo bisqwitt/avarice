@@ -20,8 +20,8 @@ public class SlotMachine {
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.1f;
-    private final float cellH = 1.1f;
+    private final float cellW = 1.5f;
+    private final float cellH = 1.5f;
     private final float spacingX = 0.3f;
     private final float spacingY = 0.3f;
 
@@ -37,14 +37,14 @@ public class SlotMachine {
     // Reels (one per column)
     private final List<Reel> reels = new ArrayList<>();
 
-    boolean spinning = false;
+    private boolean runningResults = false;
 
     public SlotMachine(float worldWidth, float worldHeight) {
         slotBox = new TextureRegion(Assets.I().getSlotBox());
         slotBoxShadow = new TextureRegion(Assets.I().getSlotBoxShadow());
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f) + 3f;
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) + 1.5f;
+        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
+        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) - 1f + 0.15f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
@@ -105,8 +105,8 @@ public class SlotMachine {
         Rectangle area = getBounds(); // world-space
         area.setX(area.x - 0.3f);
         area.setWidth(area.width + 0.3f);
-        area.setY(area.y - 0.15f);
-        area.setHeight(area.height);
+        area.setY(area.y - 0.3f);
+        area.setHeight(area.height + 0.30f);
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 
@@ -131,7 +131,7 @@ public class SlotMachine {
             for (int k = drawFrom; k <= drawTo; k++) {
                 boolean isInGrid = (k >= 0 && k < rows);
 
-                Reel.SymbolInstance symbolSlot = reel.slotAtRow(k);
+                SymbolInstance symbolSlot = reel.slotAtRow(k);
 
                 float drawX = colX;
                 float drawY = topY - (k + frac) * stepY;
@@ -139,50 +139,55 @@ public class SlotMachine {
                 boolean selected = false;
                 boolean highlighted = false;
                 boolean hovered = false;
-                float s = 1f;
+                float symbolsScale = 1f;
+                float boxScale = 1f;
+                float alpha = 1f;
 
                 TextureRegion region;
 
                 if (isInGrid) {
                     Slot slot = grid[c][k];
-
                     slot.updatePulse(selected, delta);
                     slot.tickScale(delta);
 
                     // wobble on HOVER entry even if selected
                     slot.updateHoverWobble(hovered, delta);
-                    s = slot.scale * slot.pulseScale() * slot.wobbleScale();
+                    symbolsScale = slot.scale * slot.pulseScale() * slot.wobbleScale();
+                    boxScale = slot.pulseScale() * slot.wobbleScale();
+                    if(runningResults && !slot.isInPatternHit()) alpha = 0.5f;
                 }
 
-                float drawW = cellW * s;
-                float drawH = cellH * s;
+                float drawW = cellW * symbolsScale;
+                float drawH = cellH * symbolsScale;
                 float adjX = drawX - (drawW - cellW) / 2f;
                 float adjY = drawY - (drawH - cellH) / 2f;
 
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
-                    ? grid[c][k].getFrame(symbolSlot.symbol(), selected, delta)
-                    : Assets.I().getBase(symbolSlot.symbol());
+                    ? grid[c][k].getFrame(symbolSlot.getSymbol(), selected, delta)
+                    : Assets.I().getBase(symbolSlot.getSymbol());
 
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
 
-                float boxW = drawW + 0.2f;
-                float boxH = drawH + 0.2f;
+                float boxW = cellW + 0.2f * boxScale;
+                float boxH = cellH + 0.2f * boxScale;
+                float boxX = (drawX - (boxW - cellW) / 2f);
+                float boxY = (drawY - (boxH - cellH) / 2f);
 
                 batch.setColor(1f, 1f, 1f, 0.25f);
                 batch.draw(
                     slotBoxShadow,
-                    adjX - 0.1f + 0.05f, adjY - 0.1f - 0.05f,
-                    boxW / 2f, boxH / 2f,
-                    boxW, boxH,
+                    boxX - 0.02f, boxY - 0.05f,
+                    boxW + 0.02f / 2f, boxH / 2f,
+                    boxW + 0.02f, boxH,
                     1f, 1f,
                     rotation
                 );
-                batch.setColor(1f, 1f, 1f, 1f);
+                batch.setColor(1f, 1f, 1f, runningResults ? 0.5f : 1f);
                 batch.draw(
                     slotBox,
-                    adjX - 0.1f, adjY - 0.1f,
+                    boxX, boxY,
                     boxW / 2f, boxH / 2f,
                     boxW, boxH,
                     1f, 1f,
@@ -191,14 +196,14 @@ public class SlotMachine {
 
                 batch.setColor(1f, 1f, 1f, 0.25f);
                 batch.draw(
-                    Assets.I().getSymbolShadow(symbolSlot.symbol()),
+                    Assets.I().getSymbolShadow(symbolSlot.getSymbol()),
                     adjX + 0.05f, adjY - 0.05f,
                     drawW / 2f, drawH / 2f,
                     drawW, drawH,
                     1f, 1f,
                     rotation
                 );
-                batch.setColor(1f, 1f, 1f, 1f);
+                batch.setColor(1f, 1f, 1f, alpha);
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
                     region,
@@ -208,10 +213,11 @@ public class SlotMachine {
                     1f, 1f,                   // scale already baked into drawW/H
                     rotation
                 );
+                batch.setColor(1f, 1f, 1f, 1f);
 
-                if(symbolSlot.statUpgrade() != null) {
+                if(symbolSlot.getStatUpgrade() != null) {
                     batch.draw(
-                        new TextureRegion(symbolSlot.statUpgrade().getStat().getTexture()),
+                        new TextureRegion(symbolSlot.getStatUpgrade().getStat().getTexture()),
                         adjX + 1.45f, adjY + 0.6f,
                         (drawW - 2f) / 2f, (drawW - 2f) / 2f,
                         (drawW - 1.8f), (drawW - 1.8f),
@@ -228,7 +234,6 @@ public class SlotMachine {
 
     // --- spin control (organic staggered start/stop, aligned to center row) ---
     public void spin() {
-        spinning = true;
         // tuning knobs
         float startSpeed = 16f;      // symbols/sec target cruise
         float startStagger = 0.15f;  // delay between reel starts
@@ -253,29 +258,29 @@ public class SlotMachine {
 
     // Returns each matching line as a List<Slot>
     public List<SlotMatch> findMatches() {
-        Symbol[][] symbolMap = new Symbol[cols][rows];
+        SymbolInstance[][] slotMap = new SymbolInstance[cols][rows];
 
         for (int c = 0; c < reels.size(); c++) {
             for (int row = 0; row < rows; row++) {
-                symbolMap[c][row] = reels.get(c).slotAtRow(row).symbol();
+                slotMap[c][row] = reels.get(c).slotAtRow(row);
             }
         }
 
         // Raw matches (symbol + positions)
-        List<PatternMatch> matches = PatternFinder.findMatches(symbolMap);
+        List<PatternMatch> matches = PatternFinder.findMatches(slotMap);
 
         // Build final slot-based matches
         List<SlotMatch> result = new ArrayList<>();
 
         for (PatternMatch match : matches) {
-            Symbol symbol = match.getSymbol();
 
             List<Slot> slots = new ArrayList<>();
-            for (java.awt.Point p : match.getPositions()) {
-                slots.add(grid[p.x][p.y]);
+            for (java.awt.Point p : match.positions()) {
+                Slot slot = grid[p.x][p.y];
+//                slot.setInPatternHit(true);
+                slots.add(slot);
             }
-
-            result.add(new SlotMatch(symbol, slots));
+            result.add(new SlotMatch(match.symbol(), slots));
         }
 
         return result;
@@ -300,4 +305,11 @@ public class SlotMachine {
         return reels;
     }
 
+    public boolean isRunningResults() {
+        return runningResults;
+    }
+
+    public void setRunningResults(boolean runningResults) {
+        this.runningResults = runningResults;
+    }
 }

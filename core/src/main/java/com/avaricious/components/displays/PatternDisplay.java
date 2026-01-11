@@ -1,9 +1,12 @@
 package com.avaricious.components.displays;
 
 import com.avaricious.Assets;
+import com.avaricious.DevTools;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import java.util.Objects;
 
 public class PatternDisplay {
 
@@ -46,8 +49,7 @@ public class PatternDisplay {
     public void draw(SpriteBatch batch, float delta) {
         hoverTime += delta;
         float hoverOffset = (float) Math.sin(hoverTime * 1.5f) * 0.03f;
-        float baseY = 5.025f;
-        float numberBaseY = 5.675f + hoverOffset;
+        float numberBaseY = 7.35f + hoverOffset;
 
         // ----- Pulse + wobble for POINTS -----
         float pointsScale = 1f;
@@ -110,14 +112,15 @@ public class PatternDisplay {
         }
 
         // Common digit size/origin
-        float digitWidth  = 8 / 25f;
-        float digitHeight = 14 / 25f;
+        float digitWidth  = 8 / 17f;
+        float digitHeight = 14 / 17f;
         float originX = digitWidth / 2f;
         float originY = digitHeight / 2f;
+        float numberOffset = 0.6f;
 
         // Draw POINTS (blue)
         for (int i = 0; i < 3; i++) {
-            float x = 1.57f + (i * 0.35f);
+            float x = 3.25f + (i * numberOffset);
             batch.setColor(1f, 1f, 1f, 0.25f);
             batch.draw(
                 pointNumberShadows[i],
@@ -144,7 +147,7 @@ public class PatternDisplay {
 
         // Draw MULTI (red)
         for (int i = 0; i < 3; i++) {
-            float x = 3.17f + (i * 0.35f);
+            float x = 11.5f + (i * numberOffset);
             batch.setColor(1f, 1f, 1f, 0.25f);
             batch.draw(
                 multiNumberShadows[i],
@@ -169,24 +172,23 @@ public class PatternDisplay {
             );
         }
 
-        // Draw X MULTI (red)
-        for (int i = 0; i < 2; i++) {
-            float x = 4.77f + (i * 0.35f);
+        if(Objects.equals(DevTools.playMode, "asdf")) for (int i = 0; i < 2; i++) {
+            float x = 11.5f + (i * numberOffset);
             batch.setColor(1f, 1f, 1f, 0.25f);
-            batch.draw(
-                streakNumberShadows[i],
-                x - originX + 0.05f, numberBaseY - originY - 0.05f,
-                originX, originY,
-                digitWidth, digitHeight,
-                streakScale,
-                streakScale,
-                streakRotation
-            );
+//            batch.draw(
+//                streakNumberShadows[i],
+//                x - originX + 0.05f, numberBaseY - originY + 1f,
+//                originX, originY,
+//                digitWidth, digitHeight,
+//                streakScale,
+//                streakScale,
+//                streakRotation
+//            );
             batch.setColor(Assets.I().colorRed());
             batch.draw(
                 streakDigitalNumbers[i],
-                x - originX,
-                numberBaseY - originY,
+                x - originX + 0.625f,
+                numberBaseY - originY + 1f,
                 originX,
                 originY,
                 digitWidth,
@@ -197,11 +199,11 @@ public class PatternDisplay {
             );
         }
         batch.setColor(1f, 1f, 1f, 0.25f);
-        batch.draw(multSymbolShadow, 2.61f, numberBaseY - originY - 0.05f, 0.35f, 0.35f);
+        batch.draw(multSymbolShadow, 11f, numberBaseY - originY - 0.05f, 0.35f, 0.35f);
         batch.draw(multSymbolShadow, 4.21f, numberBaseY - originY - 0.05f, 0.35f, 0.35f);
         batch.setColor(1f, 1f, 1f, 1f);
-        batch.draw(multSymbolTexture, 2.56f, numberBaseY - originY, 0.35f, 0.35f);
-        batch.draw(multSymbolTexture, 4.16f, numberBaseY - originY, 0.35f, 0.35f);
+        batch.draw(multSymbolTexture, 10.75f, numberBaseY - originY, 0.4f, 0.4f);
+        if(Objects.equals(DevTools.playMode, "sadf")) batch.draw(multSymbolTexture, 11.4f, numberBaseY - originY + 1f, 0.4f, 0.4f);
     }
 
     public void resetBaseValues() {

@@ -9,8 +9,6 @@ public class Reel {
     // Simple state machine: spin -> stop cleanly (no post-settle bounce)
     enum State { IDLE, ACCEL, CRUISE, DECEL }
 
-    public record SymbolInstance(Symbol symbol, StatUpgrade statUpgrade) {};
-
     private final List<Symbol> strip;
     private List<SymbolInstance> slots;
     private final int rowsVisible;

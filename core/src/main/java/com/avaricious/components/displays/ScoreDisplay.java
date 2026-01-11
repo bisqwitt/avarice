@@ -11,16 +11,21 @@ import com.badlogic.gdx.math.Rectangle;
 public class ScoreDisplay {
     private final DigitalNumber digitalNumber;
     private final ProgressBar progressBar;
+    private final Texture backgroundBox = Assets.I().getScoreDisplayBackground();
+    private final Texture whiteTexture = Assets.I().getWhiteTexture();
 
     public ScoreDisplay() {
         progressBar = new ProgressBar();
         progressBar.setMaxValue(RoundsManager.I().getCurrentTargetScore());
         digitalNumber = new DigitalNumber(0, Assets.I().lightColor(), 7,
-            new Rectangle(1.175f, 7.5f, 0.32f * 1.5f, 0.56f * 1.5f), 0.6f);
+            new Rectangle(5.1f, 7.15f, 0.32f * 2f, 0.56f * 2f), 0.8f);
     }
 
     public void draw(SpriteBatch batch, float delta) {
-        progressBar.draw(batch);
+//        progressBar.draw(batch);
+//        batch.draw(backgroundBox, 4.5f, 6.3f, 273 / 40f, 88 / 40f);
+
+        batch.draw(whiteTexture, 2.65f, 6.65f, 10.25f, 0.1f);
         digitalNumber.draw(batch, delta);
     }
 

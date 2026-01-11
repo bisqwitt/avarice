@@ -1,5 +1,6 @@
 package com.avaricious.components.progressbar;
 
+import com.avaricious.DevTools;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 
@@ -41,7 +42,7 @@ public class HealthBar extends ProgressBar {
     }
 
     public void damage(float amount) {
-        setCurrentHealth(currentValue - amount);
+        if(!DevTools.noDamage) setCurrentHealth(currentValue - amount);
     }
 
     public void heal(float amount) {

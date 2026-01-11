@@ -1,0 +1,106 @@
+irst: what actually makes “hitting a symbol” feel good?
+Not visuals.
+Prediction → confirmation → amplification.
+If you don’t get those three phases right, no amount of glow, particles, or shaders will help.
+The 3-phase loop (non-negotiable)
+Anticipation
+“This might hit”
+Confirmation
+“Yes, it hit”
+Reward amplification
+“Oh damn, that hit hard”
+Balatro nails this with timing, sound, and micro-movement, not fireworks.
+Core rule (I’m serious about this):
+Movement beats particles. Sound beats movement. Timing beats everything.
+Particles come last.
+Let’s design this properly for a 2D slot roguelike
+I’ll give you concrete, implementable layers, ordered by impact.
+LAYER 1 — Symbol motion (highest ROI)
+When a symbol hits, it must react.
+❌ Bad
+Symbol stays static
+Score number pops up
+Some particles appear
+✅ Good
+Each hit symbol does one decisive motion:
+Micro punch scale
+scale up → snap back (≤120ms)
+Directional nudge
+slightly push outward from the center of the hit pattern
+Rotation jitter (±2–4° max)
+This gives physicality.
+libGDX tip
+Use non-linear easing:
+ease-out-back
+ease-out-elastic (tiny)
+Linear interpolation feels dead.
+LAYER 2 — Hit freeze (the secret sauce)
+Balatro does this constantly.
+Add a hit stop:
+Freeze everything for 30–80 ms
+Resume with force
+This creates:
+weight
+impact
+“oh shit” moments
+No particles required.
+Even a single frame freeze is noticeable.
+LAYER 3 — Symbol isolation (focus beats chaos)
+When a pattern hits:
+Dim or desaturate non-hit symbols
+Slightly brighten or sharpen hit symbols
+Optional: subtle vignette
+This tells the player:
+This is what mattered.
+Your brain rewards clarity more than spectacle.
+LAYER 4 — Score reveal choreography (not numbers)
+Don’t just show “+120”.
+Do this instead:
+Numbers count up
+They appear after the hit stop
+Font weight increases with multiplier tiers
+Slight screen shake ONLY when crossing thresholds
+Example:
+Pair → no shake
+Triple → light shake
+Rare combo → directional shake + freeze
+This builds escalation.
+LAYER 5 — Sound design (this is where dopamine lives)
+I know you didn’t ask, but I won’t let you ignore this.
+Rules:
+Each symbol type has a timbre
+Combos stack pitch, not volume
+Multipliers add harmonics, not new sounds
+Balatro is basically a musical instrument.
+If your audio is bad, visuals won’t matter.
+LAYER 6 — Particles (now they finally matter)
+Use particles sparingly and purposefully:
+Good particle usage:
+Burst outward from hit symbols
+Directional, short-lived
+Color tied to symbol identity
+Appear AFTER hit stop
+Bad particle usage:
+Constant ambient sparkle
+Large slow fades
+Generic glow everywhere
+Particles should feel like debris, not fog.
+LAYER 7 — Depth & layering (since you asked)
+Yes, layering helps — but only if meaningful.
+Simple but effective depth stack:
+Background (dark, stable)
+Reel/symbol layer
+Hit symbols (temporary z-boost)
+Particles
+Score / UI overlay
+Screen-space effects (shake, flash)
+During a hit:
+Lift hit symbols forward (z or draw order)
+Push everything else back visually
+Depth = hierarchy, not blur.
+One thing I’ll explicitly warn you against
+Do NOT animate everything on every spin.
+If everything moves:
+Nothing feels special
+Big hits feel the same as small hits
+Reserve intensity for rarity.

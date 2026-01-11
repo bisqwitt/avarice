@@ -8,8 +8,8 @@ varying vec2 v_texCoords;
 
 uniform float u_time;       // from LibGDX
 
-const vec3 mixColor1 = vec3(0.20784, 0.39607, 0.30196);
-const vec3 mixColor2 = vec3(0.20784, 0.39607, 0.30196);
+const vec3 mixColor1 = vec3(0.2078, 0.39607, 0.30196);
+const vec3 mixColor2 = vec3(0.2078, 0.39607, 0.30196);
 
 #define NUM_OCTAVES 5
 
