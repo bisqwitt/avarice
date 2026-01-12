@@ -13,6 +13,7 @@ import java.util.List;
 public class NumberPopup {
 
     private final List<TextureRegion> digitalNumberTextures = new ArrayList<>();
+    private final List<TextureRegion> digitalNumberShadowTextures = new ArrayList<>();
 
     private final TextureRegion plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
     private final TextureRegion percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());;
@@ -36,7 +37,7 @@ public class NumberPopup {
         this.color = color;
         this.asPercentage = asPercentage;
 
-        this.bounds = new Rectangle(x, y, 7 / 20f, 11 / 20f);
+        this.bounds = new Rectangle(x, y, 7 / 15f, 11 / 15f);
         setDigitalNumberTextures(number);
         TextureEcho.create(plusTexture, bounds.setX(bounds.x - 0.5f), color);
         digitalNumberTextures.forEach(texture -> TextureEcho.create(texture, bounds, color));
@@ -83,6 +84,17 @@ public class NumberPopup {
         );
 
         for (int i = 0; i < digitalNumberTextures.size(); i++) {
+            batch.setColor(1f, 1f, 1f, 0.25f);
+            batch.draw(
+                digitalNumberShadowTextures.get(i),
+                bounds.x + (0.5f * i) + 0.1f, bounds.y - 0.1f,
+                originX, originY,
+                bounds.width, bounds.height,
+                scale, scale,
+                rotation
+            );
+            batch.setColor(color.r, color.g, color.b, alpha);
+
             batch.draw(
                 digitalNumberTextures.get(i),
                 bounds.x + (0.5f * i), bounds.y,
@@ -180,6 +192,9 @@ public class NumberPopup {
         String.valueOf(number)
             .chars()
             .map(Character::getNumericValue)
-            .forEach(digit -> digitalNumberTextures.add(new TextureRegion(Assets.I().getDigitalNumber(digit))));
+            .forEach(digit -> {
+                digitalNumberTextures.add(new TextureRegion(Assets.I().getDigitalNumber(digit)));
+                digitalNumberShadowTextures.add(new TextureRegion(Assets.I().getDigitalNumberShadow(digit)));
+            });
     }
 }

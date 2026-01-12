@@ -14,6 +14,8 @@ public class ScoreDisplay {
     private final Texture backgroundBox = Assets.I().getScoreDisplayBackground();
     private final Texture whiteTexture = Assets.I().getWhiteTexture();
 
+    private final Texture darkGreenTexture = Assets.I().getDarkGreenTexture();
+
     public ScoreDisplay() {
         progressBar = new ProgressBar();
         progressBar.setMaxValue(RoundsManager.I().getCurrentTargetScore());
@@ -25,7 +27,9 @@ public class ScoreDisplay {
 //        progressBar.draw(batch);
 //        batch.draw(backgroundBox, 4.5f, 6.3f, 273 / 40f, 88 / 40f);
 
-        batch.draw(whiteTexture, 2.65f, 6.65f, 10.25f, 0.1f);
+        batch.draw(whiteTexture, 2.15f, 6.65f, 11.25f, 0.1f);
+        batch.draw(darkGreenTexture, 2.6f, 6.8f, 10.75f, 1.85f);
+
         digitalNumber.draw(batch, delta);
     }
 

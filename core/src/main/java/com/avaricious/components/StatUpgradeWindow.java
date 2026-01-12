@@ -13,17 +13,13 @@ import java.util.List;
 
 public class StatUpgradeWindow {
 
-    private final Texture window;
-    private final Texture shadow;
+    private final Texture window = Assets.I().getStatUpgradeWindow();
+    private final Texture shadow = Assets.I().getStatUpgradeWindowShadow();
     private boolean show = false;
 
-    private final UpgradeBar upgradeBar;
+    private final UpgradeBar upgradeBar = new StatUpgradeBar(randomStatUpgrades());
 
     public StatUpgradeWindow(Runnable onExit) {
-        window = Assets.I().getStatUpgradeWindow();
-        shadow = Assets.I().getStatUpgradeWindowShadow();
-
-        upgradeBar = new StatUpgradeBar(randomStatUpgrades());
         upgradeBar.setOnUpgradeClickedAndAnimationEnded(() -> {
             show = false;
             onExit.run();

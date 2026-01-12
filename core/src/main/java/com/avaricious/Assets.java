@@ -66,6 +66,8 @@ public class Assets {
         manager.load("slotMachineBox.png", Texture.class);
         manager.load("metal-texture.png", Texture.class);
         manager.load("ScoreDisplayBackground.png", Texture.class);
+        manager.load("dark-green.png", Texture.class);
+        manager.load("black-green-pixel.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -240,6 +242,10 @@ public class Assets {
 
     public Texture getProgressBarBorder() {
         return manager.get("progressbar/ProgressBarBorder.png", Texture.class);
+    }
+
+    public Texture getDarkGreenTexture() {
+        return manager.get("dark-green.png", Texture.class);
     }
 
     public Texture getTooltipBox() {
@@ -496,6 +502,10 @@ public class Assets {
 
     public Texture getRetriggerShadow() {
         return manager.get("stats/Retrigger-shadow.png", Texture.class);
+    }
+
+    public Texture getBlackGreenTexture() {
+        return manager.get("black-green-pixel.png", Texture.class);
     }
 
     public Texture getSpinAgainPressedButton() {

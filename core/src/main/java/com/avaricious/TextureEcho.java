@@ -17,7 +17,7 @@ public class TextureEcho {
     private final Rectangle currentPos;
     private float alpha = 0.5f;
 
-    private static List<TextureEcho> echos = new ArrayList<>();
+    private static final List<TextureEcho> echos = new ArrayList<>();
 
     public static void create(TextureRegion texture, Rectangle spawnPoint, Color color) {
         echos.add(new TextureEcho(texture, spawnPoint, color));
@@ -43,7 +43,7 @@ public class TextureEcho {
         batch.draw(textureEcho, currentPos.x, currentPos.y, currentPos.width, currentPos.height);
         batch.setColor(1f, 1f, 1f, 1f);
 
-        float echoSpeed = 15f;
+        float echoSpeed = 20f;
         float fadeSpeed = 1f;
 
         float additionalSize = delta * echoSpeed;

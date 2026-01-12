@@ -26,7 +26,7 @@ public class Shop {
 
     private boolean show = false;
 
-    public Shop(Runnable onExit) {
+    public Shop() {
         window = Assets.I().getShopWindow();
 
         creditScore = new CreditScore(0,

@@ -6,6 +6,7 @@ import com.avaricious.components.slot.pattern.PatternFinder;
 import com.avaricious.components.slot.pattern.PatternMatch;
 import com.avaricious.components.slot.pattern.SlotMatch;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -31,8 +32,11 @@ public class SlotMachine {
     // Visual cells (for selection pulse/scale)
     private final Slot[][] grid = new Slot[cols][rows];
 
-    private final TextureRegion slotBox;
-    private final TextureRegion slotBoxShadow;
+    private final TextureRegion slotBox = new TextureRegion(Assets.I().getSlotBox());;
+    private final TextureRegion slotBoxShadow = new TextureRegion(Assets.I().getSlotBoxShadow());;
+
+    private final Texture darkGreenTexture = Assets.I().getDarkGreenTexture();
+    private final Texture blackGreenTexture = Assets.I().getBlackGreenTexture();
 
     // Reels (one per column)
     private final List<Reel> reels = new ArrayList<>();
@@ -40,8 +44,6 @@ public class SlotMachine {
     private boolean runningResults = false;
 
     public SlotMachine(float worldWidth, float worldHeight) {
-        slotBox = new TextureRegion(Assets.I().getSlotBox());
-        slotBoxShadow = new TextureRegion(Assets.I().getSlotBoxShadow());
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
         originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) - 1f + 0.15f;
@@ -107,11 +109,17 @@ public class SlotMachine {
         area.setWidth(area.width + 0.3f);
         area.setY(area.y - 0.3f);
         area.setHeight(area.height + 0.30f);
+
+        drawBorder(batch, area, darkGreenTexture, 0.2f);
+        drawBorder(batch, area, blackGreenTexture, 0.05f);
+
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
 
         batch.flush();
         ScissorStack.pushScissors(scissors);
+
+        batch.draw(Assets.I().getWhiteTexture(), 0f, 0f, 16f, 9f);
 
         // render continuous rolling bands per column
         final float stepX = (cellW + spacingX);
@@ -175,16 +183,16 @@ public class SlotMachine {
                 float boxX = (drawX - (boxW - cellW) / 2f);
                 float boxY = (drawY - (boxH - cellH) / 2f);
 
-                batch.setColor(1f, 1f, 1f, 0.25f);
-                batch.draw(
-                    slotBoxShadow,
-                    boxX - 0.02f, boxY - 0.05f,
-                    boxW + 0.02f / 2f, boxH / 2f,
-                    boxW + 0.02f, boxH,
-                    1f, 1f,
-                    rotation
-                );
-                batch.setColor(1f, 1f, 1f, runningResults ? 0.5f : 1f);
+//                batch.setColor(1f, 1f, 1f, 0.25f);
+//                batch.draw(
+//                    slotBoxShadow,
+//                    boxX + 0.1f, boxY - 0.1f,
+//                    boxW / 2f, boxH / 2f,
+//                    boxW, boxH,
+//                    1f, 1f,
+//                    rotation
+//                );
+//                batch.setColor(1f, 1f, 1f, runningResults ? 0.5f : 1f);
                 batch.draw(
                     slotBox,
                     boxX, boxY,
@@ -230,6 +238,17 @@ public class SlotMachine {
 
         batch.flush();
         ScissorStack.popScissors();
+    }
+
+    private void drawBorder(SpriteBatch batch, Rectangle area, Texture texture, float size) {
+        batch.draw(texture, area.x - size, area.y + area.height,
+            area.width + size * 2, size);
+        batch.draw(texture, area.x - size, area.y - size,
+            size, area.height + size * 2);
+        batch.draw(texture, area.x - size, area.y - size,
+            area.width + size * 2, size);
+        batch.draw(texture, area.x + area.width, area.y - size,
+            size, area.height + size * 2);
     }
 
     // --- spin control (organic staggered start/stop, aligned to center row) ---
