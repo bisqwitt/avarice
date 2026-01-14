@@ -2,6 +2,7 @@ package com.avaricious.components.displays;
 
 import com.avaricious.Assets;
 import com.avaricious.RoundsManager;
+import com.avaricious.audio.AudioManager;
 import com.avaricious.components.DigitalNumber;
 import com.avaricious.components.progressbar.ProgressBar;
 import com.badlogic.gdx.graphics.Texture;
@@ -21,6 +22,8 @@ public class ScoreDisplay {
         progressBar.setMaxValue(RoundsManager.I().getCurrentTargetScore());
         digitalNumber = new DigitalNumber(0, Assets.I().lightColor(), 7,
             new Rectangle(5.1f, 7.15f, 0.32f * 2f, 0.56f * 2f), 0.8f);
+
+        digitalNumber.setOnInternalScoreDisplayed(() -> AudioManager.I().endPayout());
     }
 
     public void draw(SpriteBatch batch, float delta) {
@@ -34,6 +37,7 @@ public class ScoreDisplay {
     }
 
     public void addToScore(int amount) {
+        AudioManager.I().startPayout();
         digitalNumber.setScore(digitalNumber.getScore() + amount);
         progressBar.setDisplayedValue(digitalNumber.getScore());
     }

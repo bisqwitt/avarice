@@ -36,7 +36,7 @@ public class UpgradeSticks {
     }
 
     public void draw(SpriteBatch batch) {
-        List<Upgrade> upgrades = UpgradesManager.I().getUpgrades();
+        List<Upgrade> upgrades = UpgradesManager.I().getDeck();
         ensureCapacity(upgrades.size());
 
         float dt = Gdx.graphics.getDeltaTime();
@@ -58,7 +58,7 @@ public class UpgradeSticks {
     }
 
     public void hoveringAt(Vector2 mouse) {
-        List<Upgrade> upgrades = UpgradesManager.I().getUpgrades();
+        List<Upgrade> upgrades = UpgradesManager.I().getDeck();
         ensureCapacity(upgrades.size());
 
         hoverIndex = -1;

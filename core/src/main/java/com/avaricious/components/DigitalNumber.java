@@ -22,7 +22,11 @@ public class DigitalNumber {
     private int score;
     private int displayedScore;
 
+    private boolean internalScoreIsDisplayed = true;
+
     private float hoverTime = 0f;
+
+    private Runnable onInternalScoreDisplayed;
 
     public DigitalNumber(int initialScore, Color color, Rectangle rectangle, float offset) {
         setScore(initialScore);
@@ -55,6 +59,9 @@ public class DigitalNumber {
             long diff = displayedScore - score;
             displayedScore -= (int) Math.ceil(diff * 0.025);
             updateDigitalNumbers(displayedScore);
+        } else if(!internalScoreIsDisplayed) {
+            internalScoreIsDisplayed = true;
+            if(onInternalScoreDisplayed != null) onInternalScoreDisplayed.run();
         }
 
         hoverTime += delta;
@@ -89,6 +96,7 @@ public class DigitalNumber {
             numberTextures.add(Assets.I().getDigitalNumber(0));
             numberShadowTextures.add(Assets.I().getDigitalNumberShadow(0));
         }
+        internalScoreIsDisplayed = false;
     }
 
     protected float calcHoverY() {
@@ -100,5 +108,9 @@ public class DigitalNumber {
 
     public int getScore() {
         return score;
+    }
+
+    public void setOnInternalScoreDisplayed(Runnable onInternalScoreDisplayed) {
+        this.onInternalScoreDisplayed = onInternalScoreDisplayed;
     }
 }

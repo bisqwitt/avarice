@@ -28,11 +28,12 @@ public class ParticleManager {
         });
     }
 
-    public void create(float x, float y, ParticleType type) {
+    public void create(float x, float y, ParticleType type, float streak) {
         ParticleEffect particle = new ParticleEffect();
-        particle.load(ParticleType.RAINBOW.getFile(),
+        particle.load(type.getFile(),
             Gdx.files.internal("particles/pngs"));
         particle.scaleEffect(0.03f);
+        particle.getEmitters().forEach(emitter -> emitter.getEmission().setHigh(streak * 25));
 
         particle.setPosition(x, y);
         particle.start();

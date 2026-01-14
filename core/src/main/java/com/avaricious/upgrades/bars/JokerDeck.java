@@ -3,6 +3,7 @@ package com.avaricious.upgrades.bars;
 import com.avaricious.Assets;
 import com.avaricious.components.popups.PopupManager;
 import com.avaricious.components.slot.Slot;
+import com.avaricious.screens.ScreenManager;
 import com.avaricious.upgrades.Upgrade;
 import com.avaricious.upgrades.UpgradesManager;
 import com.badlogic.gdx.Gdx;
@@ -22,7 +23,13 @@ public class JokerDeck {
     private final float FOLDED_STEP = 0.02f;
     private final float SPREAD_STEP_X = 2.25f;
     private final float UNFOLDED_SCALE = 1.15f;
-    private final float UNFOLD_SPEED = 5f;
+    private final float UNFOLD_SPEED = 3f;
+
+    private final float CARD_DELAY = 0.15f;     // delay between cards in normalized unfold space (0..1)
+    private final float CARD_RAMP  = 0.5f;     // how much of the remaining time each card uses to reach 1
+    private final float CARD_EASE_POWER = 0.8f; // >1 = snappier finish; <1 = softer
+
+    private final float PICK_PHASE = 0.35f; // fraction of each card's timeline reserved for "pick up" (scale)
 
     private final float EPS = 0.001f;
 
@@ -33,10 +40,10 @@ public class JokerDeck {
     private final Map<Upgrade, Slot> jokerAnimationManagers = new LinkedHashMap<>();
     private final Rectangle deckBounds;
 
-    // Animation state
     private float unfoldT = 0f;                 // 0 = folded, 1 = fully unfolded
     private final Map<Upgrade, Rectangle> foldedBounds = new LinkedHashMap<>();
     private final Map<Upgrade, Rectangle> unfoldedBounds = new LinkedHashMap<>();
+    private final Map<Upgrade, Float> pickProgress = new LinkedHashMap<>();
 
     private Upgrade hoveringUpgrade;
 
@@ -47,30 +54,35 @@ public class JokerDeck {
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
+        Upgrade hoveringUpgradeLastRender = hoveringUpgrade;
         hoveringUpgrade = null;
-        boolean hoverDeck = deckBounds.contains(mouse);
+        boolean hoveringDeck = deckBounds.contains(mouse);
 
         if (unfolded()) {
-            Rectangle firstCardBounds = jokerBounds.values().iterator().next();
-            for(Map.Entry<Upgrade, Rectangle> entry: jokerBounds.entrySet()) {
-                firstCardBounds = entry.getValue();
-                if(firstCardBounds.contains(mouse)) hoveringUpgrade = entry.getKey();
-            }
+            jokerBounds.forEach((upgrade, bounds) -> {
+                if(bounds.contains(mouse)) {
+                    hoveringUpgrade = upgrade;
+                }
+            });
 
-            float width = (deckBounds.x + firstCardBounds.width) - firstCardBounds.x;
-            float height = firstCardBounds.height;
-
-            Rectangle hoverBounds = new Rectangle(
-                firstCardBounds.x, firstCardBounds.y, width, height
-            );
-            if (hoverBounds.contains(mouse)) hoverDeck = true;
+            if (getUnfoldedAllCardBounds().contains(mouse)) hoveringDeck = true;
         }
 
-        float target = hoverDeck ? 1f : 0f;
+        float target = hoveringDeck ? 1f : 0f;
         unfoldT = expApproach(unfoldT, target, UNFOLD_SPEED, delta);
+
+        if(hoveringUpgradeLastRender == null && hoveringUpgrade != null) {
+            Slot slot = jokerAnimationManagers.get(hoveringUpgrade);
+//            slot.pulse();
+//            slot.wobble();
+        }
 
         // Recompute current animated bounds
         updateAnimatedBounds();
+        jokerAnimationManagers.forEach((upgrade, slot) -> {
+            slot.updateHoverWobble(true, delta);
+            slot.updatePulse(false, delta);
+        });
     }
 
 
@@ -81,21 +93,42 @@ public class JokerDeck {
             deckBounds.width + 0.3f, deckBounds.height + 0.3f);
         batch.setColor(1f, 1f, 1f, 1f);
         jokerBounds.forEach((upgrade, bounds) -> {
-//            if(bounds.x < deckBounds.x - 0.1f) {
-//                batch.setColor(1f, 1f, 1f, 0.25f);
-//                batch.draw(jokerShadowTexture, bounds.x + 0.15f, bounds.y - 0.15f, bounds.width, bounds.height);
-//                batch.setColor(1f, 1f, 1f, 1f);
-//            }
 
-            batch.draw(jokerTexture, bounds.x, bounds.y, bounds.width, bounds.height);
+            float pickProgress = clamp01(this.pickProgress.get(upgrade));
+            float shadowAlpha = 0.25f * pickProgress;
+            float shadowXOffset = 0.15f * pickProgress;
+            float shadowYOffset = -0.15f * pickProgress;
+
+            batch.setColor(1f, 1f, 1f, shadowAlpha);
+            batch.draw(jokerShadowTexture, bounds.x + shadowXOffset, bounds.y + shadowYOffset, bounds.width, bounds.height);
+            batch.setColor(1f, 1f, 1f, 1f);
+
+            float originX = bounds.width * 0.5f;
+            float originY = bounds.height * 0.5f;
+
+            Slot slot = jokerAnimationManagers.get(upgrade);
+            float s = slot.pulseScale() * slot.wobbleScale(); // combined scale multipliers
+            float r = slot.wobbleAngleDeg();                  // degrees
+
+            batch.draw(
+                jokerTexture,
+                bounds.x, bounds.y,
+                originX, originY,
+                bounds.width, bounds.height,
+                s, s,
+                r
+            );
         });
 
         if(hoveringUpgrade != null) PopupManager.I().showTooltip(hoveringUpgrade,
-            getBoundsByUpgrade(hoveringUpgrade).x -1f, getBoundsByUpgrade(hoveringUpgrade).y + 2.75f);
+            getBoundsByUpgrade(hoveringUpgrade).x -1f, getBoundsByUpgrade(hoveringUpgrade).y + 2.5f);
     }
 
     private void updateAnimatedBounds() {
-        float t = smoothstep(unfoldT); // <-- easing applied here
+        float globalUnfold = smoothstep(unfoldT);     // driven by hover
+
+        int i = 0;
+        int n = jokerBounds.size();
 
         for (Map.Entry<Upgrade, Rectangle> e : jokerBounds.entrySet()) {
             Upgrade up = e.getKey();
@@ -103,17 +136,35 @@ public class JokerDeck {
             Rectangle a = foldedBounds.get(up);
             Rectangle b = unfoldedBounds.get(up);
 
-            cur.x = lerp(a.x, b.x, t);
-            cur.y = lerp(a.y, b.y, t);
-            cur.width  = lerp(a.width,  b.width,  t);
-            cur.height = lerp(a.height, b.height, t);
+            // normal per-card unfold timeline
+            float tUnfold = cardTimeline(globalUnfold, (n - 1) - i);
+            tUnfold = easeOutPow(tUnfold, CARD_EASE_POWER);
+
+            // combine: highlighted card can move even when unfolded is 0
+            float t = tUnfold;
+
+            float tScale = clamp01(t / PICK_PHASE);
+            float tMove  = clamp01((t - PICK_PHASE) / (1f - PICK_PHASE));
+
+            tScale = easeOutPow(tScale, 1.8f);
+            tMove  = smoothstep(tMove);
+
+            cur.width  = lerp(a.width,  b.width,  tScale);
+            cur.height = lerp(a.height, b.height, tScale);
+
+            cur.x = lerp(a.x, b.x, tMove);
+
+            pickProgress.put(up, tScale);
+            i++;
         }
     }
+
 
     private void loadJokers() {
         jokerBounds.clear();
         foldedBounds.clear();
         unfoldedBounds.clear();
+        pickProgress.clear();
 
         List<Upgrade> upgrades = UpgradesManager.I().getDeck();
 
@@ -129,29 +180,24 @@ public class JokerDeck {
                 deckBounds.height
             );
 
-            // Unfolded: spread to the left; keep a slight Y offset if you like
-            // how far each next card moves left (world units)
             Rectangle unfolded = unfoldedCardPos(i);
-
 
             foldedBounds.put(up, folded);
             unfoldedBounds.put(up, unfolded);
 
-            // Start folded
             jokerBounds.put(up, new Rectangle(folded));
             jokerAnimationManagers.put(up, new Slot(new Vector2(folded.x, folded.y)));
+
+            pickProgress.put(up, 0f);
         }
     }
 
     private Rectangle unfoldedCardPos(int i) {
         float baseX = deckBounds.x - (i * SPREAD_STEP_X);
-        float baseY = deckBounds.y + i * FOLDED_STEP;
+        float baseY = deckBounds.y;
 
-//        float LIFT_Y = 0.4f;
-//        baseY += LIFT_Y;
-
-        float unfoldedW = deckBounds.width;
-        float unfoldedH = deckBounds.height;
+        float unfoldedW = deckBounds.width * UNFOLDED_SCALE;
+        float unfoldedH = deckBounds.height * UNFOLDED_SCALE;
 
         float centerX = baseX + deckBounds.width / 2f;
         float centerY = baseY + deckBounds.height / 2f;
@@ -162,6 +208,18 @@ public class JokerDeck {
             unfoldedW,
             unfoldedH
         );
+    }
+
+    private Rectangle getUnfoldedAllCardBounds() {
+        Rectangle firstCardBounds = null;
+        for(Map.Entry<Upgrade, Rectangle> entry: jokerBounds.entrySet()) {
+            firstCardBounds = entry.getValue();
+        }
+
+        float width = (deckBounds.x + firstCardBounds.width) - firstCardBounds.x;
+        float height = firstCardBounds.height;
+
+        return new Rectangle(firstCardBounds.x, firstCardBounds.y, width, height);
     }
 
     public Rectangle getBoundsByUpgrade(Upgrade upgrade) {
@@ -190,6 +248,30 @@ public class JokerDeck {
         // smoothstep: 3t^2 - 2t^3
         return t * t * (3f - 2f * t);
     }
+
+    private float cardTimeline(float globalT, int index) {
+        // Stagger start per card
+        float start = index * CARD_DELAY;
+
+        // Each card uses a short window to finish (fast motion)
+        float end = start + CARD_RAMP;
+
+        // Map globalT into [0..1] for this card
+        return clamp01((globalT - start) / (end - start));
+    }
+
+    private static float clamp01(float v) {
+        if (v < 0f) return 0f;
+        if (v > 1f) return 1f;
+        return v;
+    }
+
+    // Ease out power curve: fast start, crisp settle
+    private static float easeOutPow(float t, float power) {
+        t = clamp01(t);
+        return 1f - (float)Math.pow(1f - t, power);
+    }
+
 
     private boolean unfolded() {
         return unfoldT > EPS;

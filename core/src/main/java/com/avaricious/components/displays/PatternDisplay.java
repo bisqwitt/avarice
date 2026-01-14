@@ -3,6 +3,7 @@ package com.avaricious.components.displays;
 import com.avaricious.Assets;
 import com.avaricious.DevTools;
 import com.avaricious.TextureEcho;
+import com.avaricious.TextureGlow;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -213,16 +214,22 @@ public class PatternDisplay {
     }
 
     public void spawnEcho() {
-        for(int i = 0; i < pointDigitalNumbers.length; i++) {
-            TextureEcho.create(pointDigitalNumbers[i],
-                new Rectangle(FIRST_POINT_DIGIT_X + (i * DIGIT_OFFSET), DIGIT_Y, DIGIT_WIDTH, DIGIT_HEIGHT),
-                Assets.I().colorBlue());
-        }
-        for(int i = 0; i < multiDigitalNumbers.length; i++) {
-            TextureEcho.create(multiDigitalNumbers[i],
-                new Rectangle(FIRST_MULTI_DIGIT_X + (i * DIGIT_OFFSET), DIGIT_Y, DIGIT_WIDTH, DIGIT_HEIGHT),
-                Assets.I().colorRed());
-        }
+//        for(int i = 0; i < pointDigitalNumbers.length; i++) {
+//            Rectangle bounds = new Rectangle(FIRST_POINT_DIGIT_X + (i * DIGIT_OFFSET), DIGIT_Y, DIGIT_WIDTH, DIGIT_HEIGHT);
+//            TextureEcho.create(pointDigitalNumbers[i],
+//                bounds,
+//                Assets.I().colorBlue());
+//            TextureGlow.create(pointDigitalNumbers[i],
+//                bounds, "number");
+//        }
+//        for(int i = 0; i < multiDigitalNumbers.length; i++) {
+//            Rectangle bounds = new Rectangle(FIRST_MULTI_DIGIT_X + (i * DIGIT_OFFSET), DIGIT_Y, DIGIT_WIDTH, DIGIT_HEIGHT);
+//            TextureEcho.create(multiDigitalNumbers[i],
+//                bounds,
+//                Assets.I().colorRed());
+//            TextureGlow.create(pointDigitalNumbers[i],
+//                bounds, "number");
+//        }
     }
 
     public void resetBaseValues() {

@@ -1,8 +1,8 @@
 package com.avaricious.screens;
 
 import com.avaricious.*;
+import com.avaricious.audio.AudioManager;
 import com.avaricious.components.*;
-import com.avaricious.components.buttons.Button;
 import com.avaricious.components.buttons.DisablableButton;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
@@ -19,8 +19,6 @@ import com.avaricious.stats.statupgrades.CriticalHitChance;
 import com.avaricious.stats.statupgrades.DoubleHitChance;
 import com.avaricious.upgrades.UpgradesManager;
 import com.avaricious.upgrades.bars.JokerDeck;
-import com.avaricious.upgrades.bars.JokerUpgradeBar;
-import com.avaricious.upgrades.bars.UpgradeBar;
 import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
 import com.avaricious.upgrades.pointAdditions.symbolValueStacker.SymbolValueStackUpgrade;
 import com.badlogic.gdx.Gdx;
@@ -34,7 +32,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
@@ -70,7 +67,7 @@ public class SlotScreen extends ScreenAdapter {
 //    private final Button shopButton = new Button(this::)
 
     private final JokerDeck jokerDeck = new JokerDeck(
-        new Rectangle(13.25f, 1f, 142 / 85f, 190 / 85f)
+        new Rectangle(13.25f, 1f, 142 / 95f, 190 / 95f)
     );
 
     private final CreditScore creditScore = new CreditScore(0,
@@ -159,6 +156,8 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.draw(batch, delta);
         creditScore.draw(batch, delta);
         jokerDeck.draw(batch, delta);
+
+        TextureGlow.draw(batch, delta, "number");
 
         shop.draw(batch, delta);
         statUpgradeWindow.draw(batch, delta);
@@ -267,21 +266,22 @@ public class SlotScreen extends ScreenAdapter {
                     slot.wobble();
                     slot.pulse();
 
-                    ParticleManager.I().create(slot.getPos().x + 0.75f, slot.getPos().y + 0.75f, ParticleType.RED);
-                    TextureEcho.create(Assets.I().getBase(slotMatch.symbol()),
-                        new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f),
-                        new Color(1f, 1f, 1f, 1f));
+                    EffectManager.create(Assets.I().getBase(slotMatch.symbol()),
+                        new Rectangle(slot.getPos().x, slot.getPos().y, SlotMachine.CELL_W, SlotMachine.CELL_H),
+                        "slot", new Color(1f, 1f, 1f, 1f));
                 });
 
                 boolean criticalHit = PlayerStats.I().rollChance(CriticalHitChance.class);
                 int mult = criticalHit ? slots.size() * 2 : slots.size();
 
                 PopupManager.I().spawnNumber(mult, Assets.I().colorRed(),
-                    middleSlot.getPos().x + 1.5f, middleSlot.getPos().y + 1f);
+                    middleSlot.getPos().x + ((slots.size() % 2 == 0) ? 2f : 1.5f), middleSlot.getPos().y + 1f);
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
                     middleSlot.getPos().x + 2.5f, middleSlot.getPos().y + 1f);
                 patternDisplay.addMulti(mult);
-            }, 0.5f);
+
+                AudioManager.I().playHit(EffectManager.streak);
+            }, 0f);
 
             UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
@@ -292,13 +292,16 @@ public class SlotScreen extends ScreenAdapter {
                         cardSlot.wobble();
                         patternDisplay.addMulti(multi);
                         PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
-                            jokerDeck.getBoundsByUpgrade(upgrade).x + 0.7f, 2.6f);
+                            jokerDeck.getBoundsByUpgrade(upgrade).x + 1.5f, 2.6f);
                     }));
 
-            scheduler.schedule(() -> slots.forEach(slot -> {
-                slot.targetScale = 1f;
-                slot.setInPatternHit(false);
-            }), 0f);
+            scheduler.schedule(() -> {
+                EffectManager.increaseStreak();
+                slots.forEach(slot -> {
+                    slot.targetScale = 1f;
+                    slot.setInPatternHit(false);
+                });
+            }, 0f);
         }));
 
         scheduler.schedule(() -> {
@@ -306,8 +309,7 @@ public class SlotScreen extends ScreenAdapter {
             spinAgainButton.setDisabled(false);
             cashoutButton.setDisabled(false);
             slotMachine.setRunningResults(false);
-
-//            matches.forEach(slotMatch -> slotMatch.slots().forEach(slot -> slot.setInPatternHit(false)));
+            EffectManager.endStreak();
         });
 
         if(DevTools.autoSpin) {
@@ -332,10 +334,11 @@ public class SlotScreen extends ScreenAdapter {
                     slot.getPos().x + 2.5f, slot.getPos().y + 1f);
                 patternDisplay.addPoints(points);
 
-                ParticleManager.I().create(slot.getPos().x + 0.75f, slot.getPos().y + 0.75f, ParticleType.BLUE);
-                TextureEcho.create(Assets.I().getBase(slotMatch.symbol()),
-                    new Rectangle(slot.getPos().x, slot.getPos().y, 1.1f, 1.1f),
-                    new Color(1f, 1f, 1f, 1f));
+                EffectManager.create(Assets.I().getBase(slotMatch.symbol()),
+                    new Rectangle(slot.getPos().x, slot.getPos().y, SlotMachine.CELL_W, SlotMachine.CELL_H),
+                    "slot", new Color(1f, 1f, 1f, 1f));
+
+                AudioManager.I().playHit(EffectManager.streak);
             });
 
             if(PlayerStats.I().rollChance(CreditSpawnChance.class)) {
@@ -348,25 +351,25 @@ public class SlotScreen extends ScreenAdapter {
                 });
             }
 
-//            UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
-//                .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
-//                .forEach(upgrade -> {
-//                    Slot upgradeSlot = jokerDeck.getSlotByUpgrade(upgrade);
-//                    scheduler.schedule(() -> {
-//                        upgradeSlot.wobble();
-//                        upgradeSlot.pulse();
-//                        PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
-//                            upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
-//                    });
-//                    if(upgrade.addStacks(1)) {
-//                        scheduler.schedule(() -> {
-//                            upgradeSlot.wobble();
-//                            upgradeSlot.pulse();
-//                            PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
-//                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
-//                        });
-//                    }
-//                });
+            UpgradesManager.I().getUpgradesOfClass(SymbolValueStackUpgrade.class)
+                .filter(upgrade -> upgrade.getSymbol() == slotMatch.symbol())
+                .forEach(upgrade -> {
+                    Slot upgradeSlot = jokerDeck.getSlotByUpgrade(upgrade);
+                    scheduler.scheduleImmediate(() -> {
+                        upgradeSlot.wobble();
+                        upgradeSlot.pulse();
+                        PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
+                            upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                    });
+                    if(upgrade.addStacks(1)) {
+                        scheduler.schedule(() -> {
+                            upgradeSlot.wobble();
+                            upgradeSlot.pulse();
+                            PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
+                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                        });
+                    }
+                });
         });
     }
 

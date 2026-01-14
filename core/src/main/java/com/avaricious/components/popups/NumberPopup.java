@@ -2,6 +2,7 @@ package com.avaricious.components.popups;
 
 import com.avaricious.Assets;
 import com.avaricious.TextureEcho;
+import com.avaricious.TextureGlow;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -39,8 +40,8 @@ public class NumberPopup {
 
         this.bounds = new Rectangle(x, y, 7 / 15f, 11 / 15f);
         setDigitalNumberTextures(number);
-        TextureEcho.create(plusTexture, bounds.setX(bounds.x - 0.5f), color);
-        digitalNumberTextures.forEach(texture -> TextureEcho.create(texture, bounds, color));
+//        TextureEcho.create(plusTexture, bounds.setX(bounds.x - 0.5f), color);
+//        digitalNumberTextures.forEach(texture -> TextureEcho.create(texture, bounds, color));
     }
 
     public void transform(int newValue) {

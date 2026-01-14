@@ -15,8 +15,8 @@ public class Lwjgl3Launcher {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("Avaricious");
         configuration.useVsync(true);
-        configuration.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
-//        configuration.setWindowedMode(1440, 810); // this line changes the size of the window
+//        configuration.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+        configuration.setWindowedMode(1440, 810); // this line changes the size of the window
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
         configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
 

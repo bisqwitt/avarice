@@ -1,7 +1,9 @@
 package com.avaricious.components.slot;
 
 import com.avaricious.Assets;
+import com.avaricious.DevTools;
 import com.avaricious.Main;
+import com.avaricious.TextureGlow;
 import com.avaricious.components.slot.pattern.PatternFinder;
 import com.avaricious.components.slot.pattern.PatternMatch;
 import com.avaricious.components.slot.pattern.SlotMatch;
@@ -21,8 +23,8 @@ public class SlotMachine {
     // --- Layout ---
     private final int cols = 5;
     private final int rows = 3;
-    private final float cellW = 1.5f;
-    private final float cellH = 1.5f;
+    public static final float CELL_W = 1.5f;
+    public static final float CELL_H = 1.5f;
     private final float spacingX = 0.3f;
     private final float spacingY = 0.3f;
 
@@ -45,23 +47,23 @@ public class SlotMachine {
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
-        originX = ((worldWidth - cols * (cellW + spacingX)) / 2f);
-        originY = ((worldHeight - rows * (cellH + spacingY)) / 2f) - 1f + 0.15f;
+        originX = ((worldWidth - cols * (CELL_W + spacingX)) / 2f);
+        originY = ((worldHeight - rows * (CELL_H + spacingY)) / 2f) - 1f + 0.15f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
             for (int r = 0; r < rows; r++) {
                 if(r == 0) grid[c][r] = new Slot(new Vector2(
-                    originX + c * (cellW + spacingX),
-                    originY + 2 * (cellH + spacingY)
+                    originX + c * (CELL_W + spacingX),
+                    originY + 2 * (CELL_H + spacingY)
                 ));
                 if(r == 1) grid[c][r] = new Slot(new Vector2(
-                    originX + c * (cellW + spacingX),
-                    originY + 1 * (cellH + spacingY)
+                    originX + c * (CELL_W + spacingX),
+                    originY + 1 * (CELL_H + spacingY)
                 ));
                 if(r == 2) grid[c][r] = new Slot(new Vector2(
-                    originX + c * (cellW + spacingX),
-                    originY + 0 * (cellH + spacingY)
+                    originX + c * (CELL_W + spacingX),
+                    originY + 0 * (CELL_H + spacingY)
                 ));
             }
         }
@@ -71,21 +73,20 @@ public class SlotMachine {
 
         for(int i = 0; i < 12; i++) {
             baseStrip.add(Symbol.LEMON);
-            baseStrip.add(Symbol.CHERRY);
+            if(!DevTools.onlyLemon) baseStrip.add(Symbol.CHERRY);
         }
-        for(int i = 0; i < 8; i++) {
-            baseStrip.add(Symbol.CLOVER);
-            baseStrip.add(Symbol.BELL);
+        if(!DevTools.onlyLemon && !DevTools.lemonCherry) {
+            for(int i = 0; i < 8; i++) {
+                baseStrip.add(Symbol.CLOVER);
+                baseStrip.add(Symbol.BELL);
+            }
+            for(int i = 0; i < 4; i++) {
+                baseStrip.add(Symbol.IRON);
+                baseStrip.add(Symbol.DIAMOND);
+            }
+            baseStrip.add(Symbol.SEVEN);
+            baseStrip.add(Symbol.SEVEN);
         }
-        for(int i = 0; i < 4; i++) {
-            baseStrip.add(Symbol.IRON);
-            baseStrip.add(Symbol.DIAMOND);
-        }
-        baseStrip.add(Symbol.SEVEN);
-        baseStrip.add(Symbol.SEVEN);
-//        baseStrip.addAll(Arrays.asList(Symbol.values()));
-//        baseStrip.addAll(Arrays.asList(Symbol.values()));
-//        baseStrip.addAll(Arrays.asList(Symbol.values()));
 
         for (int c = 0; c < cols; c++) {
             reels.add(new Reel(baseStrip, rows));
@@ -121,9 +122,32 @@ public class SlotMachine {
 
         batch.draw(Assets.I().getWhiteTexture(), 0f, 0f, 16f, 9f);
 
-        // render continuous rolling bands per column
-        final float stepX = (cellW + spacingX);
-        final float stepY = (cellH + spacingY);
+        drawBoxes(batch);
+        TextureGlow.draw(batch, delta, "slot");
+        drawSymbols(batch, delta);
+
+//        batch.setColor(1f, 1f, 1f, 0.25f);
+//        batch.draw(Assets.I().getJokerCardShadow(), area.x - 2f, area.y + area.height - 0.5f, 15f, 3f);
+//        batch.setColor(1f, 1f, 1f, 1f);
+
+        batch.flush();
+        ScissorStack.popScissors();
+    }
+
+    private void drawBorder(SpriteBatch batch, Rectangle area, Texture texture, float size) {
+        batch.draw(texture, area.x - size, area.y + area.height,
+            area.width + size * 2, size);
+        batch.draw(texture, area.x - size, area.y - size,
+            size, area.height + size * 2);
+        batch.draw(texture, area.x - size, area.y - size,
+            area.width + size * 2, size);
+        batch.draw(texture, area.x + area.width, area.y - size,
+            size, area.height + size * 2);
+    }
+
+    private void drawBoxes(SpriteBatch batch) {
+        final float stepX = (CELL_W + spacingX);
+        final float stepY = (CELL_H + spacingY);
         final float topY = originY + (rows - 1) * stepY; // y of the top grid cell
 
         for (int c = 0; c < cols; c++) {
@@ -145,10 +169,58 @@ public class SlotMachine {
                 float drawY = topY - (k + frac) * stepY;
 
                 boolean selected = false;
-                boolean highlighted = false;
-                boolean hovered = false;
                 float symbolsScale = 1f;
                 float boxScale = 1f;
+
+                float drawW = CELL_W * symbolsScale;
+                float drawH = CELL_H * symbolsScale;
+
+                // NEW: rotate around center using current wobble angle
+                float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
+
+                float boxW = CELL_W + 0.2f * boxScale;
+                float boxH = CELL_H + 0.2f * boxScale;
+                float boxX = (drawX - (boxW - CELL_W) / 2f);
+                float boxY = (drawY - (boxH - CELL_H) / 2f);
+
+                batch.draw(
+                    slotBox,
+                    boxX, boxY,
+                    boxW / 2f, boxH / 2f,
+                    boxW, boxH,
+                    1f, 1f,
+                    rotation
+                );
+            }
+        }
+    }
+
+    private void drawSymbols(SpriteBatch batch, float delta) {
+        final float stepX = (CELL_W + spacingX);
+        final float stepY = (CELL_H + spacingY);
+        final float topY = originY + (rows - 1) * stepY; // y of the top grid cell
+
+        for (int c = 0; c < cols; c++) {
+            Reel reel = reels.get(c);
+            float frac = reel.frac(); // 0..1 progress toward next symbol
+            float colX = originX + c * stepX;
+
+            int extraAbove = 1;
+            int extraBelow = 1;
+            int drawFrom = -extraAbove;
+            int drawTo   = rows - 1 + extraBelow;
+
+            for (int k = drawFrom; k <= drawTo; k++) {
+                boolean isInGrid = (k >= 0 && k < rows);
+
+                SymbolInstance symbolSlot = reel.slotAtRow(k);
+
+                float drawX = colX;
+                float drawY = topY - (k + frac) * stepY;
+
+                boolean selected = false;
+                boolean hovered = false;
+                float symbolsScale = 1f;
                 float alpha = 1f;
 
                 TextureRegion region;
@@ -161,14 +233,13 @@ public class SlotMachine {
                     // wobble on HOVER entry even if selected
                     slot.updateHoverWobble(hovered, delta);
                     symbolsScale = slot.scale * slot.pulseScale() * slot.wobbleScale();
-                    boxScale = slot.pulseScale() * slot.wobbleScale();
                     if(runningResults && !slot.isInPatternHit()) alpha = 0.5f;
                 }
 
-                float drawW = cellW * symbolsScale;
-                float drawH = cellH * symbolsScale;
-                float adjX = drawX - (drawW - cellW) / 2f;
-                float adjY = drawY - (drawH - cellH) / 2f;
+                float drawW = CELL_W * symbolsScale;
+                float drawH = CELL_H * symbolsScale;
+                float adjX = drawX - (drawW - CELL_W) / 2f;
+                float adjY = drawY - (drawH - CELL_H) / 2f;
 
                 // choose frame (keeps your animated border when selected)
                 region = isInGrid
@@ -177,30 +248,6 @@ public class SlotMachine {
 
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
-
-                float boxW = cellW + 0.2f * boxScale;
-                float boxH = cellH + 0.2f * boxScale;
-                float boxX = (drawX - (boxW - cellW) / 2f);
-                float boxY = (drawY - (boxH - cellH) / 2f);
-
-//                batch.setColor(1f, 1f, 1f, 0.25f);
-//                batch.draw(
-//                    slotBoxShadow,
-//                    boxX + 0.1f, boxY - 0.1f,
-//                    boxW / 2f, boxH / 2f,
-//                    boxW, boxH,
-//                    1f, 1f,
-//                    rotation
-//                );
-//                batch.setColor(1f, 1f, 1f, runningResults ? 0.5f : 1f);
-                batch.draw(
-                    slotBox,
-                    boxX, boxY,
-                    boxW / 2f, boxH / 2f,
-                    boxW, boxH,
-                    1f, 1f,
-                    rotation
-                );
 
                 batch.setColor(1f, 1f, 1f, 0.25f);
                 batch.draw(
@@ -212,6 +259,7 @@ public class SlotMachine {
                     rotation
                 );
                 batch.setColor(1f, 1f, 1f, alpha);
+
                 // Draw with origin at the center, width/height already scaled
                 batch.draw(
                     region,
@@ -235,20 +283,6 @@ public class SlotMachine {
                 }
             }
         }
-
-        batch.flush();
-        ScissorStack.popScissors();
-    }
-
-    private void drawBorder(SpriteBatch batch, Rectangle area, Texture texture, float size) {
-        batch.draw(texture, area.x - size, area.y + area.height,
-            area.width + size * 2, size);
-        batch.draw(texture, area.x - size, area.y - size,
-            size, area.height + size * 2);
-        batch.draw(texture, area.x - size, area.y - size,
-            area.width + size * 2, size);
-        batch.draw(texture, area.x + area.width, area.y - size,
-            size, area.height + size * 2);
     }
 
     // --- spin control (organic staggered start/stop, aligned to center row) ---
@@ -315,8 +349,8 @@ public class SlotMachine {
         return new Rectangle(
             originX,
             originY,
-            cols * (cellW + spacingX),
-            rows * (cellH + spacingY)
+            cols * (CELL_W + spacingX),
+            rows * (CELL_H + spacingY)
         );
     }
 

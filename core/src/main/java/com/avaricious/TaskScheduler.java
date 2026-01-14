@@ -32,7 +32,7 @@ public class TaskScheduler {
         float delay = defaultDelay;
         for(ScheduledTask task : tasks) {
             Timer.schedule(create(task.runnable), delay);
-            delay += task.delay;
+            delay += (task.delay);
         }
     }
 

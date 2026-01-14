@@ -15,16 +15,13 @@ public class TextureEcho {
     private final Color color;
 
     private final Rectangle currentPos;
+    private final float streak;
     private float alpha = 0.5f;
 
     private static final List<TextureEcho> echos = new ArrayList<>();
 
-    public static void create(TextureRegion texture, Rectangle spawnPoint, Color color) {
-        echos.add(new TextureEcho(texture, spawnPoint, color));
-    }
-
-    private static void removeEcho(TextureEcho echo) {
-        echos.remove(echo);
+    public static void create(TextureRegion texture, Rectangle spawnPoint, Color color, float streak) {
+        echos.add(new TextureEcho(texture, spawnPoint, color, streak));
     }
 
     public static void draw(SpriteBatch batch, float delta) {
@@ -32,18 +29,19 @@ public class TextureEcho {
         echos.removeIf(echo -> !echo.isAlive());
     }
 
-    private TextureEcho(TextureRegion textureEcho, Rectangle spawnPoint, Color color) {
+    private TextureEcho(TextureRegion textureEcho, Rectangle spawnPoint, Color color, float streak) {
         this.textureEcho = textureEcho;
         this.color = color;
         currentPos = new Rectangle(spawnPoint);
+        this.streak = streak;
     }
 
-    public void _draw(SpriteBatch batch, float delta) {
+    private void _draw(SpriteBatch batch, float delta) {
         batch.setColor(color.r, color.g, color.b, alpha);
         batch.draw(textureEcho, currentPos.x, currentPos.y, currentPos.width, currentPos.height);
         batch.setColor(1f, 1f, 1f, 1f);
 
-        float echoSpeed = 20f;
+        float echoSpeed = 18f;
         float fadeSpeed = 1f;
 
         float additionalSize = delta * echoSpeed;

@@ -28,7 +28,9 @@ public class UpgradesManager {
             .collect(Collectors.toSet()));
 
         randomUpgrades().forEach(this::addUpgrade);
-        randomUpgrades().forEach(this::addUpgrade);
+        List<? extends Upgrade> upgrades = randomUpgrades();
+        addUpgrade(upgrades.get(0));
+        addUpgrade(upgrades.get(1));
     }
 
     private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();
@@ -69,7 +71,7 @@ public class UpgradesManager {
     }
 
     public <T> Stream<T> getUpgradesOfClass(Class<T> clazz) {
-        return getUpgrades().stream()
+        return deck.stream()
             .filter(clazz::isInstance)
             .map(clazz::cast);
     }
@@ -79,38 +81,34 @@ public class UpgradesManager {
         mergeDuplicates();
     }
 
-    public List<Upgrade> getUpgrades() {
-        return deck;
-    }
-
     private void mergeDuplicates() {
-        record Key(Class<?> type, UpgradeRarity rarity) {}
-
-        var dupKey = deck.stream()
-            .collect(java.util.stream.Collectors.groupingBy(
-                u -> new Key(u.getClass(), u.getRarity())
-            ))
-            .entrySet().stream()
-            .filter(e -> e.getValue().size() >= 2)
-            .map(java.util.Map.Entry::getKey)
-            .findFirst();
-
-        if (dupKey.isEmpty()) return;
-
-        var key = dupKey.get();
-        var pair = deck.stream()
-            .filter(u -> u.getClass() == key.type() && u.getRarity() == key.rarity())
-            .limit(2)
-            .toList();
-
-        if (pair.get(0).getRarity() == UpgradeRarity.LEGENDARY) {
-            return;
-        }
-
-        deck.remove(pair.get(1));
-        pair.get(0).increaseRarity();
-
-        mergeDuplicates();
+//        record Key(Class<?> type, UpgradeRarity rarity) {}
+//
+//        var dupKey = deck.stream()
+//            .collect(java.util.stream.Collectors.groupingBy(
+//                u -> new Key(u.getClass(), u.getRarity())
+//            ))
+//            .entrySet().stream()
+//            .filter(e -> e.getValue().size() >= 2)
+//            .map(java.util.Map.Entry::getKey)
+//            .findFirst();
+//
+//        if (dupKey.isEmpty()) return;
+//
+//        var key = dupKey.get();
+//        var pair = deck.stream()
+//            .filter(u -> u.getClass() == key.type() && u.getRarity() == key.rarity())
+//            .limit(2)
+//            .toList();
+//
+//        if (pair.get(0).getRarity() == UpgradeRarity.LEGENDARY) {
+//            return;
+//        }
+//
+//        deck.remove(pair.get(1));
+//        pair.get(0).increaseRarity();
+//
+//        mergeDuplicates();
     }
 
     public void removeUpgrade(Upgrade upgrade) {
