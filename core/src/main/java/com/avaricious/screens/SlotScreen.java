@@ -40,6 +40,7 @@ public class SlotScreen extends ScreenAdapter {
     private final SlotMachine slotMachine;
     private final Texture slotMachineBox = Assets.I().getSlotMachineBox();
     private final HealthBar healthBar = new HealthBar(100f);
+    private final XpBar xpBar;
 
     private final ScoreDisplay scoreDisplay = new ScoreDisplay();
     private final PatternDisplay patternDisplay = new PatternDisplay();
@@ -97,7 +98,7 @@ public class SlotScreen extends ScreenAdapter {
 //        RayHandler.useDiffuseLight(true);
 
         slotMachine = new SlotMachine(app.getViewport().getWorldWidth(), app.getViewport().getWorldHeight());
-
+        xpBar = new XpBar(statUpgradeWindow::show);
 
         cameraShaker = new CameraShaker(app);
 
@@ -156,6 +157,7 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.draw(batch, delta);
         creditScore.draw(batch, delta);
         jokerDeck.draw(batch, delta);
+        xpBar.draw(batch);
 
         TextureGlow.draw(batch, delta, "number");
 
@@ -301,7 +303,7 @@ public class SlotScreen extends ScreenAdapter {
                     slot.targetScale = 1f;
                     slot.setInPatternHit(false);
                 });
-            }, 0f);
+            });
         }));
 
         scheduler.schedule(() -> {
@@ -339,6 +341,8 @@ public class SlotScreen extends ScreenAdapter {
                     "slot", new Color(1f, 1f, 1f, 1f));
 
                 AudioManager.I().playHit(EffectManager.streak);
+
+                xpBar.addXp(points);
             });
 
             if(PlayerStats.I().rollChance(CreditSpawnChance.class)) {

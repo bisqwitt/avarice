@@ -21,7 +21,7 @@ public class ScoreDisplay {
         progressBar = new ProgressBar();
         progressBar.setMaxValue(RoundsManager.I().getCurrentTargetScore());
         digitalNumber = new DigitalNumber(0, Assets.I().lightColor(), 7,
-            new Rectangle(5.1f, 7.15f, 0.32f * 2f, 0.56f * 2f), 0.8f);
+            new Rectangle(5.1f, 7.45f, 0.32f * 1.8f, 0.56f * 1.8f), 0.8f);
 
         digitalNumber.setOnInternalScoreDisplayed(() -> AudioManager.I().endPayout());
     }
@@ -30,8 +30,8 @@ public class ScoreDisplay {
 //        progressBar.draw(batch);
 //        batch.draw(backgroundBox, 4.5f, 6.3f, 273 / 40f, 88 / 40f);
 
-        batch.draw(whiteTexture, 2.15f, 6.65f, 11.25f, 0.1f);
-        batch.draw(darkGreenTexture, 2.6f, 6.8f, 10.75f, 1.85f);
+//        batch.draw(whiteTexture, 2.25f, 6.8f, 11.25f, 0.1f);
+        batch.draw(darkGreenTexture, 2.6f, 7.2f, 10.75f, 1.5f);
 
         digitalNumber.draw(batch, delta);
     }

@@ -15,9 +15,9 @@ public class PatternDisplay {
 
     private final float FIRST_POINT_DIGIT_X = 3.25f;
     private final float FIRST_MULTI_DIGIT_X = 11.5f;
-    private final float DIGIT_Y = 7.35f;
-    private final float DIGIT_WIDTH = 8 / 17f;
-    private final float DIGIT_HEIGHT = 14 / 17f;
+    private final float DIGIT_Y = 7.8f;
+    private final float DIGIT_WIDTH = 8 / 20f;
+    private final float DIGIT_HEIGHT = 14 / 20f;
     private final float DIGIT_OFFSET = 0.6f;
 
     private final Texture multSymbolTexture;

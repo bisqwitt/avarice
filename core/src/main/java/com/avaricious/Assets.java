@@ -68,6 +68,7 @@ public class Assets {
         manager.load("ScoreDisplayBackground.png", Texture.class);
         manager.load("dark-green.png", Texture.class);
         manager.load("black-green-pixel.png", Texture.class);
+        manager.load("xp-pixel.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -198,6 +199,10 @@ public class Assets {
 
     public TextureRegion getSymbolShadow(Symbol s) {
         return new TextureRegion(manager.get("symbolShadows/" + s.name().toLowerCase() + "-shadow.png", Texture.class));
+    }
+
+    public Texture getXpPixel() {
+        return manager.get("xp-pixel.png", Texture.class);
     }
 
     public Texture getScoreDisplayBackground() {

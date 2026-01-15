@@ -272,7 +272,6 @@ public class JokerDeck {
         return 1f - (float)Math.pow(1f - t, power);
     }
 
-
     private boolean unfolded() {
         return unfoldT > EPS;
     }

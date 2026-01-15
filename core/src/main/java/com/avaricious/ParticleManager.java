@@ -2,10 +2,13 @@ package com.avaricious;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ParticleManager {
 
@@ -26,6 +29,8 @@ public class ParticleManager {
             emitter.update(delta);
             emitter.draw(batch);
         });
+        Set<ParticleEffect> dump = emitters.stream().filter(ParticleEffect::isComplete).collect(Collectors.toSet());
+        emitters.remove(dump);
     }
 
     public void create(float x, float y, ParticleType type, float streak) {
@@ -33,7 +38,18 @@ public class ParticleManager {
         particle.load(type.getFile(),
             Gdx.files.internal("particles/pngs"));
         particle.scaleEffect(0.03f);
-        particle.getEmitters().forEach(emitter -> emitter.getEmission().setHigh(streak * 25));
+        particle.getEmitters().forEach(emitter -> emitter.getEmission().setHigh(streak * 40));
+
+        particle.setPosition(x, y);
+        particle.start();
+        emitters.add(particle);
+    }
+
+    public void create(float x, float y, ParticleType type) {
+        ParticleEffect particle = new ParticleEffect();
+        particle.load(type.getFile(),
+            Gdx.files.internal("particles/pngs"));
+        particle.scaleEffect(0.01f);
 
         particle.setPosition(x, y);
         particle.start();

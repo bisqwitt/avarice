@@ -111,8 +111,9 @@ public class SlotMachine {
         area.setY(area.y - 0.3f);
         area.setHeight(area.height + 0.30f);
 
+        drawBorder(batch, area, blackGreenTexture, 0.25f);
         drawBorder(batch, area, darkGreenTexture, 0.2f);
-        drawBorder(batch, area, blackGreenTexture, 0.05f);
+        drawBorder(batch, area, blackGreenTexture, 0.075f);
 
         Rectangle scissors = new Rectangle();
         ScissorStack.calculateScissors(cam, batch.getTransformMatrix(), area, scissors);
