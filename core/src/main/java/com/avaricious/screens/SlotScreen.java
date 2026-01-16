@@ -102,7 +102,6 @@ public class SlotScreen extends ScreenAdapter {
 
         cameraShaker = new CameraShaker(app);
 
-
         vfxManager.addEffect(new OldTvEffect());
         BloomEffect bloom = new BloomEffect();
         bloom.setBaseIntensity(1f);
@@ -125,6 +124,7 @@ public class SlotScreen extends ScreenAdapter {
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(this::runResult);
 
         shop.show();
+//        statUpgradeWindow.show();
     }
 
     @Override
@@ -283,7 +283,7 @@ public class SlotScreen extends ScreenAdapter {
                 patternDisplay.addMulti(mult);
 
                 AudioManager.I().playHit(EffectManager.streak);
-            }, 0f);
+            });
 
             UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))

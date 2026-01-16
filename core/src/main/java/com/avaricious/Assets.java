@@ -69,6 +69,7 @@ public class Assets {
         manager.load("dark-green.png", Texture.class);
         manager.load("black-green-pixel.png", Texture.class);
         manager.load("xp-pixel.png", Texture.class);
+        manager.load("levelup.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -235,6 +236,10 @@ public class Assets {
 
     public Texture getJokerCard() {
         return manager.get("Joker.png", Texture.class);
+    }
+
+    public Texture getLevelUpTxt() {
+        return manager.get("levelup.png", Texture.class);
     }
 
     public Texture getJokerCardShadow() {

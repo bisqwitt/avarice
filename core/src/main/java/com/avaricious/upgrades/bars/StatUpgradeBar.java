@@ -12,10 +12,8 @@ import java.util.List;
 
 public class StatUpgradeBar extends UpgradeBar{
 
-    public StatUpgradeBar(List<? extends Upgrade> upgrades) {
-        super(upgrades, new Rectangle(
-                8.75f, 5.4f, 1.25f, 1.25f),
-            1.5f, false);
+    public StatUpgradeBar(List<? extends Upgrade> upgrades, Rectangle bounds) {
+        super(upgrades, bounds, 1.5f, false);
     }
 
     @Override
