@@ -4,7 +4,7 @@ public class DevTools {
 
     public static boolean autoSpin = false;
 
-    public static boolean noDamage = true;
+    public static boolean noDamage = false;
 
     public static String playMode = "speedrun";
 

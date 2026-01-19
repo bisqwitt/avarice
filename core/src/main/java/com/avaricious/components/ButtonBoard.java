@@ -24,14 +24,14 @@ public class ButtonBoard {
             Assets.I().getSpinAgainPressedButton(),
             Assets.I().getSpinAgainButton(),
             Assets.I().getSpinAgainButtonDisabled(),
-            new Rectangle(8.25f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
+            new Rectangle(8.25f, 1.75f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
 
         cashoutButton = new DisablableButton(onCashoutButtonPressed,
             Assets.I().getCashoutButton(),
             Assets.I().getCashoutButtonPressed(),
             Assets.I().getCashoutButton(),
             Assets.I().getCashoutButtonDisabled(),
-            new Rectangle(5.2f, 1.25f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
+            new Rectangle(5.2f, 1.75f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
     }
 
     public void handleInput(Vector2 mouse, boolean leftClickPressed, boolean leftClickWasPressed) {
@@ -42,9 +42,9 @@ public class ButtonBoard {
     public void draw(SpriteBatch batch, float delta) {
         if(visible) {
             batch.setColor(1f, 1f, 1f, 0.25f);
-            batch.draw(buttonBoardShadow, 5f, 0.55f, 206 / 35f, 53 / 35f);
+            batch.draw(buttonBoardShadow, 5f, 1.05f, 206 / 35f, 53 / 35f);
             batch.setColor(1f, 1f, 1f, 1f);
-            batch.draw(buttonBoard, 4.9f, 0.65f, 206f / 35f, 53f / 35f);
+            batch.draw(buttonBoard, 4.9f, 1.15f, 206f / 35f, 53f / 35f);
         }
         spinAgainButton.draw(batch, delta);
         cashoutButton.draw(batch, delta);

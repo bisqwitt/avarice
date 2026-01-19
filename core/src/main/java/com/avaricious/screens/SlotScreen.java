@@ -143,7 +143,7 @@ public class SlotScreen extends ScreenAdapter {
         batch.begin();
         TextureEcho.draw(batch, delta);
         ParticleManager.I().draw(batch, delta);
-//        healthBar.draw(batch);
+        healthBar.draw(batch);
         //upgradeBar.draw(batch);
 //        batch.draw(slotMachineBox, 6.75f, 3.0f, 175f / 20.75f, 118 / 20.75f);
         slotMachine.draw(app, delta);

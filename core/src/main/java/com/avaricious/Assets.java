@@ -72,6 +72,7 @@ public class Assets {
         manager.load("levelup.png", Texture.class);
         manager.load("buttonboard.png", Texture.class);
         manager.load("buttonboard-shadow.png", Texture.class);
+        manager.load("health-red-pixel.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -151,12 +152,14 @@ public class Assets {
         manager.load("stats/luck.png", Texture.class);
         manager.load("stats/multi.png", Texture.class);
         manager.load("stats/Retrigger.png", Texture.class);
+        manager.load("stats/omnivamp.png", Texture.class);
         manager.load("stats/coin-shadow.png", Texture.class);
         manager.load("stats/critical hit-shadow.png", Texture.class);
         manager.load("stats/evade-shadow.png", Texture.class);
         manager.load("stats/luck-shadow.png", Texture.class);
         manager.load("stats/multi-shadow.png", Texture.class);
         manager.load("stats/Retrigger-shadow.png", Texture.class);
+        manager.load("stats/omnivamp-shadow.png", Texture.class);
 
         atlas = new TextureAtlas(Gdx.files.internal("symbols.atlas"));
         atlas.getTextures().forEach(texture -> texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest));
@@ -290,6 +293,10 @@ public class Assets {
 
     public Texture getShopWindow() {
         return manager.get("ShopWindow.png", Texture.class);
+    }
+
+    public Texture getHealthRedPixel() {
+        return manager.get("health-red-pixel.png", Texture.class);
     }
 
     public Texture getShopWindowShadow() {
@@ -498,6 +505,14 @@ public class Assets {
 
     public Texture getRetriggerStat() {
         return manager.get("stats/Retrigger.png", Texture.class);
+    }
+
+    public Texture getOmnivampStat() {
+        return manager.get("stats/omnivamp.png", Texture.class);
+    }
+
+    public Texture getOmnivampStatShadow() {
+        return manager.get("stats/omnivamp-shadow.png", Texture.class);
     }
 
     public Texture getCoinStatShadow() {

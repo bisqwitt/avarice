@@ -13,7 +13,7 @@ public class XpBar extends ProgressBar {
     private final float STEP_HEIGHT = 3 / 22f;
 
     private final float FIRST_X = 2.75f;
-    private final float Y = 6.85f;
+    private final float Y = 0.75f;
     private final float OFFSET = 0.04325f;
 
     private final Runnable onLevelUp;
