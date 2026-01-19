@@ -16,7 +16,7 @@ public class CreditManager {
     }
 
     private CreditManager() {
-        credits = 5;
+        credits = 500;
     }
 
     private int credits;

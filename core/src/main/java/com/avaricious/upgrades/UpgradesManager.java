@@ -8,6 +8,8 @@ import org.reflections.Reflections;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,15 +28,11 @@ public class UpgradesManager {
             .filter(c -> !c.isInterface())
             .filter(c -> !Modifier.isAbstract(c.getModifiers()))
             .collect(Collectors.toSet()));
-
-        randomUpgrades().forEach(this::addUpgrade);
-        List<? extends Upgrade> upgrades = randomUpgrades();
-        addUpgrade(upgrades.get(0));
-        addUpgrade(upgrades.get(1));
     }
 
     private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();
     private final List<Upgrade> deck = new ArrayList<>();
+    private final List<Consumer<List<? extends Upgrade>>> listeners = new CopyOnWriteArrayList<>();
 
     public int multAdditions(List<Symbol> selection, long count) {
         return deck.stream()
@@ -79,6 +77,8 @@ public class UpgradesManager {
     public void addUpgrade(Upgrade upgrade) {
         deck.add(upgrade);
         mergeDuplicates();
+
+        notifyDeckChanged(deck);
     }
 
     private void mergeDuplicates() {
@@ -114,6 +114,22 @@ public class UpgradesManager {
     public void removeUpgrade(Upgrade upgrade) {
         deck.remove(upgrade);
     }
+
+    public AutoCloseable onDeckChange(Consumer<List<? extends Upgrade>> listener) {
+        listeners.add(listener);
+
+        // immediate push of current state
+        listener.accept(deck);
+
+        return () -> listeners.remove(listener);
+    }
+
+    private void notifyDeckChanged(List<? extends Upgrade> deck) {
+        // publish an immutable snapshot to avoid external mutation
+        List<? extends Upgrade> currentDeck = Collections.unmodifiableList(deck);
+        listeners.forEach(l -> l.accept(currentDeck));
+    }
+
 
     public List<Upgrade> getDeck() {
         return deck;

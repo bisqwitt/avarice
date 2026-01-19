@@ -70,6 +70,8 @@ public class Assets {
         manager.load("black-green-pixel.png", Texture.class);
         manager.load("xp-pixel.png", Texture.class);
         manager.load("levelup.png", Texture.class);
+        manager.load("buttonboard.png", Texture.class);
+        manager.load("buttonboard-shadow.png", Texture.class);
 
         manager.load("buttons/spinagain/spin-again.png", Texture.class);
         manager.load("buttons/spinagain/spin-again-pressed.png", Texture.class);
@@ -264,6 +266,14 @@ public class Assets {
 
     public Texture getTooltipBoxShadow() {
         return manager.get("TooltipBox-shadow.png", Texture.class);
+    }
+
+    public Texture getButtonBoard() {
+        return manager.get("buttonboard.png", Texture.class);
+    }
+
+    public Texture getButtonBoardShadow() {
+        return manager.get("buttonboard-shadow.png", Texture.class);
     }
 
     public Texture getProgressLit() {
@@ -547,6 +557,10 @@ public class Assets {
 
     public Color colorYellow() {
         return new Color(218f / 255f, 172f / 255f, 83f / 255f, 1f);
+    }
+
+    public String yellowText(String txt) {
+        return "[#daad53]" + txt + "[]";
     }
 
     public Color lightColor() {

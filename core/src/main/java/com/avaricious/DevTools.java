@@ -2,7 +2,7 @@ package com.avaricious;
 
 public class DevTools {
 
-    public static boolean autoSpin = true;
+    public static boolean autoSpin = false;
 
     public static boolean noDamage = true;
 

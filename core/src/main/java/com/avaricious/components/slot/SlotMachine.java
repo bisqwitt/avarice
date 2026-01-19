@@ -44,6 +44,7 @@ public class SlotMachine {
     private final List<Reel> reels = new ArrayList<>();
 
     private boolean runningResults = false;
+    private float alpha = 1f;
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
@@ -173,9 +174,6 @@ public class SlotMachine {
                 float symbolsScale = 1f;
                 float boxScale = 1f;
 
-                float drawW = CELL_W * symbolsScale;
-                float drawH = CELL_H * symbolsScale;
-
                 // NEW: rotate around center using current wobble angle
                 float rotation = isInGrid ? grid[c][k].wobbleAngleDeg() : 0f;
 
@@ -222,7 +220,7 @@ public class SlotMachine {
                 boolean selected = false;
                 boolean hovered = false;
                 float symbolsScale = 1f;
-                float alpha = 1f;
+                float alpha = this.alpha;
 
                 TextureRegion region;
 
@@ -353,6 +351,10 @@ public class SlotMachine {
             cols * (CELL_W + spacingX),
             rows * (CELL_H + spacingY)
         );
+    }
+
+    public void setAlpha(float value) {
+        alpha = value;
     }
 
     public List<Reel> getReels() {

@@ -50,10 +50,14 @@ public class JokerDeck {
     public JokerDeck(Rectangle deckBounds) {
         this.deckBounds = deckBounds;
 
-        loadJokers();
+        loadJokers(UpgradesManager.I().getDeck());
+
+        UpgradesManager.I().onDeckChange(deck -> loadJokers((List<Upgrade>) deck));
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
+        if(jokerBounds.isEmpty()) return;
+
         Upgrade hoveringUpgradeLastRender = hoveringUpgrade;
         hoveringUpgrade = null;
         boolean hoveringDeck = deckBounds.contains(mouse);
@@ -137,7 +141,7 @@ public class JokerDeck {
             Rectangle b = unfoldedBounds.get(up);
 
             // normal per-card unfold timeline
-            float tUnfold = cardTimeline(globalUnfold, (n - 1) - i);
+            float tUnfold = cardTimeline(globalUnfold, (n - 1) - i, n);
             tUnfold = easeOutPow(tUnfold, CARD_EASE_POWER);
 
             // combine: highlighted card can move even when unfolded is 0
@@ -160,13 +164,11 @@ public class JokerDeck {
     }
 
 
-    private void loadJokers() {
+    private void loadJokers(List<Upgrade> upgrades) {
         jokerBounds.clear();
         foldedBounds.clear();
         unfoldedBounds.clear();
         pickProgress.clear();
-
-        List<Upgrade> upgrades = UpgradesManager.I().getDeck();
 
         for (int i = 0; i < upgrades.size(); i++) {
             Upgrade up = upgrades.get(i);
@@ -211,6 +213,8 @@ public class JokerDeck {
     }
 
     private Rectangle getUnfoldedAllCardBounds() {
+
+
         Rectangle firstCardBounds = null;
         for(Map.Entry<Upgrade, Rectangle> entry: jokerBounds.entrySet()) {
             firstCardBounds = entry.getValue();
@@ -249,16 +253,16 @@ public class JokerDeck {
         return t * t * (3f - 2f * t);
     }
 
-    private float cardTimeline(float globalT, int index) {
-        // Stagger start per card
-        float start = index * CARD_DELAY;
+    private float cardTimeline(float globalT, int index, int n) {
+        // Fit all cards into [0..1] regardless of n
+        float usable = Math.max(0.0001f, 1f - CARD_RAMP); // space left for staggering
+        float delay = (n <= 1) ? 0f : (usable / (n - 1));
 
-        // Each card uses a short window to finish (fast motion)
+        float start = index * delay;
         float end = start + CARD_RAMP;
-
-        // Map globalT into [0..1] for this card
         return clamp01((globalT - start) / (end - start));
     }
+
 
     private static float clamp01(float v) {
         if (v < 0f) return 0f;

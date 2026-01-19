@@ -3,7 +3,7 @@ package com.avaricious.screens;
 import com.avaricious.*;
 import com.avaricious.audio.AudioManager;
 import com.avaricious.components.*;
-import com.avaricious.components.buttons.DisablableButton;
+import com.avaricious.components.buttons.Button;
 import com.avaricious.components.displays.PatternDisplay;
 import com.avaricious.components.displays.ScoreDisplay;
 import com.avaricious.components.popups.PopupManager;
@@ -19,6 +19,7 @@ import com.avaricious.stats.statupgrades.CriticalHitChance;
 import com.avaricious.stats.statupgrades.DoubleHitChance;
 import com.avaricious.upgrades.UpgradesManager;
 import com.avaricious.upgrades.bars.JokerDeck;
+import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
 import com.avaricious.upgrades.multAdditions.pattern.PatternMultAdditionUpgrade;
 import com.avaricious.upgrades.pointAdditions.symbolValueStacker.SymbolValueStackUpgrade;
 import com.badlogic.gdx.Gdx;
@@ -51,30 +52,24 @@ public class SlotScreen extends ScreenAdapter {
 
     private final BackgroundLayer backgroundLayer = new BackgroundLayer();
 
-    private final DisablableButton spinAgainButton = new DisablableButton(this::onSpinButtonPressed,
-        Assets.I().getSpinAgainButton(),
-        Assets.I().getSpinAgainPressedButton(),
-        Assets.I().getSpinAgainButtonHovered(),
-        Assets.I().getSpinAgainButtonDisabled(),
-        new Rectangle(8.7f, 2.4f, 79 / 35f, 25 / 35f), Input.Keys.SPACE);
-
-    private final DisablableButton cashoutButton = new DisablableButton(this::onApplyButtonPressed,
-        Assets.I().getCashoutButton(),
-        Assets.I().getCashoutButtonPressed(),
-        Assets.I().getCashoutButtonHovered(),
-        Assets.I().getCashoutButtonDisabled(),
-        new Rectangle(4.7f, 2.4f, 79 / 35f, 25 / 35f), Input.Keys.ENTER);
-
-//    private final Button shopButton = new Button(this::)
+    private final ButtonBoard buttonBoard = new ButtonBoard(this::onSpinButtonPressed, this::onCashoutButtonPressed);
 
     private final JokerDeck jokerDeck = new JokerDeck(
         new Rectangle(13.25f, 1f, 142 / 95f, 190 / 95f)
     );
 
     private final CreditScore creditScore = new CreditScore(0,
-        new Rectangle(1f, 1f, 0.32f * 1.5f, 0.56f * 1.5f), 0.35f * 1.5f);
+        new Rectangle(1f, 2.5f, 0.32f * 1.5f, 0.56f * 1.5f), 0.35f * 1.5f);
 
     private final Shop shop = new Shop();
+
+    private final Button shopButton = new Button(shop::show,
+        Assets.I().getShopButton(),
+        Assets.I().getShopButtonPressed(),
+        Assets.I().getShopButton(),
+        new Rectangle(0.35f, 1f, 79f / 35f, 25f / 35f),
+        Input.Keys.ESCAPE);
+
 
     private final VfxManager vfxManager = new VfxManager(Pixmap.Format.RGBA8888);
     private final VfxManager bloomFxManager = new VfxManager(Pixmap.Format.RGBA8888);
@@ -116,7 +111,7 @@ public class SlotScreen extends ScreenAdapter {
     public void show() {
         roundsManager.nextRound();
         scoreDisplay.resetScore();
-        cashoutButton.setDisabled(true);
+        buttonBoard.setVisible(false);
 
         backgroundLayer.init();
 
@@ -125,6 +120,7 @@ public class SlotScreen extends ScreenAdapter {
 
         shop.show();
 //        statUpgradeWindow.show();
+        onSpinButtonPressed();
     }
 
     @Override
@@ -149,15 +145,15 @@ public class SlotScreen extends ScreenAdapter {
         ParticleManager.I().draw(batch, delta);
 //        healthBar.draw(batch);
         //upgradeBar.draw(batch);
-//        spinAgainButton.draw(batch, delta);
-//        cashoutButton.draw(batch, delta);
 //        batch.draw(slotMachineBox, 6.75f, 3.0f, 175f / 20.75f, 118 / 20.75f);
         slotMachine.draw(app, delta);
         scoreDisplay.draw(batch, delta);
         patternDisplay.draw(batch, delta);
         creditScore.draw(batch, delta);
+        buttonBoard.draw(batch, delta);
         jokerDeck.draw(batch, delta);
         xpBar.draw(batch);
+        shopButton.draw(batch, delta);
 
         TextureGlow.draw(batch, delta, "number");
 
@@ -220,10 +216,9 @@ public class SlotScreen extends ScreenAdapter {
         }
         statUpgradeWindow.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
 
+        buttonBoard.handleInput(mouse, leftClickPressed, leftClickWasPressed);
+        shopButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         backgroundLayer.handleInput();
-
-        spinAgainButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
-        cashoutButton.handleInput(mouse, leftClickPressed, leftClickWasPressed);
         jokerDeck.handleInput(mouse, leftClickPressed, leftClickWasPressed, delta);
 
         leftClickWasPressed = leftClickPressed;
@@ -237,9 +232,8 @@ public class SlotScreen extends ScreenAdapter {
             if(healthBar.getCurrentHealth() <= 0) {
                 ScreenManager.I().setScreen(MainScreen.class);
             }
-            spinAgainButton.setDisabled(false);
 
-            if(DevTools.autoSpin) onSpinButtonPressed();
+            onSpinButtonPressed();
             return;
         }
 
@@ -285,7 +279,7 @@ public class SlotScreen extends ScreenAdapter {
                 AudioManager.I().playHit(EffectManager.streak);
             });
 
-            UpgradesManager.I().getUpgradesOfClass(PatternMultAdditionUpgrade.class)
+            UpgradesManager.I().getUpgradesOfClass(MultAdditionUpgrade.class)
                 .filter(upgrade -> upgrade.condition(null, slotMatch.slots().size()))
                 .forEach(upgrade -> scheduler.schedule(() -> {
                         int multi = upgrade.getMulti();
@@ -308,14 +302,14 @@ public class SlotScreen extends ScreenAdapter {
 
         scheduler.schedule(() -> {
             patternDisplay.addStreak(1);
-            spinAgainButton.setDisabled(false);
-            cashoutButton.setDisabled(false);
+            buttonBoard.setVisible(true);
+            slotMachine.setAlpha(0.25f);
             slotMachine.setRunningResults(false);
             EffectManager.endStreak();
         });
 
         if(DevTools.autoSpin) {
-            scheduler.schedule(this::onApplyButtonPressed);
+            scheduler.schedule(this::onCashoutButtonPressed);
             scheduler.schedule(this::onSpinButtonPressed);
         }
         scheduler.runTasks();
@@ -378,17 +372,16 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void onSpinButtonPressed() {
+        slotMachine.setAlpha(1f);
+        buttonBoard.setVisible(false);
         slotMachine.spin();
-        spinAgainButton.setDisabled(true);
-        cashoutButton.setDisabled(true);
     }
 
-    private void onApplyButtonPressed() {
-//        statUpgradeWindow.show();
+    private void onCashoutButtonPressed() {
         scoreDisplay.addToScore(Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti()));
         patternDisplay.spawnEcho();
         patternDisplay.reset();
-        cashoutButton.setDisabled(true);
+        onSpinButtonPressed();
     }
 
     private void onTargetScoreReached() {

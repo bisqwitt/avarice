@@ -1,6 +1,7 @@
 package com.avaricious.components.buttons;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -21,6 +22,11 @@ public class DisablableButton extends Button {
             currentTexture = disabledTexture;
             wasHovered = false;
         }
+    }
+
+    @Override
+    public void draw(SpriteBatch batch, float delta) {
+        if(!disabled) super.draw(batch, delta);
     }
 
     public void setDisabled(boolean disabled) {
