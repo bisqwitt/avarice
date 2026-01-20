@@ -17,6 +17,7 @@ import com.avaricious.stats.PlayerStats;
 import com.avaricious.stats.statupgrades.CreditSpawnChance;
 import com.avaricious.stats.statupgrades.CriticalHitChance;
 import com.avaricious.stats.statupgrades.DoubleHitChance;
+import com.avaricious.stats.statupgrades.Omnivamp;
 import com.avaricious.upgrades.UpgradesManager;
 import com.avaricious.upgrades.bars.JokerDeck;
 import com.avaricious.upgrades.multAdditions.MultAdditionUpgrade;
@@ -33,13 +34,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.crashinvaders.vfx.VfxManager;
 import com.crashinvaders.vfx.effects.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class SlotScreen extends ScreenAdapter {
 
     private final Main app;
     private final SlotMachine slotMachine;
-    private final Texture slotMachineBox = Assets.I().getSlotMachineBox();
     private final HealthBar healthBar = new HealthBar(100f);
     private final XpBar xpBar;
 
@@ -55,11 +56,11 @@ public class SlotScreen extends ScreenAdapter {
     private final ButtonBoard buttonBoard = new ButtonBoard(this::onSpinButtonPressed, this::onCashoutButtonPressed);
 
     private final JokerDeck jokerDeck = new JokerDeck(
-        new Rectangle(13.25f, 1f, 142 / 95f, 190 / 95f)
+        new Rectangle(0.75f, 1f, 142 / 95f, 190 / 95f)
     );
 
     private final CreditScore creditScore = new CreditScore(0,
-        new Rectangle(1f, 2.5f, 0.32f * 1.5f, 0.56f * 1.5f), 0.35f * 1.5f);
+        new Rectangle(1f, 7.5f, 0.32f * 1.5f, 0.56f * 1.5f), 0.35f * 1.5f);
 
     private final Shop shop = new Shop();
 
@@ -67,7 +68,7 @@ public class SlotScreen extends ScreenAdapter {
         Assets.I().getShopButton(),
         Assets.I().getShopButtonPressed(),
         Assets.I().getShopButton(),
-        new Rectangle(0.35f, 1f, 79f / 35f, 25f / 35f),
+        new Rectangle(0.35f, 3.5f, 79f / 35f, 25f / 35f),
         Input.Keys.ESCAPE);
 
 
@@ -118,7 +119,7 @@ public class SlotScreen extends ScreenAdapter {
         healthBar.setCurrentHealth(healthBar.getMaxHealth());
         slotMachine.getReels().get(slotMachine.getReels().size() -1).setOnSpinFinished(this::runResult);
 
-        shop.show();
+//        shop.show();
 //        statUpgradeWindow.show();
         onSpinButtonPressed();
     }
@@ -143,7 +144,6 @@ public class SlotScreen extends ScreenAdapter {
         batch.begin();
         TextureEcho.draw(batch, delta);
         ParticleManager.I().draw(batch, delta);
-        healthBar.draw(batch);
         //upgradeBar.draw(batch);
 //        batch.draw(slotMachineBox, 6.75f, 3.0f, 175f / 20.75f, 118 / 20.75f);
         slotMachine.draw(app, delta);
@@ -151,10 +151,11 @@ public class SlotScreen extends ScreenAdapter {
         patternDisplay.draw(batch, delta);
         creditScore.draw(batch, delta);
         buttonBoard.draw(batch, delta);
-        jokerDeck.draw(batch, delta);
+        healthBar.draw(batch);
         xpBar.draw(batch);
         shopButton.draw(batch, delta);
 
+        jokerDeck.draw(batch, delta);
         TextureGlow.draw(batch, delta, "number");
 
         shop.draw(batch, delta);
@@ -230,14 +231,13 @@ public class SlotScreen extends ScreenAdapter {
             healthBar.damage(20);
             patternDisplay.reset();
             if(healthBar.getCurrentHealth() <= 0) {
-                ScreenManager.I().setScreen(MainScreen.class);
+                ScreenManager.restartGame();
             }
 
             onSpinButtonPressed();
             return;
         }
 
-        healthBar.heal(20);
         TaskScheduler scheduler = new TaskScheduler(0.325f);
         scheduler.schedule(() -> slotMachine.setRunningResults(true), 0f);
 
@@ -258,6 +258,8 @@ public class SlotScreen extends ScreenAdapter {
             }
 
             scheduler.schedule(() -> {
+                PopupManager.I().releaseHoldingNumbers();
+
                 slots.forEach(slot -> {
                     slot.wobble();
                     slot.pulse();
@@ -271,7 +273,8 @@ public class SlotScreen extends ScreenAdapter {
                 int mult = criticalHit ? slots.size() * 2 : slots.size();
 
                 PopupManager.I().spawnNumber(mult, Assets.I().colorRed(),
-                    middleSlot.getPos().x + ((slots.size() % 2 == 0) ? 2f : 1.5f), middleSlot.getPos().y + 1f);
+                    middleSlot.getPos().x + ((slots.size() % 2 == 0) ? 2f : 1.5f), middleSlot.getPos().y + 1f,
+                    false);
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
                     middleSlot.getPos().x + 2.5f, middleSlot.getPos().y + 1f);
                 patternDisplay.addMulti(mult);
@@ -288,14 +291,14 @@ public class SlotScreen extends ScreenAdapter {
                         cardSlot.wobble();
                         patternDisplay.addMulti(multi);
                         PopupManager.I().spawnNumber(multi, Assets.I().colorRed(),
-                            jokerDeck.getBoundsByUpgrade(upgrade).x + 1.5f, 2.6f);
+                            jokerDeck.getBoundsByUpgrade(upgrade).x + 1.5f, 2.6f,
+                            false);
                     }));
 
             scheduler.schedule(() -> {
                 EffectManager.increaseStreak();
                 slots.forEach(slot -> {
                     slot.targetScale = 1f;
-                    slot.setInPatternHit(false);
                 });
             });
         }));
@@ -325,7 +328,7 @@ public class SlotScreen extends ScreenAdapter {
                 int points = criticalHit ? slotMatch.symbol().baseValue() * 2 : slotMatch.symbol().baseValue();
 
                 PopupManager.I().spawnNumber(points, Assets.I().colorBlue(),
-                    slot.getPos().x + 1.5f, slot.getPos().y + 1f);
+                    slot.getPos().x + 1.5f, slot.getPos().y + 1f, true);
                 if(criticalHit) PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CriticalHitChance.class).getTexture(),
                     slot.getPos().x + 2.5f, slot.getPos().y + 1f);
                 patternDisplay.addPoints(points);
@@ -343,7 +346,7 @@ public class SlotScreen extends ScreenAdapter {
                 scheduler.schedule(() -> {
                     float x = slot.getPos().x + 1f;
                     float y = slot.getPos().y + 1f;
-                    PopupManager.I().spawnNumber(1, Assets.I().colorYellow(), x, y);
+                    PopupManager.I().spawnNumber(1, Assets.I().colorYellow(), x, y, false);
                     PopupManager.I().spawnStatisticHit(PlayerStats.I().getStat(CreditSpawnChance.class).getTexture(), x + 1f, y);
                     CreditManager.I().gain(1);
                 });
@@ -357,14 +360,14 @@ public class SlotScreen extends ScreenAdapter {
                         upgradeSlot.wobble();
                         upgradeSlot.pulse();
                         PopupManager.I().spawnNumber(1, Assets.I().colorGreen(),
-                            upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                            upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f, false);
                     });
                     if(upgrade.addStacks(1)) {
                         scheduler.schedule(() -> {
                             upgradeSlot.wobble();
                             upgradeSlot.pulse();
                             PopupManager.I().spawnNumber(1, Assets.I().colorBlue(),
-                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f);
+                                upgradeSlot.getPos().x, upgradeSlot.getPos().y + 1.5f, false);
                         });
                     }
                 });
@@ -378,7 +381,10 @@ public class SlotScreen extends ScreenAdapter {
     }
 
     private void onCashoutButtonPressed() {
-        scoreDisplay.addToScore(Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti()));
+        int score = Math.round(patternDisplay.getPoints() * patternDisplay.getMulti() * patternDisplay.getXMulti());
+        scoreDisplay.addToScore(score);
+        healthBar.heal(PlayerStats.I().getStat(Omnivamp.class).getPercentage().multiply(BigDecimal.valueOf(score)).intValue());
+
         patternDisplay.spawnEcho();
         patternDisplay.reset();
         onSpinButtonPressed();

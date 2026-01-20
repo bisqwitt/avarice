@@ -23,11 +23,10 @@ public class JokerDeck {
     private final float FOLDED_STEP = 0.02f;
     private final float SPREAD_STEP_X = 2.25f;
     private final float UNFOLDED_SCALE = 1.15f;
-    private final float UNFOLD_SPEED = 3f;
+    private final float UNFOLD_SPEED = 2f;
 
-    private final float CARD_DELAY = 0.15f;     // delay between cards in normalized unfold space (0..1)
     private final float CARD_RAMP  = 0.5f;     // how much of the remaining time each card uses to reach 1
-    private final float CARD_EASE_POWER = 0.8f; // >1 = snappier finish; <1 = softer
+    private final float CARD_EASE_POWER = 0.9f; // >1 = snappier finish; <1 = softer
 
     private final float PICK_PHASE = 0.35f; // fraction of each card's timeline reserved for "pick up" (scale)
 
@@ -52,7 +51,7 @@ public class JokerDeck {
 
         loadJokers(UpgradesManager.I().getDeck());
 
-        UpgradesManager.I().onDeckChange(deck -> loadJokers((List<Upgrade>) deck));
+        UpgradesManager.I().onDeckChange(this::loadJokers);
     }
 
     public void handleInput(Vector2 mouse, boolean pressed, boolean wasPressed, float delta) {
@@ -164,7 +163,7 @@ public class JokerDeck {
     }
 
 
-    private void loadJokers(List<Upgrade> upgrades) {
+    private void loadJokers(List<? extends Upgrade> upgrades) {
         jokerBounds.clear();
         foldedBounds.clear();
         unfoldedBounds.clear();
@@ -176,7 +175,7 @@ public class JokerDeck {
             // Folded: stack on the deck (tiny offset for depth)
             // small stacked offset (optional)
             Rectangle folded = new Rectangle(
-                deckBounds.x + i * FOLDED_STEP,
+                deckBounds.x,
                 deckBounds.y + i * FOLDED_STEP,
                 deckBounds.width,
                 deckBounds.height
@@ -195,7 +194,7 @@ public class JokerDeck {
     }
 
     private Rectangle unfoldedCardPos(int i) {
-        float baseX = deckBounds.x - (i * SPREAD_STEP_X);
+        float baseX = deckBounds.x + (i * SPREAD_STEP_X);
         float baseY = deckBounds.y;
 
         float unfoldedW = deckBounds.width * UNFOLDED_SCALE;
@@ -213,17 +212,15 @@ public class JokerDeck {
     }
 
     private Rectangle getUnfoldedAllCardBounds() {
-
-
         Rectangle firstCardBounds = null;
-        for(Map.Entry<Upgrade, Rectangle> entry: jokerBounds.entrySet()) {
+        for(Map.Entry<Upgrade, Rectangle> entry: unfoldedBounds.entrySet()) {
             firstCardBounds = entry.getValue();
         }
 
-        float width = (deckBounds.x + firstCardBounds.width) - firstCardBounds.x;
+        float width = deckBounds.x + firstCardBounds.x + firstCardBounds.width;
         float height = firstCardBounds.height;
 
-        return new Rectangle(firstCardBounds.x, firstCardBounds.y, width, height);
+        return new Rectangle(deckBounds.x, deckBounds.y, width, height);
     }
 
     public Rectangle getBoundsByUpgrade(Upgrade upgrade) {

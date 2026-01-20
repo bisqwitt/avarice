@@ -15,13 +15,12 @@ public class PlayerStats {
     }
 
     private final Map<Class<? extends Stat>, Stat> stats = Map.of(
-        ChipUpgradeSpawnChance.class, new ChipUpgradeSpawnChance(),
         CreditSpawnChance.class, new CreditSpawnChance(),
         CriticalHitChance.class, new CriticalHitChance(),
         DoubleHitChance.class, new DoubleHitChance(),
         EvadeChance.class, new EvadeChance(),
         LuckChance.class, new LuckChance(),
-        MultiUpgradeSpawnChance.class, new MultiUpgradeSpawnChance()
+        Omnivamp.class, new Omnivamp()
     );
 
     private PlayerStats() {

@@ -38,7 +38,7 @@ public class ParticleManager {
         particle.load(type.getFile(),
             Gdx.files.internal("particles/pngs"));
         particle.scaleEffect(0.03f);
-        particle.getEmitters().forEach(emitter -> emitter.getEmission().setHigh(streak * 40));
+        particle.getEmitters().forEach(emitter -> emitter.getEmission().setHigh(streak * 60));
 
         particle.setPosition(x, y);
         particle.start();

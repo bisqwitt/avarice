@@ -10,8 +10,10 @@ public class DevTools {
 
     public static boolean onlyLemon = false;
 
-    public static boolean lemonCherry = true;
+    public static boolean lemonCherry = false;
 
     public static boolean audioMuted = true;
+
+    public static boolean fullscreen = true;
 
 }

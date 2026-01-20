@@ -1,8 +1,6 @@
 package com.avaricious.components.popups;
 
 import com.avaricious.Assets;
-import com.avaricious.TextureEcho;
-import com.avaricious.TextureGlow;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -13,66 +11,117 @@ import java.util.List;
 
 public class NumberPopup {
 
+    private enum Phase { PULSE, HOLD, EXIT, FINISHED }
+
     private final List<TextureRegion> digitalNumberTextures = new ArrayList<>();
     private final List<TextureRegion> digitalNumberShadowTextures = new ArrayList<>();
 
     private final TextureRegion plusTexture = new TextureRegion(Assets.I().getPlusSymbol());
-    private final TextureRegion percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());;
+    private final TextureRegion percentageTexture = new TextureRegion(Assets.I().getPercentageSymbol());
 
     private final Rectangle bounds;
     private final Color color;
 
-    // --- Timing (seconds) ---
     private final float pulseTime = 0.20f; // pop+wobble duration
-    private final float holdTime  = 0.4f; // stay static
+    private final float holdTime  = 0.40f; // OLD behavior: stay static for this long
     private final float exitTime  = 0.25f; // shrink until gone
-    private final float lifetime  = pulseTime + holdTime + exitTime;
 
-    private float timeAlive = 0f;
+    private final boolean manualHold;
+
+    private Phase phase = Phase.PULSE;
+
+    // One timer reused for the current phase (0..phaseDuration)
+    private float timeInPhase = 0f;
 
     private final boolean asPercentage;
 
     private Runnable onFinished;
 
-    public NumberPopup(int number, Color color, float x, float y, boolean asPercentage) {
+    public NumberPopup(int number, Color color, float x, float y, boolean asPercentage, boolean manualHold) {
         this.color = color;
         this.asPercentage = asPercentage;
+        this.manualHold = manualHold;
 
         this.bounds = new Rectangle(x, y, 7 / 15f, 11 / 15f);
         setDigitalNumberTextures(number);
-//        TextureEcho.create(plusTexture, bounds.setX(bounds.x - 0.5f), color);
-//        digitalNumberTextures.forEach(texture -> TextureEcho.create(texture, bounds, color));
+        restart();
+    }
+
+    public void release() {
+        if (manualHold && phase == Phase.HOLD) {
+            phase = Phase.EXIT;
+            timeInPhase = 0f;
+        }
+    }
+
+    public boolean isManualHold() {
+        return manualHold;
     }
 
     public void transform(int newValue) {
         setDigitalNumberTextures(newValue);
-        timeAlive = 0f;
+        restart();
+    }
+
+    private void restart() {
+        phase = Phase.PULSE;
+        timeInPhase = 0f;
     }
 
     public boolean isFinished() {
-        return timeAlive >= lifetime;
+        return phase == Phase.FINISHED;
+    }
+
+    public boolean isHolding() {
+        return phase == Phase.HOLD;
     }
 
     public void update(float delta) {
-        timeAlive += delta;
-        if (timeAlive > lifetime) {
-            timeAlive = lifetime;
-            if(onFinished != null) onFinished.run();
+        if (phase == Phase.FINISHED) return;
+
+        timeInPhase += delta;
+
+        switch (phase) {
+            case PULSE -> {
+                if (timeInPhase >= pulseTime) {
+                    phase = Phase.HOLD;
+                    timeInPhase = 0f;
+                }
+            }
+            case HOLD -> {
+                // Old behavior: auto-exit after holdTime
+                if (!manualHold && timeInPhase >= holdTime) {
+                    phase = Phase.EXIT;
+                    timeInPhase = 0f;
+                }
+                // New behavior: do nothing until release()
+            }
+            case EXIT -> {
+                if (timeInPhase >= exitTime) {
+                    timeInPhase = exitTime;
+                    phase = Phase.FINISHED;
+                    if (onFinished != null) onFinished.run();
+                }
+            }
+            case FINISHED -> {
+                // nothing
+            }
         }
     }
 
     public void render(SpriteBatch batch, float delta) {
+        if (phase == Phase.FINISHED) return;
+
         float scale = getScale();
         float rotation = getRotation();
         float alpha = getAlpha();
 
-        // If you want a hard cutoff instead of drawing tiny values:
         if (alpha <= 0f || scale <= 0f) return;
 
         float originX = bounds.width / 2f;
         float originY = bounds.height / 2f;
 
-        // Use alpha here (previously you always used 1f)
+        // Use alpha for main draw color
         batch.setColor(color.r, color.g, color.b, alpha);
 
         batch.draw(
@@ -85,6 +134,7 @@ public class NumberPopup {
         );
 
         for (int i = 0; i < digitalNumberTextures.size(); i++) {
+            // Shadow
             batch.setColor(1f, 1f, 1f, 0.25f);
             batch.draw(
                 digitalNumberShadowTextures.get(i),
@@ -94,8 +144,9 @@ public class NumberPopup {
                 scale, scale,
                 rotation
             );
-            batch.setColor(color.r, color.g, color.b, alpha);
 
+            // Foreground digit
+            batch.setColor(color.r, color.g, color.b, alpha);
             batch.draw(
                 digitalNumberTextures.get(i),
                 bounds.x + (0.5f * i), bounds.y,
@@ -106,7 +157,7 @@ public class NumberPopup {
             );
         }
 
-        if(asPercentage) {
+        if (asPercentage) {
             batch.draw(
                 percentageTexture,
                 bounds.x + 0.4f, bounds.y,
@@ -121,10 +172,7 @@ public class NumberPopup {
     }
 
     private float getPulseCurve() {
-        // 0..1 within pulse phase only
-        float t = clamp01(timeAlive / pulseTime);
-
-        // Parabola: 0 -> 1 -> 0
+        float t = clamp01(timeInPhase / pulseTime);
         float pulse = 1f - 4f * (t - 0.5f) * (t - 0.5f);
         return Math.max(0f, pulse);
     }
@@ -132,30 +180,22 @@ public class NumberPopup {
     private float getScale() {
         float baseScale = 1.0f;
 
-        // Phase 1: pulse
-        if (timeAlive <= pulseTime) {
-            float pulseCurve = getPulseCurve();
+        if (phase == Phase.PULSE) {
             float pulseScale = 0.35f;
-            return baseScale + pulseCurve * pulseScale;
+            return baseScale + getPulseCurve() * pulseScale;
         }
 
-        // Phase 2: hold (static)
-        if (timeAlive <= pulseTime + holdTime) {
+        if (phase == Phase.HOLD) {
             return baseScale;
         }
 
-        // Phase 3: exit (shrink)
-        float t = (timeAlive - (pulseTime + holdTime)) / exitTime; // 0..1
-        t = clamp01(t);
-
-        // Ease-in shrink looks more natural than linear
-        float k = easeInQuad(t);
-        return baseScale * (1f - k); // 1 -> 0
+        // EXIT
+        float t = clamp01(timeInPhase / exitTime);
+        return baseScale * (1f - easeInQuad(t));
     }
 
     private float getRotation() {
-        // wobble only during pulse, then static
-        if (timeAlive <= pulseTime) {
+        if (phase == Phase.PULSE) {
             float wobbleAngle = 8f;
             return getPulseCurve() * wobbleAngle;
         }
@@ -163,17 +203,14 @@ public class NumberPopup {
     }
 
     private float getAlpha() {
-        // fully visible during pulse + hold
-        if (timeAlive <= pulseTime + holdTime) {
+        if (phase == Phase.PULSE || phase == Phase.HOLD) {
             return 1f;
         }
 
-        // optional fade during exit (recommended)
-        float t = (timeAlive - (pulseTime + holdTime)) / exitTime; // 0..1
-        t = clamp01(t);
-        return 1f - t; // 1 -> 0
+        // EXIT fade
+        float t = clamp01(timeInPhase / exitTime);
+        return 1f - t;
     }
-
 
     private float clamp01(float v) {
         return Math.max(0f, Math.min(1f, v));
@@ -187,9 +224,10 @@ public class NumberPopup {
         this.onFinished = onFinished;
     }
 
-
     private void setDigitalNumberTextures(int number) {
         digitalNumberTextures.clear();
+        digitalNumberShadowTextures.clear(); // IMPORTANT: keep lists in sync
+
         String.valueOf(number)
             .chars()
             .map(Character::getNumericValue)

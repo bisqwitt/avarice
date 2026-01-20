@@ -2,6 +2,7 @@ package com.avaricious.screens;
 
 import com.avaricious.Main;
 import com.avaricious.screens.mainscreen.MainScreen;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -53,6 +54,21 @@ public class ScreenManager {
 
     public static Viewport getUiViewport() {
         return uiViewport;
+    }
+
+    public static void restartGame() {
+        // Defer: prevents switching screens while an FBO capture is mid-flight.
+        Gdx.app.postRunnable(() -> {
+            ScreenAdapter old = instance.screens.get(SlotScreen.class);
+            if (old != null) {
+                // You must manage disposal yourself; libGDX does not auto-dispose Screens.
+                old.dispose();
+            }
+
+            ScreenAdapter fresh = new SlotScreen(instance.app);
+            instance.screens.put(SlotScreen.class, fresh);
+            instance.app.setScreen(fresh);
+        });
     }
 
 }

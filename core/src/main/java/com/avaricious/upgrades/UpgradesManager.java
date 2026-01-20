@@ -28,6 +28,9 @@ public class UpgradesManager {
             .filter(c -> !c.isInterface())
             .filter(c -> !Modifier.isAbstract(c.getModifiers()))
             .collect(Collectors.toSet()));
+
+        randomUpgrades().forEach(this::addUpgrade);
+        randomUpgrades().forEach(this::addUpgrade);
     }
 
     private final List<Class<? extends Upgrade>> allUpgrades = new ArrayList<>();

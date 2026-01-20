@@ -35,7 +35,7 @@ public class StatUpgrade extends Upgrade {
 
     @Override
     public void apply() {
-       stat.setPercentageChance(stat.getPercentageChance().add(additionalPercentage));
+       stat.setPercentage(stat.getPercentage().add(additionalPercentage));
     }
 
     public int getAdditionalPercentage() {

@@ -7,10 +7,12 @@ import com.avaricious.TextureGlow;
 import com.avaricious.components.slot.pattern.PatternFinder;
 import com.avaricious.components.slot.pattern.PatternMatch;
 import com.avaricious.components.slot.pattern.SlotMatch;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
@@ -45,11 +47,12 @@ public class SlotMachine {
 
     private boolean runningResults = false;
     private float alpha = 1f;
+    private float desiredAlpha = 1f;
 
     public SlotMachine(float worldWidth, float worldHeight) {
         // center the 5x3 grid within the world
         originX = ((worldWidth - cols * (CELL_W + spacingX)) / 2f);
-        originY = ((worldHeight - rows * (CELL_H + spacingY)) / 2f) - 1f + 0.75f;
+        originY = ((worldHeight - rows * (CELL_H + spacingY)) / 2f) - 1f + 0.5f;
 
         // build visual cells
         for (int c = 0; c < cols; c++) {
@@ -100,6 +103,11 @@ public class SlotMachine {
         // update reel motion
         for (int c = 0; c < cols; c++) {
             reels.get(c).update(delta);
+        }
+
+        if(desiredAlpha != alpha) {
+            float speed = 6f; // higher = faster convergence
+            alpha = MathUtils.lerp(alpha, desiredAlpha, speed * delta);
         }
 
         // one big clip over the whole machine area
@@ -335,6 +343,7 @@ public class SlotMachine {
             result.add(new SlotMatch(match.symbol(), slots));
         }
 
+        result.sort(Comparator.comparingInt(m -> m.symbol().ordinal()));
         return result;
     }
 
@@ -354,7 +363,7 @@ public class SlotMachine {
     }
 
     public void setAlpha(float value) {
-        alpha = value;
+        desiredAlpha = value;
     }
 
     public List<Reel> getReels() {
